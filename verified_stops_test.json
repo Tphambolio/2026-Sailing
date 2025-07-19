@@ -1,0 +1,52 @@
+[
+    {
+        "name": "Venice, Italy",
+        "lat": 45.4408,
+        "lon": 12.3155
+    },
+    {
+        "name": "Chioggia, Italy",
+        "lat": 45.2201,
+        "lon": 12.2863
+    },
+    {
+        "name": "Grado, Italy",
+        "lat": 45.6791,
+        "lon": 13.3946
+    },
+    {
+        "name": "Trieste, Italy",
+        "lat": 45.6495,
+        "lon": 13.7768
+    },
+    {
+        "name": "Umag, Croatia",
+        "lat": 45.4333,
+        "lon": 13.5167
+    },
+    {
+        "name": "Pore\u010d, Croatia",
+        "lat": 45.227,
+        "lon": 13.595
+    },
+    {
+        "name": "Vrsar, Croatia",
+        "lat": 45.1381,
+        "lon": 13.6052
+    },
+    {
+        "name": "Pula, Croatia",
+        "lat": 44.8666,
+        "lon": 13.85
+    },
+    {
+        "name": "Medulin, Croatia",
+        "lat": 44.8222,
+        "lon": 13.9344
+    },
+    {
+        "name": "Rijeka, Croatia",
+        "lat": 45.3271,
+        "lon": 14.4422
+    }
+]
