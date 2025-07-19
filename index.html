@@ -37,7 +37,7 @@
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    fetch('https://raw.githubusercontent.com/Tphambolio/2026-Sailing/main/med_sailing_repaired_stops_1_10.json')
+    fetch('https://raw.githubusercontent.com/Tphambolio/2026-Sailing/main/verified_stops_test.json')
       .then(response => response.json())
       .then(stops => {
         stops.forEach((stop, index) => {
