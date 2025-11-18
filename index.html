@@ -27,6 +27,7 @@
 </head>
 <body>
   <h2 style="text-align:center;">🌊 Mediterranean Sailing Itinerary Map</h2>
+  <div style="text-align:center; padding: 10px; font-size: 18px; font-weight: bold;" id="stop-counter">Loading stops...</div>
   <div id="map"></div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -40,6 +41,11 @@
     fetch('https://raw.githubusercontent.com/Tphambolio/2026-Sailing/main/full_stops_81_validated.json')
       .then(response => response.json())
       .then(stops => {
+        // Count and display the number of loaded stops
+        const stopCount = stops.length;
+        document.getElementById('stop-counter').textContent = `📍 ${stopCount} Stops Loaded`;
+        console.log(`Total stops loaded: ${stopCount}`);
+
         stops.forEach((stop, index) => {
           const iconClass = stop.season === 'summer' ? 'summer' :
                             stop.season === 'fall' ? 'fall' : 'winter';
@@ -62,6 +68,10 @@
             .addTo(map)
             .bindPopup(popupContent);
         });
+      })
+      .catch(error => {
+        document.getElementById('stop-counter').textContent = '❌ Error loading stops';
+        console.error('Error loading stops:', error);
       });
   </script>
 </body>
