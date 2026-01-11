@@ -479,7 +479,7 @@ function App() {
 
         <main className="flex-1 relative">
           <MapContainer center={DEFAULT_MAP_CENTER} zoom={DEFAULT_MAP_ZOOM} className={`h-full w-full ${measureMode ? 'cursor-crosshair' : ''}`} style={{ background: '#0f172a' }}>
-            <LayersControl position="topright">
+            <LayersControl position="bottomleft">
               <LayersControl.BaseLayer checked name="Dark">
                 <TileLayer attribution='&copy; CARTO' url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
               </LayersControl.BaseLayer>
