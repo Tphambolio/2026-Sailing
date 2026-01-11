@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, useMapEvents, LayersControl } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { getData } from './services/dataService';
@@ -263,6 +263,13 @@ function App() {
   const [measureMode, setMeasureMode] = useState(false);
   const [measurePoints, setMeasurePoints] = useState<MeasurePoint[]>([]);
   const [zoomLevel, setZoomLevel] = useState(DEFAULT_MAP_ZOOM);
+  const [mapStyle, setMapStyle] = useState<'dark' | 'satellite' | 'streets'>('dark');
+
+  const tileLayerConfig = {
+    dark: { url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', attribution: '&copy; CARTO' },
+    satellite: { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', attribution: '&copy; Esri' },
+    streets: { url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', attribution: '&copy; OpenStreetMap' }
+  };
 
   const handleZoomChange = useCallback((zoom: number) => {
     setZoomLevel(zoom);
@@ -410,6 +417,26 @@ function App() {
               <span className="text-cyan-400">{stats.totalSchengenDays} Schengen</span>
             </div>
           )}
+          <div className="flex items-center gap-1 bg-slate-700 rounded-lg p-1">
+            <button
+              onClick={() => setMapStyle('dark')}
+              className={`px-2 py-1 rounded text-xs font-medium ${mapStyle === 'dark' ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-600'}`}
+            >
+              Dark
+            </button>
+            <button
+              onClick={() => setMapStyle('satellite')}
+              className={`px-2 py-1 rounded text-xs font-medium ${mapStyle === 'satellite' ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-600'}`}
+            >
+              Satellite
+            </button>
+            <button
+              onClick={() => setMapStyle('streets')}
+              className={`px-2 py-1 rounded text-xs font-medium ${mapStyle === 'streets' ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-600'}`}
+            >
+              Streets
+            </button>
+          </div>
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-slate-700 rounded-lg">{sidebarOpen ? '◀' : '▶'}</button>
         </div>
       </header>
@@ -479,20 +506,11 @@ function App() {
 
         <main className="flex-1 relative">
           <MapContainer center={DEFAULT_MAP_CENTER} zoom={DEFAULT_MAP_ZOOM} className={`h-full w-full ${measureMode ? 'cursor-crosshair' : ''}`} style={{ background: '#0f172a' }}>
-            <LayersControl position="topright">
-              <LayersControl.BaseLayer checked name="Dark">
-                <TileLayer attribution='&copy; CARTO' url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
-              </LayersControl.BaseLayer>
-              <LayersControl.BaseLayer name="Satellite">
-                <TileLayer
-                  attribution='&copy; Esri'
-                  url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-                />
-              </LayersControl.BaseLayer>
-              <LayersControl.BaseLayer name="OpenStreetMap">
-                <TileLayer attribution='&copy; OpenStreetMap' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-              </LayersControl.BaseLayer>
-            </LayersControl>
+            <TileLayer
+              key={mapStyle}
+              attribution={tileLayerConfig[mapStyle].attribution}
+              url={tileLayerConfig[mapStyle].url}
+            />
             <MapController selectedStop={selectedStop} />
             <ZoomTracker onZoomChange={handleZoomChange} />
             <MeasureHandler measureMode={measureMode} onAddPoint={handleAddMeasurePoint} />
