@@ -480,18 +480,18 @@ function App() {
 
         <main className="flex-1 relative">
           <MapContainer center={DEFAULT_MAP_CENTER} zoom={DEFAULT_MAP_ZOOM} className={`h-full w-full ${measureMode ? 'cursor-crosshair' : ''}`} style={{ background: '#0f172a' }}>
-            {mapLayer === 'dark' && (
-              <TileLayer attribution='&copy; CARTO' url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
-            )}
-            {mapLayer === 'satellite' && (
-              <TileLayer
-                attribution='&copy; Esri'
-                url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-              />
-            )}
-            {mapLayer === 'osm' && (
-              <TileLayer attribution='&copy; OpenStreetMap' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            )}
+            <TileLayer
+              key={mapLayer}
+              attribution={
+                mapLayer === 'dark' ? '&copy; CARTO' :
+                mapLayer === 'satellite' ? '&copy; Esri' : '&copy; OpenStreetMap'
+              }
+              url={
+                mapLayer === 'dark' ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' :
+                mapLayer === 'satellite' ? 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}' :
+                'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+              }
+            />
             <MapController selectedStop={selectedStop} />
             <ZoomTracker onZoomChange={handleZoomChange} />
             <MeasureHandler measureMode={measureMode} onAddPoint={handleAddMeasurePoint} />
