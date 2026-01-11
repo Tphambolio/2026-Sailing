@@ -391,53 +391,57 @@ function App() {
 
   return (
     <div className="h-screen flex flex-col bg-slate-900">
-      <header className="bg-slate-800 border-b border-slate-700 px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h1 className="text-xl font-bold text-white flex items-center gap-2">
-            <span className="text-2xl">🌊</span>Mediterranean Odyssey
-          </h1>
-          <span className={`text-xs px-2 py-1 rounded ${dataSource === 'live' ? 'bg-green-600' : dataSource === 'cache' ? 'bg-yellow-600' : 'bg-slate-600'}`}>
-            {dataSource === 'live' ? 'Live' : dataSource === 'cache' ? 'Cached' : 'Offline'}
-          </span>
-        </div>
-        <div className="flex items-center gap-4">
-          <input
-            type="text"
-            placeholder="Search stops..."
-            value={filters.searchQuery}
-            onChange={(e) => setFilters(f => ({ ...f, searchQuery: e.target.value }))}
-            className="bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 w-64"
-          />
-          {stats && (
-            <div className="hidden md:flex items-center gap-4 text-sm text-slate-300">
-              <span>{stats.totalDays} days</span>
-              <span className="text-slate-500">|</span>
-              <span>{stops.length} stops</span>
-              <span className="text-slate-500">|</span>
-              <span className="text-cyan-400">{stats.totalSchengenDays} Schengen</span>
-            </div>
-          )}
-          <div className="flex items-center gap-1 bg-slate-700 rounded-lg p-1">
-            <button
-              onClick={() => setMapStyle('dark')}
-              className={`px-2 py-1 rounded text-xs font-medium ${mapStyle === 'dark' ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-600'}`}
-            >
-              Dark
-            </button>
-            <button
-              onClick={() => setMapStyle('satellite')}
-              className={`px-2 py-1 rounded text-xs font-medium ${mapStyle === 'satellite' ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-600'}`}
-            >
-              Satellite
-            </button>
-            <button
-              onClick={() => setMapStyle('streets')}
-              className={`px-2 py-1 rounded text-xs font-medium ${mapStyle === 'streets' ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-600'}`}
-            >
-              Streets
-            </button>
+      <header className="bg-slate-800 border-b border-slate-700 px-2 md:px-4 py-2 md:py-3">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <h1 className="text-base md:text-xl font-bold text-white flex items-center gap-1 md:gap-2">
+              <span className="text-xl md:text-2xl">🌊</span>
+              <span className="hidden sm:inline">Mediterranean Odyssey</span>
+              <span className="sm:hidden">Med Odyssey</span>
+            </h1>
+            <span className={`hidden md:inline text-xs px-2 py-1 rounded ${dataSource === 'live' ? 'bg-green-600' : dataSource === 'cache' ? 'bg-yellow-600' : 'bg-slate-600'}`}>
+              {dataSource === 'live' ? 'Live' : dataSource === 'cache' ? 'Cached' : 'Offline'}
+            </span>
           </div>
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-slate-700 rounded-lg">{sidebarOpen ? '◀' : '▶'}</button>
+          <div className="flex items-center gap-2 md:gap-4">
+            <input
+              type="text"
+              placeholder="Search..."
+              value={filters.searchQuery}
+              onChange={(e) => setFilters(f => ({ ...f, searchQuery: e.target.value }))}
+              className="hidden md:block bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 w-64"
+            />
+            {stats && (
+              <div className="hidden lg:flex items-center gap-4 text-sm text-slate-300">
+                <span>{stats.totalDays} days</span>
+                <span className="text-slate-500">|</span>
+                <span>{stops.length} stops</span>
+                <span className="text-slate-500">|</span>
+                <span className="text-cyan-400">{stats.totalSchengenDays} Schengen</span>
+              </div>
+            )}
+            <div className="flex items-center gap-1 bg-slate-700 rounded-lg p-1">
+              <button
+                onClick={() => setMapStyle('dark')}
+                className={`px-2 py-1 rounded text-xs font-medium ${mapStyle === 'dark' ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-600'}`}
+              >
+                🌙
+              </button>
+              <button
+                onClick={() => setMapStyle('satellite')}
+                className={`px-2 py-1 rounded text-xs font-medium ${mapStyle === 'satellite' ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-600'}`}
+              >
+                🛰️
+              </button>
+              <button
+                onClick={() => setMapStyle('streets')}
+                className={`px-2 py-1 rounded text-xs font-medium ${mapStyle === 'streets' ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-600'}`}
+              >
+                🗺️
+              </button>
+            </div>
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-slate-700 rounded-lg">{sidebarOpen ? '◀' : '▶'}</button>
+          </div>
         </div>
       </header>
 
