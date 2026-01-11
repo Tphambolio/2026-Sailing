@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, useMapEvents, LayersControl } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { getData } from './services/dataService';
@@ -263,7 +263,6 @@ function App() {
   const [measureMode, setMeasureMode] = useState(false);
   const [measurePoints, setMeasurePoints] = useState<MeasurePoint[]>([]);
   const [zoomLevel, setZoomLevel] = useState(DEFAULT_MAP_ZOOM);
-  const [mapLayer, setMapLayer] = useState<'dark' | 'satellite' | 'osm'>('dark');
 
   const handleZoomChange = useCallback((zoom: number) => {
     setZoomLevel(zoom);
@@ -480,18 +479,20 @@ function App() {
 
         <main className="flex-1 relative">
           <MapContainer center={DEFAULT_MAP_CENTER} zoom={DEFAULT_MAP_ZOOM} className={`h-full w-full ${measureMode ? 'cursor-crosshair' : ''}`} style={{ background: '#0f172a' }}>
-            <TileLayer
-              key={mapLayer}
-              attribution={
-                mapLayer === 'dark' ? '&copy; CARTO' :
-                mapLayer === 'satellite' ? '&copy; Esri' : '&copy; OpenStreetMap'
-              }
-              url={
-                mapLayer === 'dark' ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' :
-                mapLayer === 'satellite' ? 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}' :
-                'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-              }
-            />
+            <LayersControl position="topright">
+              <LayersControl.BaseLayer checked name="Dark">
+                <TileLayer attribution='&copy; CARTO' url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
+              </LayersControl.BaseLayer>
+              <LayersControl.BaseLayer name="Satellite">
+                <TileLayer
+                  attribution='&copy; Esri'
+                  url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                />
+              </LayersControl.BaseLayer>
+              <LayersControl.BaseLayer name="OpenStreetMap">
+                <TileLayer attribution='&copy; OpenStreetMap' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              </LayersControl.BaseLayer>
+            </LayersControl>
             <MapController selectedStop={selectedStop} />
             <ZoomTracker onZoomChange={handleZoomChange} />
             <MeasureHandler measureMode={measureMode} onAddPoint={handleAddMeasurePoint} />
@@ -637,36 +638,6 @@ function App() {
               <span>📏</span>
               {measureMode ? 'Measuring...' : 'Measure Distance'}
             </button>
-
-            <div className="bg-slate-800/90 backdrop-blur rounded-lg p-2">
-              <p className="text-[10px] text-slate-400 mb-1 uppercase">Map Style</p>
-              <div className="flex gap-1">
-                <button
-                  onClick={() => setMapLayer('dark')}
-                  className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                    mapLayer === 'dark' ? 'bg-cyan-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                  }`}
-                >
-                  🌙 Dark
-                </button>
-                <button
-                  onClick={() => setMapLayer('satellite')}
-                  className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                    mapLayer === 'satellite' ? 'bg-cyan-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                  }`}
-                >
-                  🛰️ Satellite
-                </button>
-                <button
-                  onClick={() => setMapLayer('osm')}
-                  className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                    mapLayer === 'osm' ? 'bg-cyan-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                  }`}
-                >
-                  🗺️ Map
-                </button>
-              </div>
-            </div>
 
             {measureMode && (
               <div className="bg-slate-800/90 backdrop-blur rounded-lg p-3">
