@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, useMapEvents, LayersControl } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { getData } from './services/dataService';
@@ -346,10 +346,9 @@ function App() {
     return segments;
   }, [filteredStops, phases]);
 
-  // Create distance labels with arrows at midpoints between stops (every 2nd segment to show more)
-  const distanceLabels = stops.slice(0, -1).filter((_, i) => i % 2 === 0).map((stop, i) => {
-    const actualIndex = i * 2;
-    const nextStop = stops[actualIndex + 1];
+  // Create distance labels with arrows at midpoints between ALL consecutive stops
+  const distanceLabels = stops.slice(0, -1).map((stop, i) => {
+    const nextStop = stops[i + 1];
     const midLat = (stop.lat + nextStop.lat) / 2;
     const midLon = (stop.lon + nextStop.lon) / 2;
     const bearing = calculateBearing(stop.lat, stop.lon, nextStop.lat, nextStop.lon);
@@ -480,7 +479,20 @@ function App() {
 
         <main className="flex-1 relative">
           <MapContainer center={DEFAULT_MAP_CENTER} zoom={DEFAULT_MAP_ZOOM} className={`h-full w-full ${measureMode ? 'cursor-crosshair' : ''}`} style={{ background: '#0f172a' }}>
-            <TileLayer attribution='&copy; CARTO' url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
+            <LayersControl position="topright">
+              <LayersControl.BaseLayer checked name="Dark">
+                <TileLayer attribution='&copy; CARTO' url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
+              </LayersControl.BaseLayer>
+              <LayersControl.BaseLayer name="Satellite">
+                <TileLayer
+                  attribution='&copy; Esri'
+                  url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                />
+              </LayersControl.BaseLayer>
+              <LayersControl.BaseLayer name="OpenStreetMap">
+                <TileLayer attribution='&copy; OpenStreetMap' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              </LayersControl.BaseLayer>
+            </LayersControl>
             <MapController selectedStop={selectedStop} />
             <ZoomTracker onZoomChange={handleZoomChange} />
             <MeasureHandler measureMode={measureMode} onAddPoint={handleAddMeasurePoint} />
