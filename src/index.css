@@ -1,0 +1,118 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Dark theme base styles */
+:root {
+  --color-bg-primary: #0f172a;
+  --color-bg-secondary: #1e293b;
+  --color-bg-tertiary: #334155;
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #94a3b8;
+  --color-accent: #06b6d4;
+}
+
+html {
+  @apply scroll-smooth;
+}
+
+body {
+  @apply bg-dark-900 text-slate-100 font-sans antialiased;
+  margin: 0;
+  min-height: 100vh;
+}
+
+#root {
+  @apply w-full h-screen;
+}
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-dark-800;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-dark-600 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-dark-700;
+}
+
+/* Leaflet map overrides for dark theme */
+.leaflet-container {
+  @apply bg-dark-900;
+}
+
+.leaflet-control-zoom a {
+  @apply bg-dark-800 text-slate-100 border-dark-700;
+}
+
+.leaflet-control-zoom a:hover {
+  @apply bg-dark-700;
+}
+
+.leaflet-popup-content-wrapper {
+  @apply bg-dark-800 text-slate-100 rounded-lg shadow-xl;
+}
+
+.leaflet-popup-tip {
+  @apply bg-dark-800;
+}
+
+/* Custom marker styles */
+.custom-marker {
+  @apply flex items-center justify-center rounded-full border-2 font-bold text-sm;
+  width: 32px;
+  height: 32px;
+}
+
+.marker-marina {
+  @apply bg-blue-500 border-blue-400 text-white;
+}
+
+.marker-anchorage {
+  @apply bg-orange-500 border-orange-400 text-white;
+}
+
+/* Glow effects for hover states */
+.glow-cyan {
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.5);
+}
+
+.glow-blue {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+}
+
+/* Animation utilities */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+/* Distance measure cursor */
+.leaflet-container.cursor-crosshair {
+  cursor: crosshair !important;
+}
+
+.leaflet-container.cursor-crosshair .leaflet-marker-icon {
+  cursor: crosshair !important;
+}

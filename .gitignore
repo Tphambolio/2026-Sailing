@@ -1,0 +1,16 @@
+node_modules/
+.DS_Store
+*.pyc
+__pycache__/
+/.vscode/
+data/*.bak
+env/
+.env
+dist/
+coverage/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+/.parcel-cache/
+nbproject/
+*.swp
