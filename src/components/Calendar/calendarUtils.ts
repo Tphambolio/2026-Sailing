@@ -170,7 +170,7 @@ export function formatMonthYear(year: number, month: number): string {
 
 // Get trip date range
 export function getTripMonths(): { year: number; month: number }[] {
-  // Trip is July 2026 - April 2027
+  // Trip is July 2026 - May 2027
   const months: { year: number; month: number }[] = [];
 
   // July 2026 to December 2026
@@ -178,8 +178,8 @@ export function getTripMonths(): { year: number; month: number }[] {
     months.push({ year: 2026, month: m });
   }
 
-  // January 2027 to April 2027
-  for (let m = 0; m <= 3; m++) {
+  // January 2027 to May 2027
+  for (let m = 0; m <= 4; m++) {
     months.push({ year: 2027, month: m });
   }
 
