@@ -246,6 +246,9 @@ function calculateBearing(lat1: number, lon1: number, lat2: number, lon2: number
 }
 
 function App() {
+  // Mobile detection - check if screen is < 768px
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+
   const [stops, setStops] = useState<Stop[]>([]);
   const [phases, setPhases] = useState<Phase[]>([]);
   const [stats, setStats] = useState<TripStats | null>(null);
@@ -253,7 +256,8 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [dataSource, setDataSource] = useState<'live' | 'cache' | 'fallback'>('fallback');
   const [selectedStop, setSelectedStop] = useState<Stop | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(typeof window !== 'undefined' ? window.innerWidth >= 768 : true);
+  const [legendVisible, setLegendVisible] = useState(typeof window !== 'undefined' ? window.innerWidth >= 768 : true);
   const [filters, setFilters] = useState<FilterState>({
     countries: [],
     types: [],
@@ -321,6 +325,16 @@ function App() {
       }
     }
     loadData();
+  }, []);
+
+  // Handle window resize for mobile detection
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const filteredStops = stops.filter(stop => {
@@ -394,18 +408,28 @@ function App() {
   return (
     <div className="h-screen flex flex-col bg-slate-900">
       <header className="bg-slate-800 border-b border-slate-700 px-2 md:px-4 py-2 md:py-3">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
+        <div className="flex items-center justify-between gap-1 md:gap-2">
+          {/* Left side: Hamburger (mobile) + Logo */}
+          <div className="flex items-center gap-1 md:gap-2 min-w-0">
+            {/* Hamburger menu for mobile */}
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-2 hover:bg-slate-700 rounded-lg md:hidden"
+              aria-label="Toggle menu"
+            >
+              {sidebarOpen ? '✕' : '☰'}
+            </button>
             <h1 className="text-base md:text-xl font-bold text-white flex items-center gap-1 md:gap-2">
               <span className="text-xl md:text-2xl">🌊</span>
               <span className="hidden sm:inline">Mediterranean Odyssey</span>
-              <span className="sm:hidden">Med Odyssey</span>
+              <span className="sm:hidden">Med</span>
             </h1>
             <span className={`hidden md:inline text-xs px-2 py-1 rounded ${dataSource === 'live' ? 'bg-green-600' : dataSource === 'cache' ? 'bg-yellow-600' : 'bg-slate-600'}`}>
               {dataSource === 'live' ? 'Live' : dataSource === 'cache' ? 'Cached' : 'Offline'}
             </span>
           </div>
-          <div className="flex items-center gap-2 md:gap-4">
+          {/* Right side: Controls */}
+          <div className="flex items-center gap-1 md:gap-4">
             <input
               type="text"
               placeholder="Search..."
@@ -422,24 +446,24 @@ function App() {
                 <span className="text-cyan-400">{stats.totalSchengenDays} Schengen</span>
               </div>
             )}
-            {/* View Toggle */}
-            <div className="flex items-center gap-1 bg-slate-700 rounded-lg p-1">
+            {/* View Toggle - icons only on mobile */}
+            <div className="flex items-center gap-0.5 md:gap-1 bg-slate-700 rounded-lg p-0.5 md:p-1">
               <button
                 onClick={() => setActiveView('map')}
-                className={`px-2 py-1 rounded text-xs font-medium ${activeView === 'map' ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-600'}`}
+                className={`px-1.5 py-1 md:px-2 rounded text-xs font-medium ${activeView === 'map' ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-600'}`}
               >
-                🗺️ Map
+                🗺️<span className="hidden md:inline"> Map</span>
               </button>
               <button
                 onClick={() => setActiveView('calendar')}
-                className={`px-2 py-1 rounded text-xs font-medium ${activeView === 'calendar' ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-600'}`}
+                className={`px-1.5 py-1 md:px-2 rounded text-xs font-medium ${activeView === 'calendar' ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-600'}`}
               >
-                📅 Calendar
+                📅<span className="hidden md:inline"> Calendar</span>
               </button>
             </div>
-            {/* Map Style Toggle - only show when map is active */}
+            {/* Map Style Toggle - hidden on mobile, only show when map is active */}
             {activeView === 'map' && (
-              <div className="flex items-center gap-1 bg-slate-700 rounded-lg p-1">
+              <div className="hidden md:flex items-center gap-1 bg-slate-700 rounded-lg p-1">
                 <button
                   onClick={() => setMapStyle('dark')}
                   className={`px-2 py-1 rounded text-xs font-medium ${mapStyle === 'dark' ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-600'}`}
@@ -460,14 +484,27 @@ function App() {
                 </button>
               </div>
             )}
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-slate-700 rounded-lg">{sidebarOpen ? '◀' : '▶'}</button>
+            {/* Desktop sidebar toggle */}
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="hidden md:block p-2 hover:bg-slate-700 rounded-lg">{sidebarOpen ? '◀' : '▶'}</button>
           </div>
         </div>
       </header>
 
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden relative">
+        {/* Mobile backdrop */}
+        {sidebarOpen && isMobile && (
+          <div
+            className="fixed inset-0 bg-black/50 z-40 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        {/* Sidebar - overlay on mobile, inline on desktop */}
         {sidebarOpen && (
-          <aside className="w-80 bg-slate-800 border-r border-slate-700 flex flex-col">
+          <aside className={`
+            w-80 bg-slate-800 border-r border-slate-700 flex flex-col
+            ${isMobile ? 'fixed inset-y-0 left-0 z-50 pt-14' : 'relative'}
+          `}>
             <div className="p-4 border-b border-slate-700">
               <h2 className="text-sm font-semibold text-slate-400 uppercase mb-3">Filters</h2>
               <div className="flex gap-2 mb-3">
@@ -485,7 +522,10 @@ function App() {
             <div className="flex-1 overflow-y-auto p-2">
               <p className="text-xs text-slate-500 px-2 mb-2">{filteredStops.length} of {stops.length} stops</p>
               {filteredStops.map(stop => (
-                <button key={stop.id} onClick={() => setSelectedStop(stop)}
+                <button key={stop.id} onClick={() => {
+                  setSelectedStop(stop);
+                  if (isMobile) setSidebarOpen(false); // Close sidebar on mobile after selection
+                }}
                   className={`w-full text-left p-3 rounded-lg mb-1 ${selectedStop?.id === stop.id ? 'bg-cyan-600/20 border border-cyan-500' : 'hover:bg-slate-700 border border-transparent'}`}>
                   <div className="flex items-start gap-2">
                     <span className="text-lg">{stop.type === 'marina' ? '⛵' : '⚓'}</span>
@@ -591,17 +631,27 @@ function App() {
           </MapContainer>
 
           {selectedStop && (
-            <div className="absolute bottom-0 left-0 right-0 z-[1000] bg-slate-800 border-t border-slate-700 p-4 animate-slide-up">
+            <div className={`
+              absolute bottom-0 left-0 right-0 z-[1000] bg-slate-800 border-t border-slate-700 animate-slide-up
+              ${isMobile ? 'max-h-[50vh] overflow-y-auto rounded-t-2xl' : ''}
+            `}>
+              {/* Mobile drag handle */}
+              {isMobile && (
+                <div className="sticky top-0 bg-slate-800 pt-2 pb-1 flex justify-center">
+                  <div className="w-12 h-1.5 bg-slate-600 rounded-full" />
+                </div>
+              )}
+              <div className="p-4">
               <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h2 className="text-xl font-bold text-white">{selectedStop.type === 'marina' ? '⛵' : '⚓'} {selectedStop.name}</h2>
-                  <p className="text-slate-400">{COUNTRY_FLAGS[selectedStop.country] || ''} {selectedStop.country}
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-lg md:text-xl font-bold text-white truncate">{selectedStop.type === 'marina' ? '⛵' : '⚓'} {selectedStop.name}</h2>
+                  <p className="text-sm md:text-base text-slate-400">{COUNTRY_FLAGS[selectedStop.country] || ''} {selectedStop.country}
                     {selectedStop.phase && <span className="ml-2 px-2 py-0.5 rounded text-xs" style={{ backgroundColor: PHASE_COLORS[selectedStop.phase] || '#6b7280' }}>{selectedStop.phase}</span>}
                   </p>
                 </div>
-                <button onClick={() => setSelectedStop(null)} className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white">✕</button>
+                <button onClick={() => setSelectedStop(null)} className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white flex-shrink-0">✕</button>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
                 <div className="bg-slate-700 rounded-lg p-4">
                   <h3 className="text-sm font-semibold text-slate-400 uppercase mb-2">Schedule</h3>
                   {selectedStop.arrival && (
@@ -663,10 +713,13 @@ function App() {
                   </div>
                 </div>
               </div>
+              </div>
             </div>
           )}
 
-          <div className="absolute top-4 right-4 z-[1000] bg-slate-800/90 backdrop-blur rounded-lg p-3 text-sm">
+          {/* Legend - hideable on mobile */}
+          {legendVisible && (
+          <div className={`absolute z-[1000] bg-slate-800/90 backdrop-blur rounded-lg p-3 text-sm ${isMobile ? 'top-4 right-12' : 'top-4 right-4'}`}>
             <h3 className="font-semibold text-slate-400 mb-2 text-xs uppercase">Route by Country</h3>
             <div className="flex items-center gap-3 mb-2 text-[10px] text-slate-500">
               <span className="flex items-center gap-1"><span className="text-green-400">●</span> Schengen</span>
@@ -682,6 +735,16 @@ function App() {
               </div>
             ))}
           </div>
+          )}
+
+          {/* Legend toggle button */}
+          <button
+            onClick={() => setLegendVisible(!legendVisible)}
+            className="absolute top-4 right-4 z-[1000] w-8 h-8 bg-slate-800/90 backdrop-blur rounded-lg flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-700"
+            aria-label={legendVisible ? 'Hide legend' : 'Show legend'}
+          >
+            {legendVisible ? '✕' : 'ℹ️'}
+          </button>
 
           <div className="absolute top-20 left-4 z-[1000] flex flex-col gap-2">
             <button

@@ -23,7 +23,7 @@ export function StayBlock({ segment, phases, onClick, isSelected }: StayBlockPro
   return (
     <div
       onClick={onClick}
-      className={`absolute h-6 cursor-pointer transition-all hover:brightness-110 hover:z-10 ${
+      className={`absolute h-4 md:h-6 cursor-pointer transition-all hover:brightness-110 hover:z-10 ${
         isSelected ? 'ring-2 ring-white ring-offset-1 ring-offset-slate-900 z-10' : ''
       }`}
       style={{
@@ -38,14 +38,14 @@ export function StayBlock({ segment, phases, onClick, isSelected }: StayBlockPro
     >
       {/* Show name only if there's enough space (3+ days) */}
       {spanDays >= 3 && (
-        <span className="absolute inset-0 flex items-center px-2 text-xs font-medium text-white truncate">
+        <span className="absolute inset-0 flex items-center px-1 md:px-2 text-[10px] md:text-xs font-medium text-white truncate">
           {stop.name}
         </span>
       )}
 
       {/* Show emoji indicator for type */}
       {spanDays < 3 && (
-        <span className="absolute inset-0 flex items-center justify-center text-xs">
+        <span className="absolute inset-0 flex items-center justify-center text-[10px] md:text-xs">
           {stop.type === 'marina' ? '⛵' : '⚓'}
         </span>
       )}

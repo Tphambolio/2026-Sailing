@@ -51,7 +51,7 @@ export function CalendarGrid({
         {DAY_NAMES.map((day) => (
           <div
             key={day}
-            className="py-2 text-center text-xs font-medium text-slate-400 uppercase tracking-wider"
+            className="py-1 md:py-2 text-center text-[10px] md:text-xs font-medium text-slate-400 uppercase tracking-wider"
           >
             {day}
           </div>
@@ -74,12 +74,12 @@ export function CalendarGrid({
                 return (
                   <div
                     key={dayIndex}
-                    className={`min-h-[80px] p-2 border-r border-slate-700 last:border-r-0 ${
+                    className={`min-h-[50px] md:min-h-[80px] p-1 md:p-2 border-r border-slate-700 last:border-r-0 ${
                       isCurrentMonth ? 'bg-slate-800' : 'bg-slate-900/50'
                     }`}
                   >
                     <span
-                      className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-sm ${
+                      className={`inline-flex items-center justify-center w-5 h-5 md:w-7 md:h-7 rounded-full text-xs md:text-sm ${
                         isTodayDate
                           ? 'bg-cyan-500 text-white font-bold'
                           : isCurrentMonth
@@ -95,7 +95,7 @@ export function CalendarGrid({
             </div>
 
             {/* Stay blocks overlay for this row */}
-            <div className="absolute inset-x-0 top-10 bottom-2 pointer-events-none">
+            <div className="absolute inset-x-0 top-7 md:top-10 bottom-1 md:bottom-2 pointer-events-none">
               <div className="relative h-full pointer-events-auto">
                 {rowSegments.map((segment, idx) => (
                   <StayBlock

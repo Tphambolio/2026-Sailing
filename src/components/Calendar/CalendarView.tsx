@@ -52,7 +52,7 @@ export function CalendarView({
   const countriesInView = [...new Set(stops.map((s) => s.country))];
 
   return (
-    <div className="h-full flex flex-col bg-slate-900 p-4">
+    <div className="h-full flex flex-col bg-slate-900 p-2 md:p-4">
       {/* Header with navigation */}
       <CalendarHeader
         year={currentYear}
@@ -75,57 +75,54 @@ export function CalendarView({
       </div>
 
       {/* Legend */}
-      <div className="mt-4 flex flex-wrap gap-3 justify-center">
+      <div className="mt-2 md:mt-4 flex flex-wrap gap-2 md:gap-3 justify-center">
         {phases
           .filter((p) => countriesInView.includes(p.name))
           .map((phase) => (
-            <div key={phase.id} className="flex items-center gap-2">
+            <div key={phase.id} className="flex items-center gap-1 md:gap-2">
               <div
-                className="w-4 h-4 rounded"
+                className="w-3 h-3 md:w-4 md:h-4 rounded"
                 style={{ backgroundColor: phase.color }}
               />
-              <span className="text-sm text-slate-400">{phase.name}</span>
+              <span className="text-xs md:text-sm text-slate-400">{phase.name}</span>
             </div>
           ))}
       </div>
 
       {/* Selected stop info */}
       {selectedStop && (
-        <div className="mt-4 p-4 bg-slate-800 rounded-lg border border-slate-700">
+        <div className="mt-2 md:mt-4 p-3 md:p-4 bg-slate-800 rounded-lg border border-slate-700">
           <div className="flex items-start justify-between">
-            <div>
-              <h3 className="font-semibold text-white">{selectedStop.name}</h3>
-              <p className="text-sm text-slate-400">{selectedStop.country}</p>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-white text-sm md:text-base truncate">{selectedStop.name}</h3>
+              <p className="text-xs md:text-sm text-slate-400">{selectedStop.country}</p>
             </div>
             <button
               onClick={() => onStopSelect(null)}
-              className="text-slate-500 hover:text-white"
+              className="text-slate-500 hover:text-white ml-2 flex-shrink-0"
             >
               &times;
             </button>
           </div>
-          <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
+          <div className="mt-2 grid grid-cols-2 gap-1 md:gap-2 text-xs md:text-sm">
             <div className="text-slate-400">
-              <span className="text-slate-500">Arrival:</span>{' '}
+              <span className="text-slate-500">Arr:</span>{' '}
               {new Date(selectedStop.arrival).toLocaleDateString('en-US', {
-                weekday: 'short',
                 month: 'short',
                 day: 'numeric',
               })}
             </div>
             <div className="text-slate-400">
-              <span className="text-slate-500">Departure:</span>{' '}
+              <span className="text-slate-500">Dep:</span>{' '}
               {new Date(selectedStop.departure).toLocaleDateString('en-US', {
-                weekday: 'short',
                 month: 'short',
                 day: 'numeric',
               })}
             </div>
             <div className="text-slate-400">
-              <span className="text-slate-500">Duration:</span> {selectedStop.duration}
+              <span className="text-slate-500">Stay:</span> {selectedStop.duration}
             </div>
             <div className="text-slate-400">
-              <span className="text-slate-500">Type:</span>{' '}
               {selectedStop.type === 'marina' ? '⛵ Marina' : '⚓ Anchorage'}
             </div>
           </div>
