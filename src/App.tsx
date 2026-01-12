@@ -534,7 +534,13 @@ function App() {
             stops={stops}
             phases={phases}
             selectedStop={selectedStop}
-            onStopSelect={setSelectedStop}
+            onStopSelect={(stop) => {
+              setSelectedStop(stop);
+              if (stop) {
+                // Switch to map view and fly to location
+                setActiveView('map');
+              }
+            }}
           />
         ) : (
         <main className="flex-1 relative">
