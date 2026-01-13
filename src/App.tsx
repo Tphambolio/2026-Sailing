@@ -682,83 +682,50 @@ function App() {
           </MapContainer>
 
           {selectedStop && (
-            <div className="absolute bottom-0 left-0 right-0 z-[1000] bg-slate-800 border-t border-slate-700 animate-slide-up max-h-[50vh] md:max-h-none overflow-y-auto md:overflow-visible rounded-t-2xl md:rounded-none">
-              {/* Mobile drag handle */}
-              <div className="md:hidden sticky top-0 bg-slate-800 pt-2 pb-1 flex justify-center">
-                <div className="w-12 h-1.5 bg-slate-600 rounded-full" />
-              </div>
-              <div className="p-4">
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-lg md:text-xl font-bold text-white truncate">{selectedStop.type === 'marina' ? '⛵' : '⚓'} {selectedStop.name}</h2>
-                  <p className="text-sm md:text-base text-slate-400">{COUNTRY_FLAGS[selectedStop.country] || ''} {selectedStop.country}
-                    {selectedStop.phase && <span className="ml-2 px-2 py-0.5 rounded text-xs" style={{ backgroundColor: PHASE_COLORS[selectedStop.phase] || '#6b7280' }}>{selectedStop.phase}</span>}
-                  </p>
-                </div>
-                <button onClick={() => setSelectedStop(null)} className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white flex-shrink-0">✕</button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
-                <div className="bg-slate-700 rounded-lg p-4">
-                  <h3 className="text-sm font-semibold text-slate-400 uppercase mb-2">Schedule</h3>
-                  {selectedStop.arrival && (
-                    <p className="text-sm text-white mb-1">
-                      📅 {formatDateLong(selectedStop.arrival)}
-                      {selectedStop.departure && selectedStop.arrival !== selectedStop.departure && (
-                        <span className="text-slate-400"> → {formatDate(selectedStop.departure)}</span>
-                      )}
-                    </p>
-                  )}
-                  {selectedStop.duration && <p className="text-sm text-white mb-1">⏱️ {selectedStop.duration}</p>}
-                  {selectedStop.distanceToNext > 0 && <p className="text-sm text-white mb-1">📍 {selectedStop.distanceToNext} km to next</p>}
-                  {schengenDays.get(selectedStop.id) && (
-                    <p className={`text-sm mt-2 ${
-                      schengenDays.get(selectedStop.id)?.isPaused
-                        ? 'text-slate-400'
-                        : schengenDays.get(selectedStop.id)!.rolling > 80
-                          ? 'text-red-400'
-                          : 'text-cyan-400'
-                    }`}>
-                      {schengenDays.get(selectedStop.id)?.isPaused ? (
-                        <>⏸ Schengen paused ({schengenDays.get(selectedStop.id)?.rolling}/90 in window)</>
-                      ) : (
-                        <>🇪🇺 Rolling 90/180: {schengenDays.get(selectedStop.id)?.rolling}/90 days</>
-                      )}
-                    </p>
-                  )}
-                  {selectedStop.notes && <p className="text-sm text-slate-300 mt-2 italic">{selectedStop.notes}</p>}
-                </div>
-                <div className="bg-slate-700 rounded-lg p-4">
-                  <h3 className="text-sm font-semibold text-slate-400 uppercase mb-2">Marina</h3>
-                  {selectedStop.marinaName && <p className="text-sm text-white mb-1">{selectedStop.marinaName}</p>}
-                  {selectedStop.marinaUrl && <a href={selectedStop.marinaUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-cyan-400 hover:text-cyan-300">Visit website ↗</a>}
-                </div>
-                <div className="bg-slate-700 rounded-lg p-4">
-                  <h3 className="text-sm font-semibold text-slate-400 uppercase mb-2">Culture & Explore</h3>
-                  {selectedStop.cultureHighlight && <p className="text-sm text-white mb-2">🏛️ {selectedStop.cultureHighlight}</p>}
-                  <div className="flex flex-wrap gap-x-4 gap-y-1">
-                    {selectedStop.wikiUrl && (
-                      <a href={selectedStop.wikiUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-cyan-400 hover:text-cyan-300">
-                        📖 Wikipedia ↗
-                      </a>
+            <div className="absolute bottom-0 left-0 right-0 z-[1000] bg-slate-800/95 backdrop-blur border-t border-slate-700 animate-slide-up">
+              <div className="p-3 md:p-4">
+                {/* Compact single-row layout */}
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                  {/* Stop name and country */}
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-lg">{selectedStop.type === 'marina' ? '⛵' : '⚓'}</span>
+                    <h2 className="text-base md:text-lg font-bold text-white truncate">{selectedStop.name}</h2>
+                    <span className="text-slate-400 text-sm">{COUNTRY_FLAGS[selectedStop.country] || ''}</span>
+                    {selectedStop.phase && <span className="px-2 py-0.5 rounded text-xs" style={{ backgroundColor: PHASE_COLORS[selectedStop.phase] || '#6b7280' }}>{selectedStop.phase}</span>}
+                  </div>
+
+                  {/* Schedule info - inline */}
+                  <div className="flex items-center gap-3 text-sm text-slate-300">
+                    {selectedStop.arrival && (
+                      <span>📅 {formatDate(selectedStop.arrival)}{selectedStop.departure && selectedStop.arrival !== selectedStop.departure && ` → ${formatDate(selectedStop.departure)}`}</span>
                     )}
-                    {selectedStop.foodUrl && (
-                      <a href={selectedStop.foodUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-amber-400 hover:text-amber-300">
-                        🍽️ Dining ↗
-                      </a>
-                    )}
-                    {selectedStop.adventureUrl && (
-                      <a href={selectedStop.adventureUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-green-400 hover:text-green-300">
-                        🏔️ Adventure ↗
-                      </a>
-                    )}
-                    {selectedStop.provisionsUrl && (
-                      <a href={selectedStop.provisionsUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-purple-400 hover:text-purple-300">
-                        🛒 Provisions ↗
-                      </a>
+                    {selectedStop.duration && <span>⏱️ {selectedStop.duration}</span>}
+                    {selectedStop.distanceToNext > 0 && <span>📍 {selectedStop.distanceToNext}km</span>}
+                    {schengenDays.get(selectedStop.id) && (
+                      <span className={schengenDays.get(selectedStop.id)?.isPaused ? 'text-slate-400' : schengenDays.get(selectedStop.id)!.rolling > 80 ? 'text-red-400' : 'text-cyan-400'}>
+                        🇪🇺 {schengenDays.get(selectedStop.id)?.rolling}/90
+                      </span>
                     )}
                   </div>
+
+                  {/* Quick links - inline */}
+                  <div className="flex items-center gap-3 text-sm ml-auto">
+                    {selectedStop.marinaUrl && <a href={selectedStop.marinaUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300">🏠 Marina</a>}
+                    {selectedStop.wikiUrl && <a href={selectedStop.wikiUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300">📖 Wiki</a>}
+                    {selectedStop.foodUrl && <a href={selectedStop.foodUrl} target="_blank" rel="noopener noreferrer" className="text-amber-400 hover:text-amber-300">🍽️ Food</a>}
+                    {selectedStop.adventureUrl && <a href={selectedStop.adventureUrl} target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300">🏔️ Do</a>}
+                    {selectedStop.provisionsUrl && <a href={selectedStop.provisionsUrl} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300">🛒 Shop</a>}
+                    <button onClick={() => setSelectedStop(null)} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white">✕</button>
+                  </div>
                 </div>
-              </div>
+
+                {/* Secondary row for culture highlight and notes */}
+                {(selectedStop.cultureHighlight || selectedStop.notes) && (
+                  <div className="mt-2 text-sm text-slate-300 flex flex-wrap gap-x-4">
+                    {selectedStop.cultureHighlight && <span>🏛️ {selectedStop.cultureHighlight}</span>}
+                    {selectedStop.notes && <span className="italic text-slate-400">{selectedStop.notes}</span>}
+                  </div>
+                )}
               </div>
             </div>
           )}
