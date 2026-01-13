@@ -540,8 +540,7 @@ function App() {
         )}
 
         {/* Sidebar */}
-        {sidebarOpen && (
-          <aside className="w-72 md:w-80 bg-slate-800 border-r border-slate-700 flex flex-col fixed md:relative inset-y-0 left-0 z-50 top-14 md:top-0">
+        <aside className={`w-72 md:w-80 bg-slate-800 border-r border-slate-700 flex flex-col fixed md:relative inset-y-0 left-0 z-50 top-14 md:top-0 transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:hidden'}`}>
             <div className="p-4 border-b border-slate-700">
               <h2 className="text-sm font-semibold text-slate-400 uppercase mb-3">Filters</h2>
               <div className="flex gap-2 mb-3">
@@ -603,7 +602,6 @@ function App() {
               ))}
             </div>
           </aside>
-        )}
 
         {/* Main Content Area - Map or Calendar */}
         {activeView === 'calendar' ? (
