@@ -35,13 +35,6 @@ function formatDate(dateStr: string): string {
   return `${day} ${MONTHS[month - 1]}`;
 }
 
-function formatDateLong(dateStr: string): string {
-  if (!dateStr) return '';
-  const [year, month, day] = dateStr.split('-').map(Number);
-  const date = new Date(year, month - 1, day);
-  return `${DAYS[date.getDay()]}, ${day} ${MONTHS[month - 1]} ${year}`;
-}
-
 // Calculate days between two date strings
 function daysBetween(start: string, end: string): number {
   const [y1, m1, d1] = start.split('-').map(Number);
