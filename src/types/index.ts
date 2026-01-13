@@ -34,6 +34,9 @@ export interface Stop {
   // Navigation to next stop
   hoursToNext?: number;
   nmToNext?: number;         // nautical miles
+
+  // Route waypoints to avoid land crossings (coordinates between this stop and next)
+  routeWaypoints?: [number, number][];
 }
 
 export interface Phase {

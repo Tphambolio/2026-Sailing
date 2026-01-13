@@ -6,6 +6,7 @@ import { getData } from './services/dataService';
 import type { Stop, Phase, TripStats, FilterState } from './types';
 import { DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM, PHASE_COLORS, COUNTRY_FLAGS } from './types';
 import { CalendarView } from './components/Calendar';
+import RouteEditor from './components/RouteEditor';
 
 // Haversine formula to calculate distance between two points
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -267,6 +268,8 @@ function App() {
   const [zoomLevel, setZoomLevel] = useState(DEFAULT_MAP_ZOOM);
   const [mapStyle, setMapStyle] = useState<'dark' | 'satellite' | 'streets'>('dark');
   const [activeView, setActiveView] = useState<'map' | 'calendar'>('map');
+  const [routeEditMode, setRouteEditMode] = useState(false);
+  const [pendingWaypoints, setPendingWaypoints] = useState<Map<number, [number, number][]>>(new Map());
 
   const tileLayerConfig = {
     dark: { url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', attribution: '&copy; CARTO' },
@@ -294,6 +297,51 @@ function App() {
       return !prev;
     });
   }, []);
+
+  // Route editing handlers
+  const handleSaveWaypoints = useCallback((stopId: number, waypoints: [number, number][]) => {
+    // Update pending waypoints
+    setPendingWaypoints(prev => {
+      const updated = new Map(prev);
+      if (waypoints.length > 0) {
+        updated.set(stopId, waypoints);
+      } else {
+        updated.delete(stopId);
+      }
+      return updated;
+    });
+
+    // Also update the stops state for immediate visual feedback
+    setStops(prev => prev.map(stop =>
+      stop.id === stopId
+        ? { ...stop, routeWaypoints: waypoints.length > 0 ? waypoints : undefined }
+        : stop
+    ));
+
+    console.log(`Saved waypoints for stop ${stopId}:`, waypoints);
+  }, []);
+
+  const exportWaypoints = useCallback(() => {
+    // Build an object of all modified waypoints
+    const waypointData: Record<number, [number, number][]> = {};
+    stops.forEach(stop => {
+      if (stop.routeWaypoints && stop.routeWaypoints.length > 0) {
+        waypointData[stop.id] = stop.routeWaypoints;
+      }
+    });
+
+    const json = JSON.stringify(waypointData, null, 2);
+    console.log('=== WAYPOINTS DATA ===');
+    console.log(json);
+    console.log('=== END WAYPOINTS ===');
+
+    // Also copy to clipboard
+    navigator.clipboard.writeText(json).then(() => {
+      alert('Waypoints copied to clipboard! Check console for full data.');
+    }).catch(() => {
+      alert('Check console for waypoint data.');
+    });
+  }, [stops]);
 
   const totalMeasureDistance = measurePoints.length >= 2
     ? measurePoints.reduce((total, point, i) => {
@@ -347,16 +395,22 @@ function App() {
   const schengenDays = useMemo(() => calculateSchengenDays(stops), [stops]);
 
   // Draw route lines sequentially, colored by each segment's starting stop's country
+  // Uses routeWaypoints when available to avoid crossing land
   const routeSegments = useMemo(() => {
-    const segments: { from: [number, number]; to: [number, number]; color: string }[] = [];
+    const segments: { positions: [number, number][]; color: string }[] = [];
     for (let i = 0; i < filteredStops.length - 1; i++) {
       const currentStop = filteredStops[i];
       const nextStop = filteredStops[i + 1];
       // Get color from the current stop's phase (country)
       const phase = phases.find(p => p.name === currentStop.phase);
+      // Build positions array: start -> waypoints (if any) -> end
+      const positions: [number, number][] = [
+        [currentStop.lat, currentStop.lon],
+        ...(currentStop.routeWaypoints || []),
+        [nextStop.lat, nextStop.lon],
+      ];
       segments.push({
-        from: [currentStop.lat, currentStop.lon],
-        to: [nextStop.lat, nextStop.lon],
+        positions,
         color: phase?.color || '#6b7280',
       });
     }
@@ -588,7 +642,7 @@ function App() {
             {routeSegments.map((segment, i) => (
               <Polyline
                 key={`route-${i}`}
-                positions={[segment.from, segment.to]}
+                positions={segment.positions}
                 pathOptions={{ color: segment.color, weight: 3, opacity: 0.7 }}
               />
             ))}
@@ -619,6 +673,12 @@ function App() {
             {measurePoints.map((point, i) => (
               <Marker key={`measure-${i}`} position={[point.lat, point.lon]} icon={createMeasureIcon(i)} />
             ))}
+            {/* Route Editor */}
+            <RouteEditor
+              stops={filteredStops}
+              isEditing={routeEditMode}
+              onSaveWaypoints={handleSaveWaypoints}
+            />
           </MapContainer>
 
           {selectedStop && (
@@ -735,15 +795,49 @@ function App() {
           <div className="absolute top-20 left-4 z-[1000] flex flex-col gap-2">
             <button
               onClick={toggleMeasureMode}
+              disabled={routeEditMode}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 measureMode
                   ? 'bg-green-600 text-white'
-                  : 'bg-slate-800/90 backdrop-blur text-slate-300 hover:bg-slate-700'
+                  : routeEditMode
+                    ? 'bg-slate-800/50 text-slate-500 cursor-not-allowed'
+                    : 'bg-slate-800/90 backdrop-blur text-slate-300 hover:bg-slate-700'
               }`}
             >
               <span>📏</span>
               {measureMode ? 'Measuring...' : 'Measure Distance'}
             </button>
+
+            <button
+              onClick={() => {
+                if (routeEditMode) {
+                  // When exiting, offer to export
+                  if (pendingWaypoints.size > 0) {
+                    exportWaypoints();
+                  }
+                }
+                setRouteEditMode(!routeEditMode);
+                setMeasureMode(false);
+              }}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                routeEditMode
+                  ? 'bg-amber-600 text-white'
+                  : 'bg-slate-800/90 backdrop-blur text-slate-300 hover:bg-slate-700'
+              }`}
+            >
+              <span>✏️</span>
+              {routeEditMode ? 'Exit Edit Mode' : 'Edit Routes'}
+            </button>
+
+            {routeEditMode && (
+              <button
+                onClick={exportWaypoints}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-cyan-600 text-white hover:bg-cyan-500"
+              >
+                <span>💾</span>
+                Export Waypoints
+              </button>
+            )}
 
             {measureMode && (
               <div className="bg-slate-800/90 backdrop-blur rounded-lg p-3">
