@@ -494,14 +494,14 @@ function App() {
         {/* Mobile backdrop */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 bg-black/50 z-40 md:hidden"
+            className="fixed top-14 bottom-0 left-0 right-0 bg-black/50 z-40 md:hidden"
             onClick={() => setSidebarOpen(false)}
           />
         )}
 
         {/* Sidebar */}
         {sidebarOpen && (
-          <aside className="w-80 bg-slate-800 border-r border-slate-700 flex flex-col fixed inset-y-0 left-0 z-50 pt-14 md:relative md:pt-0 md:z-auto">
+          <aside className="w-80 bg-slate-800 border-r border-slate-700 flex flex-col fixed top-14 bottom-0 left-0 z-50 md:relative md:top-0 md:z-auto">
             <div className="p-4 border-b border-slate-700">
               <h2 className="text-sm font-semibold text-slate-400 uppercase mb-3">Filters</h2>
               <div className="flex gap-2 mb-3">
