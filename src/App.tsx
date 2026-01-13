@@ -246,9 +246,6 @@ function calculateBearing(lat1: number, lon1: number, lat2: number, lon2: number
 }
 
 function App() {
-  // Mobile detection - check if screen is < 768px
-  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
-
   const [stops, setStops] = useState<Stop[]>([]);
   const [phases, setPhases] = useState<Phase[]>([]);
   const [stats, setStats] = useState<TripStats | null>(null);
@@ -256,8 +253,8 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [dataSource, setDataSource] = useState<'live' | 'cache' | 'fallback'>('fallback');
   const [selectedStop, setSelectedStop] = useState<Stop | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(typeof window !== 'undefined' ? window.innerWidth >= 768 : true);
-  const [legendVisible, setLegendVisible] = useState(typeof window !== 'undefined' ? window.innerWidth >= 768 : true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [legendVisible, setLegendVisible] = useState(true);
   const [filters, setFilters] = useState<FilterState>({
     countries: [],
     types: [],
@@ -327,14 +324,11 @@ function App() {
     loadData();
   }, []);
 
-  // Handle window resize for mobile detection
+  // Set initial sidebar state based on screen width (after mount)
   useEffect(() => {
-    const handleResize = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    const isDesktop = window.innerWidth >= 768;
+    setSidebarOpen(isDesktop);
+    setLegendVisible(isDesktop);
   }, []);
 
   const filteredStops = stops.filter(stop => {
@@ -501,7 +495,7 @@ function App() {
 
         {/* Sidebar */}
         {sidebarOpen && (
-          <aside className="w-[280px] md:w-80 max-w-[85vw] bg-slate-800 border-r border-slate-700 flex flex-col fixed inset-y-0 left-0 z-50 pt-14 md:relative md:pt-0 md:z-auto overflow-hidden">
+          <aside className="w-72 md:w-80 bg-slate-800 border-r border-slate-700 flex flex-col absolute md:relative inset-y-0 left-0 z-50 pt-12 md:pt-0">
             <div className="p-4 border-b border-slate-700">
               <h2 className="text-sm font-semibold text-slate-400 uppercase mb-3">Filters</h2>
               <div className="flex gap-2 mb-3">
@@ -521,7 +515,7 @@ function App() {
               {filteredStops.map(stop => (
                 <button key={stop.id} onClick={() => {
                   setSelectedStop(stop);
-                  if (isMobile) setSidebarOpen(false); // Close sidebar on mobile after selection
+                  if (window.innerWidth < 768) setSidebarOpen(false); // Close sidebar on mobile after selection
                 }}
                   className={`w-full text-left p-3 rounded-lg mb-1 ${selectedStop?.id === stop.id ? 'bg-cyan-600/20 border border-cyan-500' : 'hover:bg-slate-700 border border-transparent'}`}>
                   <div className="flex items-start gap-2">
