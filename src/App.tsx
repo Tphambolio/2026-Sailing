@@ -491,21 +491,20 @@ function App() {
       </header>
 
       <div className="flex-1 flex overflow-hidden relative">
-        {/* Mobile backdrop */}
+        {/* Mobile backdrop - only visible on mobile when sidebar open */}
         <div
-          className={`fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity ${
-            sidebarOpen && isMobile ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          className={`fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity duration-200 ${
+            sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`}
           onClick={() => setSidebarOpen(false)}
         />
 
-        {/* Sidebar - overlay on mobile, inline on desktop */}
+        {/* Sidebar - fixed overlay on mobile, relative inline on desktop */}
         <aside className={`
-          w-80 bg-slate-800 border-r border-slate-700 flex flex-col transition-transform duration-200
-          ${isMobile
-            ? `fixed inset-y-0 left-0 z-50 pt-14 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`
-            : `relative ${sidebarOpen ? '' : 'hidden'}`
-          }
+          w-80 bg-slate-800 border-r border-slate-700 flex flex-col
+          fixed inset-y-0 left-0 z-50 pt-14 transition-transform duration-200
+          md:relative md:pt-0 md:z-auto md:translate-x-0 md:transition-none
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:hidden'}
         `}>
             <div className="p-4 border-b border-slate-700">
               <h2 className="text-sm font-semibold text-slate-400 uppercase mb-3">Filters</h2>
@@ -632,16 +631,11 @@ function App() {
           </MapContainer>
 
           {selectedStop && (
-            <div className={`
-              absolute bottom-0 left-0 right-0 z-[1000] bg-slate-800 border-t border-slate-700 animate-slide-up
-              ${isMobile ? 'max-h-[50vh] overflow-y-auto rounded-t-2xl' : ''}
-            `}>
+            <div className="absolute bottom-0 left-0 right-0 z-[1000] bg-slate-800 border-t border-slate-700 animate-slide-up max-h-[50vh] md:max-h-none overflow-y-auto md:overflow-visible rounded-t-2xl md:rounded-none">
               {/* Mobile drag handle */}
-              {isMobile && (
-                <div className="sticky top-0 bg-slate-800 pt-2 pb-1 flex justify-center">
-                  <div className="w-12 h-1.5 bg-slate-600 rounded-full" />
-                </div>
-              )}
+              <div className="md:hidden sticky top-0 bg-slate-800 pt-2 pb-1 flex justify-center">
+                <div className="w-12 h-1.5 bg-slate-600 rounded-full" />
+              </div>
               <div className="p-4">
               <div className="flex justify-between items-start mb-4">
                 <div className="flex-1 min-w-0">
@@ -720,7 +714,7 @@ function App() {
 
           {/* Legend - hideable on mobile */}
           {legendVisible && (
-          <div className={`absolute z-[1000] bg-slate-800/90 backdrop-blur rounded-lg p-3 text-sm ${isMobile ? 'top-4 right-12' : 'top-4 right-4'}`}>
+          <div className="absolute z-[1000] bg-slate-800/90 backdrop-blur rounded-lg p-3 text-sm top-4 right-12 md:right-4">
             <h3 className="font-semibold text-slate-400 mb-2 text-xs uppercase">Route by Country</h3>
             <div className="flex items-center gap-3 mb-2 text-[10px] text-slate-500">
               <span className="flex items-center gap-1"><span className="text-green-400">●</span> Schengen</span>
