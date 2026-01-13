@@ -27,7 +27,6 @@ function kmToNm(km: number): number {
 
 // Format date string without timezone conversion (YYYY-MM-DD → "15 Jul")
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function formatDate(dateStr: string): string {
   if (!dateStr) return '';
