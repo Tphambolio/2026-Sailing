@@ -491,21 +491,17 @@ function App() {
       </header>
 
       <div className="flex-1 flex overflow-hidden relative">
-        {/* Mobile backdrop - only visible on mobile when sidebar open */}
-        <div
-          className={`fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity duration-200 ${
-            sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-          }`}
-          onClick={() => setSidebarOpen(false)}
-        />
+        {/* Mobile backdrop */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/50 z-40 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
 
-        {/* Sidebar - fixed overlay on mobile, relative inline on desktop */}
-        <aside className={`
-          w-80 bg-slate-800 border-r border-slate-700 flex flex-col
-          fixed inset-y-0 left-0 z-50 pt-14 transition-transform duration-200
-          md:relative md:pt-0 md:z-auto md:translate-x-0 md:transition-none
-          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:hidden'}
-        `}>
+        {/* Sidebar */}
+        {sidebarOpen && (
+          <aside className="w-80 bg-slate-800 border-r border-slate-700 flex flex-col fixed inset-y-0 left-0 z-50 pt-14 md:relative md:pt-0 md:z-auto">
             <div className="p-4 border-b border-slate-700">
               <h2 className="text-sm font-semibold text-slate-400 uppercase mb-3">Filters</h2>
               <div className="flex gap-2 mb-3">
@@ -567,6 +563,7 @@ function App() {
               ))}
             </div>
           </aside>
+        )}
 
         {/* Main Content Area - Map or Calendar */}
         {activeView === 'calendar' ? (
