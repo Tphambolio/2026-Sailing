@@ -649,12 +649,11 @@ function App() {
             ))}
             {filteredStops.map(stop => (
               <Marker key={stop.id} position={[stop.lat, stop.lon]} icon={createMarkerIcon(stop, zoomLevel)} eventHandlers={{ click: () => !measureMode && setSelectedStop(stop) }}>
-                <Popup>
-                  <div className="min-w-[200px]">
-                    <h3 className="font-bold text-lg">{stop.name}</h3>
-                    <p className="text-sm text-gray-600">{COUNTRY_FLAGS[stop.country] || ''} {stop.country}</p>
-                    {stop.cultureHighlight && <p className="text-sm mt-2">🏛️ {stop.cultureHighlight}</p>}
-                    {stop.notes && <p className="text-sm text-gray-500 mt-2 italic">{stop.notes}</p>}
+                <Popup className="compact-popup">
+                  <div className="text-sm">
+                    <span className="font-bold">{stop.name}</span>
+                    <span className="text-gray-500 ml-1">{COUNTRY_FLAGS[stop.country] || ''}</span>
+                    {stop.cultureHighlight && <div className="text-gray-600 mt-0.5">🏛️ {stop.cultureHighlight}</div>}
                   </div>
                 </Popup>
               </Marker>

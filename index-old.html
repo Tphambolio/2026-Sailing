@@ -1,0 +1,160 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mediterranean Odyssey Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <style>
+    #map { height: 90vh; width: 100%; }
+    .custom-icon {
+      background-color: white;
+      border-radius: 50%;
+      color: black;
+      font-size: 14px;
+      font-weight: bold;
+      text-align: center;
+      line-height: 30px;
+      width: 30px;
+      height: 30px;
+      border: 2px solid black;
+    }
+    .summer { background-color: red; }
+    .fall { background-color: orange; }
+    .winter { background-color: blue; }
+  </style>
+</head>
+<body>
+  <h2 style="text-align:center;">🌊 Mediterranean Sailing Itinerary Map</h2>
+  <div id="map"></div>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster-src.js"></script>
+  <script>
+    const map = L.map('map').setView([42.5, 15], 6);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Add a simple search box
+    const searchControl = L.control({ position: 'topleft' });
+    searchControl.onAdd = function () {
+      const div = L.DomUtil.create('div', 'search');
+      div.style.background = 'white';
+      div.style.padding = '6px';
+      div.style.border = '1px solid #ccc';
+      div.innerHTML = '<input id="stop-search" placeholder="Search stop name or #" style="width:160px;padding:4px;font-size:13px;">';
+      return div;
+    };
+    searchControl.addTo(map);
+
+    // Legend
+    const legend = L.control({ position: 'bottomright' });
+    legend.onAdd = function () {
+      const div = L.DomUtil.create('div', 'legend');
+      div.style.background = 'white';
+      div.style.padding = '6px';
+      div.style.border = '1px solid #ccc';
+      div.innerHTML = '<b>Season</b><br><span style="display:inline-block;width:12px;height:12px;background:red;margin-right:6px;"></span>Summer<br><span style="display:inline-block;width:12px;height:12px;background:orange;margin-right:6px;"></span>Fall<br><span style="display:inline-block;width:12px;height:12px;background:blue;margin-right:6px;"></span>Winter';
+      return div;
+    };
+    legend.addTo(map);
+
+    const loading = L.control({ position: 'topright' });
+    loading.onAdd = function () {
+      const div = L.DomUtil.create('div', 'loading');
+      div.style.background = 'white';
+      div.style.padding = '6px';
+      div.style.border = '1px solid #ccc';
+      div.innerText = 'Loading stops...';
+      return div;
+    };
+    loading.addTo(map);
+
+    const markers = L.markerClusterGroup();
+    const markerIndex = [];
+
+    fetch('./data/full_stops_81_validated.json')
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+      })
+      .then(stops => {
+        if (loading && loading.remove) loading.remove();
+        stops.forEach((stop, index) => {
+          const iconClass = stop.season === 'summer' ? 'summer' :
+                            stop.season === 'fall' ? 'fall' : 'winter';
+
+          const markerIcon = L.divIcon({
+            className: `custom-icon ${iconClass}`,
+            html: index + 1
+          });
+
+          const safeLink = (typeof stop.link === 'string' && (stop.link.startsWith('http://') || stop.link.startsWith('https://')))
+            ? `<a href="${stop.link}" target="_blank" rel="noopener noreferrer">More Info</a>`
+            : (typeof stop.link === 'string' ? stop.link : '');
+
+          const popupContent = `
+            <b>${stop.name}</b><br>
+            Arrival: ${stop.arrival}<br>
+            Duration: ${stop.duration}<br>
+            Distance to Next: ${stop.distance}<br>
+            Type: ${stop.type}<br>
+            ${safeLink}
+          `;
+
+          const m = L.marker([stop.lat, stop.lon], { icon: markerIcon })
+            .bindPopup(popupContent);
+
+          markers.addLayer(m);
+
+          // index for search
+          markerIndex.push({
+            id: index + 1,
+            name: (stop.name || '').toLowerCase(),
+            marker: m
+          });
+        });
+
+        map.addLayer(markers);
+
+        // search handler
+        const input = document.getElementById('stop-search');
+        input.addEventListener('keypress', function (e) {
+          if (e.key === 'Enter') {
+            const q = input.value.trim().toLowerCase();
+            if (!q) return;
+            // try by number
+            const byId = markerIndex.find(x => String(x.id) === q);
+            const byName = markerIndex.find(x => x.name.includes(q));
+            const found = byId || byName;
+            if (found) {
+              map.setView(found.marker.getLatLng(), 12);
+              found.marker.openPopup();
+            } else {
+              alert('No stop found');
+            }
+          }
+        });
+      })
+      .catch(err => {
+        if (loading && loading.remove) loading.remove();
+        const errDiv = L.control({ position: 'topright' });
+        errDiv.onAdd = function () {
+          const d = L.DomUtil.create('div', 'error');
+          d.style.background = '#ffe6e6';
+          d.style.padding = '6px';
+          d.style.border = '1px solid #cc0000';
+          d.innerText = 'Failed to load stops: ' + err.message;
+          return d;
+        };
+        errDiv.addTo(map);
+        console.error('Error loading stops.json:', err);
+      });
+  </script>
+</body>
+</html>

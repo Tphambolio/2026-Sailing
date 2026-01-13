@@ -59,6 +59,11 @@ body {
 
 .leaflet-popup-content-wrapper {
   @apply bg-dark-800 text-slate-100 rounded-lg shadow-xl;
+  padding: 0 !important;
+}
+
+.leaflet-popup-content {
+  margin: 8px 10px !important;
 }
 
 .leaflet-popup-tip {
