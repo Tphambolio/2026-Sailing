@@ -151,7 +151,7 @@ function MapController({ selectedStop }: { selectedStop: Stop | null }) {
 
   useEffect(() => {
     if (selectedStop) {
-      map.flyTo([selectedStop.lat, selectedStop.lon], 10, { duration: 1 });
+      map.flyTo([selectedStop.lat, selectedStop.lon], 15, { duration: 1.5 });
     }
   }, [selectedStop, map]);
 
@@ -266,7 +266,7 @@ function App() {
   const [measureMode, setMeasureMode] = useState(false);
   const [measurePoints, setMeasurePoints] = useState<MeasurePoint[]>([]);
   const [zoomLevel, setZoomLevel] = useState(DEFAULT_MAP_ZOOM);
-  const [mapStyle, setMapStyle] = useState<'dark' | 'satellite' | 'streets'>('dark');
+  const [mapStyle, setMapStyle] = useState<'dark' | 'satellite' | 'streets'>('satellite');
   const [activeView, setActiveView] = useState<'map' | 'calendar'>('map');
   const [routeEditMode, setRouteEditMode] = useState(false);
   const [pendingWaypoints, setPendingWaypoints] = useState<Map<number, [number, number][]>>(new Map());
