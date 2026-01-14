@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import type { Stop, Phase } from '../../types';
 import { CalendarHeader } from './CalendarHeader';
 import { CalendarGrid } from './CalendarGrid';
 import { getTripMonths } from './calendarUtils';
+
+const SWIPE_THRESHOLD = 50; // minimum pixels for a swipe
 
 interface CalendarViewProps {
   stops: Stop[];
@@ -20,6 +22,32 @@ export function CalendarView({
   // Start at July 2026 (first month of trip)
   const [currentYear, setCurrentYear] = useState(2026);
   const [currentMonth, setCurrentMonth] = useState(6); // July = 6
+
+  // Swipe handling
+  const touchStartX = useRef<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+
+    const touchEndX = e.changedTouches[0].clientX;
+    const deltaX = touchEndX - touchStartX.current;
+
+    if (Math.abs(deltaX) > SWIPE_THRESHOLD) {
+      if (deltaX > 0) {
+        // Swipe right = previous month
+        navigateMonth('prev');
+      } else {
+        // Swipe left = next month
+        navigateMonth('next');
+      }
+    }
+
+    touchStartX.current = null;
+  };
 
   const tripMonths = getTripMonths();
 
@@ -63,7 +91,11 @@ export function CalendarView({
       />
 
       {/* Calendar grid */}
-      <div className="flex-1 overflow-auto">
+      <div
+        className="flex-1 overflow-auto"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         <CalendarGrid
           year={currentYear}
           month={currentMonth}
