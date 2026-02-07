@@ -8,12 +8,9 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "validate": "python3 validate_data.py data/full_stops_81_validated.json",
-    "test": "python3 tests/run_validation_tests.py",
     "waypoints": "node scripts/calculate-waypoints.js"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.90.1",
     "leaflet": "^1.9.4",
     "leaflet.markercluster": "^1.5.3",
     "react": "^19.2.0",

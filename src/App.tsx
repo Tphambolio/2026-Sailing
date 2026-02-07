@@ -1,50 +1,20 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { getData } from './services/dataService';
+import { getData, saveUserStops, clearUserStops, exportStopsJson } from './services/dataService';
+import { healRoute, computePhases, computeStats, insertStop, removeStop, updateStop } from './services/routeEngine';
 import type { Stop, Phase, TripStats, FilterState } from './types';
-import { DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM, PHASE_COLORS, COUNTRY_FLAGS } from './types';
+import { DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM } from './types';
+import { NON_SCHENGEN, COUNTRY_COLORS, COUNTRY_FLAGS } from './data/constants';
+import { haversine, kmToNm, formatDate, daysBetween } from './utils/geo';
 import { CalendarView } from './components/Calendar';
 import RouteEditor from './components/RouteEditor';
+import StopEditor from './components/StopEditor';
+import TableView from './components/TableView';
 
-// Haversine formula to calculate distance between two points
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371; // Earth's radius in kilometers
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
-
-// Convert km to nautical miles
-function kmToNm(km: number): number {
-  return km * 0.539957;
-}
-
-// Format date string without timezone conversion (YYYY-MM-DD → "15 Jul")
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-function formatDate(dateStr: string): string {
-  if (!dateStr) return '';
-  const [, month, day] = dateStr.split('-').map(Number);
-  return `${day} ${MONTHS[month - 1]}`;
-}
-
-// Calculate days between two date strings
-function daysBetween(start: string, end: string): number {
-  const [y1, m1, d1] = start.split('-').map(Number);
-  const [y2, m2, d2] = end.split('-').map(Number);
-  const date1 = new Date(y1, m1 - 1, d1);
-  const date2 = new Date(y2, m2 - 1, d2);
-  return Math.round((date2.getTime() - date1.getTime()) / (1000 * 60 * 60 * 24));
-}
-
-// Non-Schengen countries (Schengen counter pauses here)
-const NON_SCHENGEN = ['Montenegro', 'Albania', 'Turkey', 'Cyprus', 'Northern Cyprus', 'Cyprus (UK base)'];
+// Alias for existing calculateDistance usage
+const calculateDistance = haversine;
 
 // Calculate rolling 90/180 Schengen days for each stop
 function calculateSchengenDays(stops: Stop[]): Map<number, { days: number; rolling: number; isPaused: boolean }> {
@@ -140,10 +110,15 @@ function createMarkerIcon(stop: Stop, zoom: number): L.DivIcon {
 // Map component that handles flying to selected stop
 function MapController({ selectedStop }: { selectedStop: Stop | null }) {
   const map = useMap();
+  const lastFlyToId = useRef<number | null>(null);
 
   useEffect(() => {
-    if (selectedStop) {
+    if (selectedStop && selectedStop.id !== lastFlyToId.current) {
+      lastFlyToId.current = selectedStop.id;
       map.flyTo([selectedStop.lat, selectedStop.lon], 15, { duration: 1.5 });
+    }
+    if (!selectedStop) {
+      lastFlyToId.current = null;
     }
   }, [selectedStop, map]);
 
@@ -244,7 +219,7 @@ function App() {
   const [stats, setStats] = useState<TripStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [dataSource, setDataSource] = useState<'live' | 'cache' | 'fallback'>('fallback');
+  const [isUserEdited, setIsUserEdited] = useState(false);
   const [selectedStop, setSelectedStop] = useState<Stop | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [legendVisible, setLegendVisible] = useState(true);
@@ -259,9 +234,14 @@ function App() {
   const [measurePoints, setMeasurePoints] = useState<MeasurePoint[]>([]);
   const [zoomLevel, setZoomLevel] = useState(DEFAULT_MAP_ZOOM);
   const [mapStyle, setMapStyle] = useState<'dark' | 'satellite' | 'streets'>('satellite');
-  const [activeView, setActiveView] = useState<'map' | 'calendar'>('map');
+  const [activeView, setActiveView] = useState<'map' | 'calendar' | 'table'>('map');
   const [routeEditMode, setRouteEditMode] = useState(false);
   const [pendingWaypoints, setPendingWaypoints] = useState<Map<number, [number, number][]>>(new Map());
+  // Stop editing state
+  const [editingStop, setEditingStop] = useState<Stop | null>(null);
+  const [insertAfterIndex, setInsertAfterIndex] = useState<number | null>(null);
+  const [addStopMode, setAddStopMode] = useState(false);
+  const [pendingLatLon, setPendingLatLon] = useState<{ lat: number; lon: number } | null>(null);
 
   const tileLayerConfig = {
     dark: { url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', attribution: '&copy; CARTO' },
@@ -346,22 +326,84 @@ function App() {
     : 0;
 
   useEffect(() => {
-    async function loadData() {
-      try {
-        setLoading(true);
-        const { stops, phases, stats, source } = await getData();
-        setStops(stops);
-        setPhases(phases);
-        setStats(stats);
-        setDataSource(source);
-        setError(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load data');
-      } finally {
-        setLoading(false);
-      }
+    try {
+      setLoading(true);
+      const result = getData();
+      setStops(result.stops);
+      setPhases(result.phases);
+      setStats(result.stats);
+      setIsUserEdited(result.isUserEdited);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load data');
+    } finally {
+      setLoading(false);
     }
-    loadData();
+  }, []);
+
+  // Apply route changes: heal, recompute, persist
+  const applyRouteChange = useCallback((newStops: Stop[]) => {
+    const healed = healRoute(newStops);
+    setStops(healed);
+    setPhases(computePhases(healed));
+    setStats(computeStats(healed));
+    saveUserStops(healed);
+    setIsUserEdited(true);
+  }, []);
+
+  // Stop editor handlers
+  const handleAddStop = useCallback((afterIndex: number) => {
+    setInsertAfterIndex(afterIndex);
+    setEditingStop(null);
+    setPendingLatLon(null);
+  }, []);
+
+  const handleEditStop = useCallback((stop: Stop) => {
+    setEditingStop(stop);
+    setInsertAfterIndex(null);
+  }, []);
+
+  const handleDeleteStop = useCallback((index: number) => {
+    const newStops = removeStop(stops, index);
+    applyRouteChange(newStops);
+    if (selectedStop && stops[index]?.id === selectedStop.id) {
+      setSelectedStop(null);
+    }
+  }, [stops, selectedStop, applyRouteChange]);
+
+  const handleSaveStop = useCallback((stopData: Partial<Stop>) => {
+    if (editingStop) {
+      // Editing existing stop
+      const index = stops.findIndex(s => s.id === editingStop.id);
+      if (index >= 0) {
+        const newStops = updateStop(stops, index, stopData);
+        applyRouteChange(newStops);
+      }
+    } else if (insertAfterIndex !== null) {
+      // Inserting new stop
+      const newStops = insertStop(stops, insertAfterIndex, stopData);
+      applyRouteChange(newStops);
+    }
+    setEditingStop(null);
+    setInsertAfterIndex(null);
+    setPendingLatLon(null);
+    setAddStopMode(false);
+  }, [stops, editingStop, insertAfterIndex, applyRouteChange]);
+
+  const handleCancelEdit = useCallback(() => {
+    setEditingStop(null);
+    setInsertAfterIndex(null);
+    setPendingLatLon(null);
+    setAddStopMode(false);
+  }, []);
+
+  const handleResetRoute = useCallback(() => {
+    clearUserStops();
+    const result = getData();
+    setStops(result.stops);
+    setPhases(result.phases);
+    setStats(result.stats);
+    setIsUserEdited(false);
   }, []);
 
   // Set initial sidebar state based on screen width (after mount)
@@ -464,9 +506,9 @@ function App() {
               <span className="hidden sm:inline">Mediterranean Odyssey</span>
               <span className="sm:hidden">Med</span>
             </h1>
-            <span className={`hidden md:inline text-xs px-2 py-1 rounded ${dataSource === 'live' ? 'bg-green-600' : dataSource === 'cache' ? 'bg-yellow-600' : 'bg-slate-600'}`}>
-              {dataSource === 'live' ? 'Live' : dataSource === 'cache' ? 'Cached' : 'Offline'}
-            </span>
+            {isUserEdited && (
+              <span className="hidden md:inline text-xs px-2 py-1 rounded bg-amber-600">Edited</span>
+            )}
           </div>
           {/* Right side: Controls */}
           <div className="flex items-center gap-1 md:gap-4">
@@ -500,7 +542,24 @@ function App() {
               >
                 📅<span className="hidden md:inline"> Calendar</span>
               </button>
+              <button
+                onClick={() => setActiveView('table')}
+                className={`px-1.5 py-1 md:px-2 rounded text-xs font-medium ${activeView === 'table' ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-600'}`}
+              >
+                📊<span className="hidden md:inline"> Table</span>
+              </button>
             </div>
+            {/* Route edit actions */}
+            {isUserEdited && (
+              <div className="hidden md:flex items-center gap-1">
+                <button onClick={() => exportStopsJson(stops)} className="px-2 py-1 bg-cyan-600 hover:bg-cyan-500 rounded text-xs text-white" title="Download stops.json">
+                  💾 Export
+                </button>
+                <button onClick={handleResetRoute} className="px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-xs text-slate-300" title="Reset to original">
+                  ↩ Reset
+                </button>
+              </div>
+            )}
             {/* Map Style Toggle - hidden on mobile, only show when map is active */}
             {activeView === 'map' && (
               <div className="hidden md:flex items-center gap-1 bg-slate-700 rounded-lg p-1">
@@ -557,54 +616,83 @@ function App() {
             </div>
             <div className="flex-1 overflow-y-auto p-2">
               <p className="text-xs text-slate-500 px-2 mb-2">{filteredStops.length} of {stops.length} stops</p>
-              {filteredStops.map(stop => (
-                <button key={stop.id} onClick={() => {
-                  setSelectedStop(stop);
-                  if (window.innerWidth < 768) setSidebarOpen(false); // Close sidebar on mobile after selection
-                }}
-                  className={`w-full text-left p-3 rounded-lg mb-1 ${selectedStop?.id === stop.id ? 'bg-cyan-600/20 border border-cyan-500' : 'hover:bg-slate-700 border border-transparent'}`}>
-                  <div className="flex items-start gap-2">
-                    <span className="text-lg">{stop.type === 'marina' ? '⛵' : '⚓'}</span>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium text-white truncate">{stop.id}. {stop.name}</p>
-                        {stop.duration && <span className="text-[10px] text-slate-500">({stop.duration})</span>}
+              {filteredStops.map((stop) => {
+                const originalIndex = stops.findIndex(s => s.id === stop.id);
+                return (
+                <div key={stop.id} className="group">
+                  <button onClick={() => {
+                    setSelectedStop(stop);
+                    if (window.innerWidth < 768) setSidebarOpen(false);
+                  }}
+                    className={`w-full text-left p-3 rounded-lg mb-0.5 ${selectedStop?.id === stop.id ? 'bg-cyan-600/20 border border-cyan-500' : 'hover:bg-slate-700 border border-transparent'}`}>
+                    <div className="flex items-start gap-2">
+                      <span className="text-lg">{stop.type === 'marina' ? '⛵' : '⚓'}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-white truncate">{stop.id}. {stop.name}</p>
+                          {stop.duration && <span className="text-[10px] text-slate-500">({stop.duration})</span>}
+                          {/* Edit button - appears on hover */}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleEditStop(stop); }}
+                            className="ml-auto opacity-0 group-hover:opacity-100 p-0.5 hover:bg-slate-600 rounded text-slate-500 hover:text-cyan-400 text-xs transition-opacity"
+                            title="Edit stop"
+                          >✏️</button>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-slate-400">
+                          <span>{COUNTRY_FLAGS[stop.country] || ''} {stop.country}</span>
+                          {stop.arrival && <span className="text-slate-500">•</span>}
+                          {stop.arrival && <span className="text-amber-400">{formatDate(stop.arrival)}</span>}
+                          {schengenDays.get(stop.id) && (
+                            <span className={`ml-auto px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                              schengenDays.get(stop.id)?.isPaused
+                                ? 'bg-slate-600 text-slate-300'
+                                : schengenDays.get(stop.id)!.rolling > 80
+                                  ? 'bg-red-600/80 text-white'
+                                  : 'bg-cyan-600/80 text-white'
+                            }`}>
+                              {schengenDays.get(stop.id)?.isPaused ? '⏸' : '🇪🇺'} {schengenDays.get(stop.id)?.rolling}/90
+                            </span>
+                          )}
+                        </div>
+                        {stop.distanceToNext > 0 && (() => {
+                          const nextStop = stops.find(s => s.id === stop.id + 1);
+                          const distColor = getDistanceColor(stop.distanceToNext);
+                          return nextStop ? (
+                            <p className="text-[10px] text-slate-500 mt-1">
+                              → {nextStop.name} <span style={{ color: distColor }}>{Math.round(stop.distanceToNext)}km</span>
+                            </p>
+                          ) : null;
+                        })()}
+                        {stop.cultureHighlight && <p className="text-xs text-cyan-400 mt-1 truncate">{stop.cultureHighlight}</p>}
                       </div>
-                      <div className="flex items-center gap-2 text-xs text-slate-400">
-                        <span>{COUNTRY_FLAGS[stop.country] || ''} {stop.country}</span>
-                        {stop.arrival && <span className="text-slate-500">•</span>}
-                        {stop.arrival && <span className="text-amber-400">{formatDate(stop.arrival)}</span>}
-                        {schengenDays.get(stop.id) && (
-                          <span className={`ml-auto px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                            schengenDays.get(stop.id)?.isPaused
-                              ? 'bg-slate-600 text-slate-300'
-                              : schengenDays.get(stop.id)!.rolling > 80
-                                ? 'bg-red-600/80 text-white'
-                                : 'bg-cyan-600/80 text-white'
-                          }`}>
-                            {schengenDays.get(stop.id)?.isPaused ? '⏸' : '🇪🇺'} {schengenDays.get(stop.id)?.rolling}/90
-                          </span>
-                        )}
-                      </div>
-                      {stop.distanceToNext > 0 && (() => {
-                        const nextStop = stops.find(s => s.id === stop.id + 1);
-                        const distColor = getDistanceColor(stop.distanceToNext);
-                        return nextStop ? (
-                          <p className="text-[10px] text-slate-500 mt-1">
-                            → {nextStop.name} <span style={{ color: distColor }}>{Math.round(stop.distanceToNext)}km</span>
-                          </p>
-                        ) : null;
-                      })()}
-                      {stop.cultureHighlight && <p className="text-xs text-cyan-400 mt-1 truncate">{stop.cultureHighlight}</p>}
                     </div>
+                  </button>
+                  {/* Insert after button - appears on hover between stops */}
+                  <div className="flex justify-center -my-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => handleAddStop(originalIndex)}
+                      className="px-2 py-0 text-[10px] text-slate-500 hover:text-green-400 hover:bg-slate-700/50 rounded"
+                      title="Add stop here"
+                    >+ add stop</button>
                   </div>
-                </button>
-              ))}
+                </div>
+                );
+              })}
             </div>
           </aside>
 
-        {/* Main Content Area - Map or Calendar */}
-        {activeView === 'calendar' ? (
+        {/* Main Content Area - Map, Calendar, or Table */}
+        {activeView === 'table' ? (
+          <TableView
+            stops={stops}
+            selectedStop={selectedStop}
+            schengenDays={schengenDays}
+            onStopSelect={setSelectedStop}
+            onEditStop={handleEditStop}
+            onDeleteStop={handleDeleteStop}
+            onInsertAfter={handleAddStop}
+          />
+        ) : activeView === 'calendar' ? (
           <CalendarView
             stops={stops}
             phases={phases}
@@ -627,7 +715,11 @@ function App() {
             />
             <MapController selectedStop={selectedStop} />
             <ZoomTracker onZoomChange={handleZoomChange} />
-            <MeasureHandler measureMode={measureMode} onAddPoint={handleAddMeasurePoint} />
+            <MeasureHandler measureMode={measureMode || addStopMode} onAddPoint={addStopMode ? (point) => {
+              setPendingLatLon(point);
+              if (insertAfterIndex === null) setInsertAfterIndex(stops.length - 1);
+              setAddStopMode(false);
+            } : handleAddMeasurePoint} />
             {/* Route segments - drawn sequentially, colored by country */}
             {routeSegments.map((segment, i) => (
               <Polyline
@@ -680,7 +772,7 @@ function App() {
                     <span className="text-lg">{selectedStop.type === 'marina' ? '⛵' : '⚓'}</span>
                     <h2 className="text-base md:text-lg font-bold text-white truncate">{selectedStop.name}</h2>
                     <span className="text-slate-400 text-sm">{COUNTRY_FLAGS[selectedStop.country] || ''}</span>
-                    {selectedStop.phase && <span className="px-2 py-0.5 rounded text-xs" style={{ backgroundColor: PHASE_COLORS[selectedStop.phase] || '#6b7280' }}>{selectedStop.phase}</span>}
+                    {selectedStop.phase && <span className="px-2 py-0.5 rounded text-xs" style={{ backgroundColor: COUNTRY_COLORS[selectedStop.phase] || '#6b7280' }}>{selectedStop.phase}</span>}
                   </div>
 
                   {/* Schedule info - inline */}
@@ -749,6 +841,21 @@ function App() {
           </button>
 
           <div className="absolute top-20 left-4 z-[1000] flex flex-col gap-2">
+            <button
+              onClick={() => {
+                setAddStopMode(!addStopMode);
+                setMeasureMode(false);
+              }}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                addStopMode
+                  ? 'bg-green-600 text-white'
+                  : 'bg-slate-800/90 backdrop-blur text-slate-300 hover:bg-slate-700'
+              }`}
+            >
+              <span>📌</span>
+              {addStopMode ? 'Click map...' : 'Add Stop'}
+            </button>
+
             <button
               onClick={toggleMeasureMode}
               disabled={routeEditMode}
@@ -822,6 +929,21 @@ function App() {
         </main>
         )}
       </div>
+
+      {/* Stop Editor Panel */}
+      {(editingStop !== null || insertAfterIndex !== null) && (
+        <StopEditor
+          stop={editingStop || (pendingLatLon ? { lat: pendingLatLon.lat, lon: pendingLatLon.lon } : null)}
+          countries={countries}
+          onSave={handleSaveStop}
+          onDelete={editingStop ? () => {
+            const index = stops.findIndex(s => s.id === editingStop.id);
+            if (index >= 0) handleDeleteStop(index);
+            setEditingStop(null);
+          } : undefined}
+          onCancel={handleCancelEdit}
+        />
+      )}
     </div>
   );
 }

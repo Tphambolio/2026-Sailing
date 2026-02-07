@@ -12,40 +12,39 @@ export interface Stop {
   duration: string;          // e.g., "3 days"
   distanceToNext: number;    // km
   season: 'summer' | 'fall' | 'winter';
-  phase: string;             // e.g., "Venice → Montenegro"
-  schengen: boolean;
+  phase: string;             // country name (e.g., "Croatia")
 
-  // From Ports_&_Culture sheet (merged)
+  // Marina details
   marinaUrl?: string;
   marinaName?: string;
+
+  // Culture & enrichment
   cultureHighlight?: string;
   cultureUrl?: string;
   foodGuide?: string;
-
-  // New enrichment fields
-  wikiUrl?: string;           // Wikipedia link for the location
-  foodUrl?: string;           // Restaurant/food guide URL
-  adventureUrl?: string;      // Nature/adventure activities URL
-  provisionsUrl?: string;     // Provisioning/supplies URL
+  wikiUrl?: string;
+  foodUrl?: string;
+  adventureUrl?: string;
+  provisionsUrl?: string;
 
   // Notes/description
   notes?: string;
 
   // Navigation to next stop
   hoursToNext?: number;
-  nmToNext?: number;         // nautical miles
+  nmToNext?: number;
 
-  // Route waypoints to avoid land crossings (coordinates between this stop and next)
+  // Route waypoints to avoid land crossings
   routeWaypoints?: [number, number][];
 }
 
 export interface Phase {
   id: string;
   name: string;              // Country name
-  stops: number;             // Number of stops in this country
-  days: number;              // Total days in this country
-  schengen: boolean;         // Is this a Schengen country?
-  color: string;             // hex color for map display
+  stops: number;
+  days: number;
+  schengen: boolean;
+  color: string;
 }
 
 export interface TripStats {
@@ -84,47 +83,6 @@ export interface AppState {
   loading: boolean;
   error: string | null;
 }
-
-// Google Sheets API response types
-export interface SheetRow {
-  [key: string]: string | number | undefined;
-}
-
-export interface SheetsResponse {
-  range: string;
-  majorDimension: string;
-  values: string[][];
-}
-
-// Phase colors mapping
-export const PHASE_COLORS: Record<string, string> = {
-  'Venice → Montenegro': '#06b6d4',      // cyan
-  'Montenegro/Albania': '#8b5cf6',        // violet
-  'Greece (Ionian)': '#f59e0b',           // amber
-  'Corinth & Saronic': '#14b8a6',         // teal
-  'Athens → Turkey': '#3b82f6',           // blue
-  'Turkey south coast': '#ef4444',        // red
-  'Turkey → Cyprus': '#ec4899',           // pink
-  'Cyprus': '#6366f1',                    // indigo
-  'Cyprus → Turkey': '#10b981',           // emerald
-  'Turkey → Crete': '#f97316',            // orange
-  'Crete': '#a855f7',                     // purple
-  'Crete → Ionian': '#84cc16',            // lime
-  'Italy': '#0ea5e9',                     // sky
-};
-
-// Country flag emojis
-export const COUNTRY_FLAGS: Record<string, string> = {
-  'Italy': '🇮🇹',
-  'Croatia': '🇭🇷',
-  'Montenegro': '🇲🇪',
-  'Albania': '🇦🇱',
-  'Greece': '🇬🇷',
-  'Turkey': '🇹🇷',
-  'Cyprus': '🇨🇾',
-  'Cyprus (UK base)': '🇬🇧',
-  'Northern Cyprus': '🇹🇷',
-};
 
 // Default map settings
 export const DEFAULT_MAP_CENTER: [number, number] = [38.5, 20.0];

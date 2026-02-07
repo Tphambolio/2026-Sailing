@@ -1,9 +1,13 @@
 /**
  * Calculate route waypoints to avoid land crossings
- * Uses Turf.js for geometry operations and coastline GeoJSON data
+ * Uses Turf.js for geometry operations and Natural Earth 10m coastline data
+ * (includes individual islands: Vis, Hvar, Korčula, etc.)
  *
- * SIMPLE APPROACH: For each route that crosses land, find a single offshore
- * waypoint that routes around the obstruction.
+ * Usage:
+ *   node scripts/calculate-waypoints.js            # Full recalculation
+ *   node scripts/calculate-waypoints.js --validate  # Check only, no changes
+ *
+ * The coastline data must be prepared first with: node scripts/prepare-coastline.js
  */
 
 import * as turf from '@turf/turf';
@@ -17,231 +21,240 @@ const __dirname = path.dirname(__filename);
 const STOPS_PATH = path.join(__dirname, '../src/data/stops.json');
 const COASTLINE_PATH = path.join(__dirname, 'coastline.geojson');
 
-// Download coastline data if not present
-async function downloadCoastline() {
-  if (fs.existsSync(COASTLINE_PATH)) {
-    console.log('Coastline data already exists');
-    return;
+// Number of sample points along a line for crossing detection
+const LAND_SAMPLES = 25;
+
+// Margin (0-0.5) to skip samples near start/end of a segment.
+// Stops are on land (harbors/towns), so we skip the coastal zone.
+// 0.06 → sample from t=0.06 to t=0.94
+const STOP_MARGIN = 0.06;
+
+// Offsets to try (in degrees) when finding offshore waypoints
+// 0.01° ≈ 1.1km at Mediterranean latitudes
+const OFFSETS = [
+  0.01, 0.015, 0.02, 0.03, 0.04, 0.05, 0.06, 0.08,
+  0.1, 0.12, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.8
+];
+
+const VALIDATE_MODE = process.argv.includes('--validate');
+
+// ─── Data Loading ──────────────────────────────────────────────
+
+function loadData() {
+  if (!fs.existsSync(COASTLINE_PATH)) {
+    console.error('ERROR: coastline.geojson not found.');
+    console.error('Run first: node scripts/prepare-coastline.js');
+    process.exit(1);
   }
 
-  console.log('Downloading Mediterranean coastline data...');
-  const url = 'https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson';
-
-  const response = await fetch(url);
-  const data = await response.json();
-
-  // Filter to Mediterranean countries only
-  const medCountries = [
-    'Italy', 'Croatia', 'Slovenia', 'Montenegro', 'Albania', 'Greece',
-    'Turkey', 'Cyprus', 'Spain', 'France', 'Tunisia', 'Libya', 'Egypt',
-    'Israel', 'Lebanon', 'Syria', 'Malta', 'Bosnia and Herzegovina',
-    'Serbia', 'North Macedonia', 'Bulgaria'
-  ];
-
-  const filtered = {
-    type: 'FeatureCollection',
-    features: data.features.filter(f =>
-      medCountries.includes(f.properties.ADMIN) ||
-      medCountries.includes(f.properties.name)
-    )
-  };
-
-  fs.writeFileSync(COASTLINE_PATH, JSON.stringify(filtered));
-  console.log(`Saved coastline data with ${filtered.features.length} countries`);
-}
-
-// Load stops and coastline data
-function loadData() {
   const stops = JSON.parse(fs.readFileSync(STOPS_PATH, 'utf8'));
   const coastline = JSON.parse(fs.readFileSync(COASTLINE_PATH, 'utf8'));
   return { stops, coastline };
 }
 
-// Check if a point is on land
-function isOnLand(lon, lat, landPolygons) {
-  const point = turf.point([lon, lat]);
-  for (const feature of landPolygons.features) {
+// ─── Geometry Helpers ──────────────────────────────────────────
+
+function isOnLand(lon, lat, land) {
+  const pt = turf.point([lon, lat]);
+  for (const feature of land.features) {
     try {
-      if (turf.booleanPointInPolygon(point, feature)) {
-        return true;
-      }
-    } catch (e) {
-      continue;
-    }
+      if (turf.booleanPointInPolygon(pt, feature)) return true;
+    } catch { continue; }
   }
   return false;
 }
 
-// Check if a line segment crosses land (sample multiple points along it)
-function lineCrossesLand(startLon, startLat, endLon, endLat, landPolygons, samples = 10) {
-  for (let i = 1; i < samples; i++) {
-    const t = i / samples;
-    const lon = startLon + (endLon - startLon) * t;
-    const lat = startLat + (endLat - startLat) * t;
-    if (isOnLand(lon, lat, landPolygons)) {
-      return true;
-    }
+/**
+ * Check if a straight line between two points crosses land.
+ * `margin` skips samples near endpoints (for coastal stops).
+ */
+function lineCrossesLand(sLon, sLat, eLon, eLat, land, margin = 0) {
+  for (let i = 1; i < LAND_SAMPLES; i++) {
+    const t = i / LAND_SAMPLES;
+    if (t < margin || t > (1 - margin)) continue;
+    if (isOnLand(sLon + (eLon - sLon) * t, sLat + (eLat - sLat) * t, land)) return true;
   }
   return false;
 }
 
-// Find a waypoint that routes around land
-// Strategy: Try pushing the midpoint perpendicular to the route, in both directions
-function findOffshoreWaypoint(startLon, startLat, endLon, endLat, landPolygons) {
-  const midLon = (startLon + endLon) / 2;
-  const midLat = (startLat + endLat) / 2;
+/**
+ * Check if a full waypoint path is clear of land.
+ * Uses margin near stop endpoints only (first/last segment).
+ */
+function pathClear(sLon, sLat, waypoints, eLon, eLat, land) {
+  let pLon = sLon, pLat = sLat;
 
-  // Calculate perpendicular direction
-  const dx = endLon - startLon;
-  const dy = endLat - startLat;
-  const length = Math.sqrt(dx * dx + dy * dy);
+  for (let w = 0; w < waypoints.length; w++) {
+    const [wLat, wLon] = waypoints[w];
+    const margin = (w === 0) ? STOP_MARGIN : 0;
+    if (lineCrossesLand(pLon, pLat, wLon, wLat, land, margin)) return false;
+    pLon = wLon;
+    pLat = wLat;
+  }
 
-  // Perpendicular vectors (normalized)
-  const perpX = -dy / length;
-  const perpY = dx / length;
+  // Last segment to destination
+  return !lineCrossesLand(pLon, pLat, eLon, eLat, land, STOP_MARGIN);
+}
 
-  // Try increasing offsets until we find water AND clear routes
-  const offsets = [0.02, 0.04, 0.06, 0.08, 0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6];
+function perpendicular(dx, dy) {
+  const len = Math.sqrt(dx * dx + dy * dy);
+  if (len === 0) return [0, 0];
+  return [-dy / len, dx / len];
+}
 
-  for (const offset of offsets) {
-    for (const direction of [1, -1]) {
-      const testLon = midLon + perpX * offset * direction;
-      const testLat = midLat + perpY * offset * direction;
+// ─── Waypoint Calculation ──────────────────────────────────────
 
-      // Check if this point is in water
-      if (isOnLand(testLon, testLat, landPolygons)) {
-        continue;
-      }
+/**
+ * Find a single offshore waypoint that creates a clear route,
+ * testing perpendicular offsets from a point at parameter `t`.
+ */
+function findClearWaypoint(sLon, sLat, eLon, eLat, land, t = 0.5) {
+  const bLon = sLon + (eLon - sLon) * t;
+  const bLat = sLat + (eLat - sLat) * t;
 
-      // Check if BOTH segments (start->waypoint and waypoint->end) are clear
-      const seg1Clear = !lineCrossesLand(startLon, startLat, testLon, testLat, landPolygons);
-      const seg2Clear = !lineCrossesLand(testLon, testLat, endLon, endLat, landPolygons);
+  const [perpX, perpY] = perpendicular(eLon - sLon, eLat - sLat);
 
-      if (seg1Clear && seg2Clear) {
-        return { lon: testLon, lat: testLat };
+  for (const offset of OFFSETS) {
+    for (const dir of [1, -1]) {
+      const tLon = bLon + perpX * offset * dir;
+      const tLat = bLat + perpY * offset * dir;
+
+      if (isOnLand(tLon, tLat, land)) continue;
+
+      if (!lineCrossesLand(sLon, sLat, tLon, tLat, land, STOP_MARGIN) &&
+          !lineCrossesLand(tLon, tLat, eLon, eLat, land, STOP_MARGIN)) {
+        return [tLat, tLon];
       }
     }
   }
-
   return null;
 }
 
-// For complex routes, we may need multiple waypoints
-// This iteratively adds waypoints until the route is clear
-function calculateWaypoints(startLon, startLat, endLon, endLat, landPolygons, maxIterations = 3) {
-  // First check if direct route is clear
-  if (!lineCrossesLand(startLon, startLat, endLon, endLat, landPolygons)) {
+/**
+ * Calculate waypoints to route around land.
+ *
+ * Strategies (tried in order):
+ * 1. Single waypoint at midpoint
+ * 2. Single waypoint at 1/3, 2/3, 1/4, 3/4
+ * 3. Recursive split — find water midpoint, solve each half
+ * 4. Parallel 3-point offset (all three at same perpendicular offset)
+ */
+function calculateWaypoints(sLon, sLat, eLon, eLat, land, depth = 0) {
+  if (!lineCrossesLand(sLon, sLat, eLon, eLat, land, depth === 0 ? STOP_MARGIN : 0)) {
     return [];
   }
 
-  // Try to find a single waypoint solution
-  const waypoint = findOffshoreWaypoint(startLon, startLat, endLon, endLat, landPolygons);
+  if (depth > 4) return [];
 
-  if (waypoint) {
-    return [[waypoint.lat, waypoint.lon]];
+  // Strategy 1: Single waypoint at midpoint
+  const mid = findClearWaypoint(sLon, sLat, eLon, eLat, land, 0.5);
+  if (mid) return [mid];
+
+  // Strategy 2: Single waypoint at other positions
+  for (const t of [0.33, 0.67, 0.25, 0.75]) {
+    const wp = findClearWaypoint(sLon, sLat, eLon, eLat, land, t);
+    if (wp) return [wp];
   }
 
-  // If single waypoint doesn't work, try splitting the route in thirds
-  // and finding waypoints for each segment
-  if (maxIterations > 0) {
-    const waypoints = [];
+  // Strategy 3: Recursive split
+  const dx = eLon - sLon, dy = eLat - sLat;
+  const midLon = (sLon + eLon) / 2, midLat = (sLat + eLat) / 2;
+  const [perpX, perpY] = perpendicular(dx, dy);
 
-    // Try quarter points
-    const points = [
-      { lon: startLon + (endLon - startLon) * 0.33, lat: startLat + (endLat - startLat) * 0.33 },
-      { lon: startLon + (endLon - startLon) * 0.66, lat: startLat + (endLat - startLat) * 0.66 }
-    ];
+  for (const offset of OFFSETS) {
+    for (const dir of [1, -1]) {
+      const spLon = midLon + perpX * offset * dir;
+      const spLat = midLat + perpY * offset * dir;
+      if (isOnLand(spLon, spLat, land)) continue;
 
-    // Push each point offshore if it's on land
-    for (const pt of points) {
-      if (isOnLand(pt.lon, pt.lat, landPolygons)) {
-        // Find nearest water point
-        const dx = endLon - startLon;
-        const dy = endLat - startLat;
-        const length = Math.sqrt(dx * dx + dy * dy);
-        const perpX = -dy / length;
-        const perpY = dx / length;
+      const half1 = calculateWaypoints(sLon, sLat, spLon, spLat, land, depth + 1);
+      const half2 = calculateWaypoints(spLon, spLat, eLon, eLat, land, depth + 1);
+      const combined = [...half1, [spLat, spLon], ...half2];
 
-        for (const offset of [0.05, 0.1, 0.15, 0.2, 0.3]) {
-          for (const dir of [1, -1]) {
-            const testLon = pt.lon + perpX * offset * dir;
-            const testLat = pt.lat + perpY * offset * dir;
-            if (!isOnLand(testLon, testLat, landPolygons)) {
-              waypoints.push([testLat, testLon]);
-              break;
-            }
-          }
-          if (waypoints.length > 0) break;
-        }
-      } else {
-        waypoints.push([pt.lat, pt.lon]);
+      if (pathClear(sLon, sLat, combined, eLon, eLat, land)) {
+        return combined;
       }
     }
+  }
 
-    if (waypoints.length > 0) {
-      return waypoints;
+  // Strategy 4: Parallel 3-point offset
+  for (const offset of OFFSETS.slice(0, 14)) {
+    for (const dir of [1, -1]) {
+      const pts = [0.25, 0.5, 0.75].map(t => {
+        const pLon = sLon + dx * t + perpX * offset * dir;
+        const pLat = sLat + dy * t + perpY * offset * dir;
+        return [pLat, pLon];
+      });
+
+      if (pts.some(([lat, lon]) => isOnLand(lon, lat, land))) continue;
+      if (pathClear(sLon, sLat, pts, eLon, eLat, land)) return pts;
     }
   }
 
-  console.log('  Warning: Could not find clear route');
   return [];
 }
 
-// Main processing function
-async function main() {
-  console.log('Route Waypoint Calculator (Simple Version)');
-  console.log('==========================================\n');
+// ─── Main ──────────────────────────────────────────────────────
 
-  await downloadCoastline();
+async function main() {
+  console.log('Route Waypoint Calculator (Natural Earth 10m)');
+  console.log(VALIDATE_MODE ? 'Mode: VALIDATE (no changes)' : 'Mode: FULL');
+  console.log('='.repeat(50) + '\n');
 
   const { stops, coastline } = loadData();
-  console.log(`Loaded ${stops.length} stops and coastline data\n`);
+  console.log(`Loaded ${stops.length} stops, ${coastline.features.length} land polygons\n`);
 
-  let updatedCount = 0;
-  let clearedCount = 0;
+  let clear = 0, fixed = 0, failed = 0;
 
   for (let i = 0; i < stops.length - 1; i++) {
-    const current = stops[i];
-    const next = stops[i + 1];
+    const cur = stops[i];
+    const nxt = stops[i + 1];
+    const label = `${cur.id}. ${cur.name} → ${nxt.name}`;
 
-    // Check if direct route crosses land
-    const crossesLand = lineCrossesLand(
-      current.lon, current.lat,
-      next.lon, next.lat,
-      coastline
-    );
+    const crosses = lineCrossesLand(cur.lon, cur.lat, nxt.lon, nxt.lat, coastline, STOP_MARGIN);
 
-    if (crossesLand) {
-      console.log(`${current.name} -> ${next.name}: crosses land`);
+    if (!crosses) {
+      // Direct route clear — remove any old waypoints
+      if (!VALIDATE_MODE && cur.routeWaypoints) delete cur.routeWaypoints;
+      clear++;
+      continue;
+    }
 
-      const waypoints = calculateWaypoints(
-        current.lon, current.lat,
-        next.lon, next.lat,
-        coastline
-      );
+    // Calculate new waypoints
+    const waypoints = VALIDATE_MODE
+      ? []
+      : calculateWaypoints(cur.lon, cur.lat, nxt.lon, nxt.lat, coastline);
 
-      if (waypoints.length > 0) {
-        stops[i].routeWaypoints = waypoints;
-        console.log(`  Added ${waypoints.length} waypoint(s)`);
-        updatedCount++;
+    if (VALIDATE_MODE) {
+      // Just report
+      const existing = cur.routeWaypoints?.length || 0;
+      const ok = existing > 0 && pathClear(cur.lon, cur.lat, cur.routeWaypoints, nxt.lon, nxt.lat, coastline);
+      if (ok) {
+        console.log(`  ✓ ${label}: ${existing} waypoints OK`);
+        fixed++;
       } else {
-        // Clear any existing waypoints
-        if (stops[i].routeWaypoints) {
-          delete stops[i].routeWaypoints;
-        }
+        console.log(`  ✗ ${label}: crosses land${existing ? ` (${existing} wp broken)` : ''}`);
+        failed++;
       }
+    } else if (waypoints.length > 0 && pathClear(cur.lon, cur.lat, waypoints, nxt.lon, nxt.lat, coastline)) {
+      cur.routeWaypoints = waypoints;
+      console.log(`✓ ${label}: ${waypoints.length} waypoint(s)`);
+      fixed++;
     } else {
-      // Route is clear, remove any existing waypoints
-      if (stops[i].routeWaypoints) {
-        delete stops[i].routeWaypoints;
-        clearedCount++;
-      }
+      console.log(`✗ ${label}: could not auto-fix`);
+      if (cur.routeWaypoints) delete cur.routeWaypoints;
+      failed++;
     }
   }
 
-  // Save updated stops
-  fs.writeFileSync(STOPS_PATH, JSON.stringify(stops, null, 2));
-  console.log(`\nDone! Added waypoints to ${updatedCount} routes, cleared ${clearedCount}`);
+  console.log('\n' + '='.repeat(50));
+  console.log(`Direct clear: ${clear} | Fixed: ${fixed} | Unfixed: ${failed}`);
+  console.log(`Total: ${clear + fixed + failed} routes, ${Math.round((clear + fixed) / (clear + fixed + failed) * 100)}% resolved`);
+
+  if (!VALIDATE_MODE) {
+    fs.writeFileSync(STOPS_PATH, JSON.stringify(stops, null, 2));
+    console.log(`\nSaved to ${STOPS_PATH}`);
+  }
 }
 
 main().catch(console.error);

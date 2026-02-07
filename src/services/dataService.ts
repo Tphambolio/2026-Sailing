@@ -1,124 +1,80 @@
-// Data service with caching and fallback
+// Data service with localStorage persistence for user edits
 
-import { fetchAllData, isApiKeyConfigured } from './sheetsApi';
-import { CACHE_KEY, CACHE_DURATION } from '../config/sheets';
 import type { Stop, Phase, TripStats } from '../types';
-
-// Static fallback data (will be populated with real data export)
+import { healRoute, computePhases, computeStats } from './routeEngine';
 import fallbackStops from '../data/stops.json';
-import fallbackPhases from '../data/phases.json';
-import fallbackStats from '../data/stats.json';
 
-interface CachedData {
+const STORAGE_KEY = 'med_odyssey_user_stops';
+
+/**
+ * Load stops: user edits from localStorage, or fallback JSON
+ */
+export function getData(): {
   stops: Stop[];
   phases: Phase[];
   stats: TripStats;
-  timestamp: number;
+  isUserEdited: boolean;
+} {
+  // Check for user-edited stops in localStorage
+  const saved = getUserStops();
+  const rawStops = saved || (fallbackStops as Stop[]);
+  const stops = healRoute(rawStops);
+  const phases = computePhases(stops);
+  const stats = computeStats(stops);
+
+  return { stops, phases, stats, isUserEdited: !!saved };
 }
 
 /**
- * Get data from localStorage cache
+ * Get the base (committed) stops without user edits
  */
-function getCachedData(): CachedData | null {
+export function getBaseStops(): Stop[] {
+  return fallbackStops as Stop[];
+}
+
+/**
+ * Save user-edited stops to localStorage
+ */
+export function saveUserStops(stops: Stop[]): void {
   try {
-    const cached = localStorage.getItem(CACHE_KEY);
-    if (!cached) return null;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(stops));
+  } catch (error) {
+    console.warn('Failed to save stops:', error);
+  }
+}
 
-    const data: CachedData = JSON.parse(cached);
-
-    // Check if cache is still valid
-    if (Date.now() - data.timestamp > CACHE_DURATION) {
-      localStorage.removeItem(CACHE_KEY);
-      return null;
-    }
-
-    return data;
+/**
+ * Load user-edited stops from localStorage
+ */
+function getUserStops(): Stop[] | null {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return null;
+    return JSON.parse(saved);
   } catch {
     return null;
   }
 }
 
 /**
- * Save data to localStorage cache
+ * Clear user edits (reset to base data)
  */
-function setCachedData(data: { stops: Stop[]; phases: Phase[]; stats: TripStats }): void {
-  try {
-    const cached: CachedData = {
-      ...data,
-      timestamp: Date.now(),
-    };
-    localStorage.setItem(CACHE_KEY, JSON.stringify(cached));
-  } catch (error) {
-    console.warn('Failed to cache data:', error);
-  }
+export function clearUserStops(): void {
+  localStorage.removeItem(STORAGE_KEY);
 }
 
 /**
- * Load static fallback data
+ * Export stops as a downloadable JSON file
  */
-function loadFallbackData(): { stops: Stop[]; phases: Phase[]; stats: TripStats } {
-  return {
-    stops: fallbackStops as Stop[],
-    phases: fallbackPhases as Phase[],
-    stats: fallbackStats as TripStats,
-  };
-}
-
-/**
- * Main function to get data (with caching and fallback)
- */
-export async function getData(forceRefresh = false): Promise<{
-  stops: Stop[];
-  phases: Phase[];
-  stats: TripStats;
-  source: 'live' | 'cache' | 'fallback';
-}> {
-  // Check cache first (unless force refresh)
-  if (!forceRefresh) {
-    const cached = getCachedData();
-    if (cached) {
-      return {
-        stops: cached.stops,
-        phases: cached.phases,
-        stats: cached.stats,
-        source: 'cache',
-      };
-    }
-  }
-
-  // Try to fetch from Google Sheets
-  if (isApiKeyConfigured()) {
-    try {
-      const data = await fetchAllData();
-      setCachedData(data);
-      return { ...data, source: 'live' };
-    } catch (error) {
-      console.error('Failed to fetch from Google Sheets, using fallback:', error);
-    }
-  }
-
-  // Use fallback data
-  const fallback = loadFallbackData();
-  return { ...fallback, source: 'fallback' };
-}
-
-/**
- * Clear the data cache
- */
-export function clearCache(): void {
-  localStorage.removeItem(CACHE_KEY);
-}
-
-/**
- * Get cache status
- */
-export function getCacheStatus(): { exists: boolean; age: number | null } {
-  const cached = getCachedData();
-  if (!cached) {
-    return { exists: false, age: null };
-  }
-  return {
-    exists: true,
-    age: Date.now() - cached.timestamp,
-  };
+export function exportStopsJson(stops: Stop[]): void {
+  const json = JSON.stringify(stops, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'stops.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }

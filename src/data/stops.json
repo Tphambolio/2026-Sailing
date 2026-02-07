@@ -11,7 +11,6 @@
     "duration": "2 days",
     "distanceToNext": 25,
     "phase": "Croatia",
-    "schengen": true,
     "season": "summer",
     "marinaName": "Marina Kornati",
     "marinaUrl": "https://www.marinakornati.com/",
@@ -24,24 +23,12 @@
     "provisionsUrl": "https://www.marinakornati.com/services/",
     "routeWaypoints": [
       [
-        43.8894805253013,
-        15.472183227539064
+        43.88112565353939,
+        15.462527377054306
       ],
       [
-        43.872158236118786,
-        15.407638550306407
-      ],
-      [
-        43.90580835586092,
-        15.23460388233766
-      ],
-      [
-        43.87512812904008,
-        15.216751099134532
-      ],
-      [
-        43.843936871965695,
-        15.22361755371094
+        43.876187543180535,
+        15.209257371884187
       ]
     ]
   },
@@ -57,7 +44,6 @@
     "duration": "2 days",
     "distanceToNext": 53,
     "phase": "Croatia",
-    "schengen": true,
     "marinaUrl": "https://www.navily.com/mouillage/levrnaka/5f3fdcaa4b0e55001fd09c37",
     "cultureHighlight": "Kornati National Park",
     "cultureUrl": "https://en.wikipedia.org/wiki/Kornati",
@@ -69,36 +55,8 @@
     "season": "summer",
     "routeWaypoints": [
       [
-        43.77753930104478,
-        15.271682739257814
-      ],
-      [
-        43.66439469257815,
-        15.517501831556407
-      ],
-      [
-        43.70560803380608,
-        15.594406128431407
-      ],
-      [
-        43.74282465157128,
-        15.703582764173598
-      ],
-      [
-        43.73439091130472,
-        15.77362060597047
-      ],
-      [
-        43.75026520058207,
-        15.779800415540782
-      ],
-      [
-        43.71950494239367,
-        15.834732056165782
-      ],
-      [
-        43.72533572122564,
-        15.859622955322267
+        43.76565008059892,
+        15.411831183792945
       ]
     ]
   },
@@ -114,7 +72,6 @@
     "duration": "2 days",
     "distanceToNext": 51,
     "phase": "Croatia",
-    "schengen": true,
     "marinaName": "Marina Mandalina",
     "marinaUrl": "https://www.d-marin.com/en/marinas/croatia/sibenik",
     "cultureHighlight": "St James Cathedral (UNESCO)",
@@ -127,40 +84,12 @@
     "season": "summer",
     "routeWaypoints": [
       [
-        43.72942933300513,
-        15.889663696289064
+        43.647181052582326,
+        15.88621373708652
       ],
       [
-        43.73079380802074,
-        15.88502883923675
-      ],
-      [
-        43.71801614226201,
-        15.847606659060968
-      ],
-      [
-        43.680784110954875,
-        15.876617431640627
-      ],
-      [
-        43.52863784833001,
-        15.834045410156252
-      ],
-      [
-        43.463884091369046,
-        16.00021362304688
-      ],
-      [
-        43.463884091369046,
-        16.22543334960938
-      ],
-      [
-        43.469864270218416,
-        16.38473510742188
-      ],
-      [
-        43.48281929474004,
-        16.408081054687504
+        43.47669023459977,
+        16.375251048940154
       ]
     ]
   },
@@ -176,7 +105,6 @@
     "duration": "3 days",
     "distanceToNext": 37,
     "phase": "Croatia",
-    "schengen": true,
     "marinaName": "ACI Marina Split",
     "marinaUrl": "https://aci-marinas.com/marina/aci-split/",
     "cultureHighlight": "Diocletian's Palace (UNESCO)",
@@ -189,8 +117,20 @@
     "season": "summer",
     "routeWaypoints": [
       [
-        43.402054267905655,
-        16.408081054687504
+        43.400997779429446,
+        16.41032876472138
+      ],
+      [
+        43.35476762326159,
+        16.40597781399702
+      ],
+      [
+        43.33647870883348,
+        16.38797628076923
+      ],
+      [
+        43.191954542871116,
+        16.353748519948894
       ]
     ]
   },
@@ -206,7 +146,6 @@
     "duration": "2 days",
     "distanceToNext": 32,
     "phase": "Croatia",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/vinogradisce/5f0df5c6ed6dc1001fb7bc6d",
     "cultureHighlight": "Hvar Town & Fortica fortress",
@@ -219,8 +158,8 @@
     "season": "summer",
     "routeWaypoints": [
       [
-        43.16311928246932,
-        16.229553222656254
+        43.0640871526324,
+        16.030437278828845
       ]
     ]
   },
@@ -236,7 +175,6 @@
     "duration": "2 days",
     "distanceToNext": 85,
     "phase": "Croatia",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/komiza/5f0df5c6ed6dc1001fb7bc79",
     "cultureHighlight": "Fishing village on Vis Island",
@@ -249,24 +187,8 @@
     "season": "summer",
     "routeWaypoints": [
       [
-        43.016759,
-        16.432622
-      ],
-      [
-        43.030753001428344,
-        16.550903320312504
-      ],
-      [
-        43.03677585761058,
-        16.76651000976563
-      ],
-      [
-        42.995607893370135,
-        16.990356445312504
-      ],
-      [
-        42.976520698105546,
-        17.083740234375004
+        43.03923692731823,
+        16.0620909070899
       ]
     ]
   },
@@ -282,7 +204,6 @@
     "duration": "2 days",
     "distanceToNext": 47,
     "phase": "Croatia",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/korcula/5f0df5c6ed6dc1001fb7bc77",
     "cultureHighlight": "Korčula Old Town (Marco Polo's birthplace)",
@@ -295,28 +216,8 @@
     "season": "summer",
     "routeWaypoints": [
       [
-        42.94033923363183,
-        17.245788574218754
-      ],
-      [
-        42.88904574206037,
-        17.391357421875004
-      ],
-      [
-        42.78229917261048,
-        17.29385375976563
-      ],
-      [
-        42.73188302070198,
-        17.432556152343754
-      ],
-      [
-        42.712714128355564,
-        17.50259399414063
-      ],
-      [
-        42.70665956351041,
-        17.572631835937504
+        42.790036978607084,
+        17.30540201155542
       ]
     ]
   },
@@ -332,7 +233,6 @@
     "duration": "2 days",
     "distanceToNext": 42,
     "phase": "Croatia",
-    "schengen": true,
     "marinaUrl": "https://www.navily.com/mouillage/okuklje/5f0df5faed6dc1001fb7bc81",
     "cultureHighlight": "Mljet National Park & salt lakes",
     "cultureUrl": "https://en.wikipedia.org/wiki/Mljet_National_Park",
@@ -344,16 +244,8 @@
     "season": "summer",
     "routeWaypoints": [
       [
-        42.66628070564928,
-        17.67562866210938
-      ],
-      [
-        42.63597933867727,
-        17.98049926757813
-      ],
-      [
-        42.619812573672185,
-        18.031311035156254
+        42.69121930785589,
+        17.766641581666413
       ]
     ]
   },
@@ -369,7 +261,6 @@
     "duration": "3 days",
     "distanceToNext": 40,
     "phase": "Croatia",
-    "schengen": true,
     "marinaName": "ACI Marina Dubrovnik",
     "marinaUrl": "https://aci-marinas.com/marina/aci-dubrovnik/",
     "cultureHighlight": "Dubrovnik Old Town (UNESCO)",
@@ -382,16 +273,8 @@
     "season": "summer",
     "routeWaypoints": [
       [
-        42.44778143462245,
-        18.31832885742188
-      ],
-      [
-        42.37883631647602,
-        18.553161621093754
-      ],
-      [
-        42.40824865050679,
-        18.54354858398438
+        42.55041818952564,
+        18.22489396290089
       ]
     ]
   },
@@ -407,7 +290,6 @@
     "duration": "2 days",
     "distanceToNext": 20,
     "phase": "Montenegro",
-    "schengen": false,
     "marinaUrl": "https://www.navily.com/mouillage/herceg-novi/5f0df5faed6dc1001fb7bc83",
     "cultureHighlight": "Forte Mare & Old Town",
     "cultureUrl": "https://en.wikipedia.org/wiki/Herceg_Novi",
@@ -419,28 +301,8 @@
     "season": "summer",
     "routeWaypoints": [
       [
-        42.4272579085461,
-        18.609294891357425
-      ],
-      [
-        42.43840732455779,
-        18.660964965820316
-      ],
-      [
-        42.47235014569384,
-        18.68156433105469
-      ],
-      [
-        42.48323834594139,
-        18.70456695556641
-      ],
-      [
-        42.46652544694582,
-        18.751602172851566
-      ],
-      [
-        42.43992754579425,
-        18.758125305175785
+        42.43350815733268,
+        18.532856408167646
       ]
     ]
   },
@@ -456,7 +318,6 @@
     "duration": "2 days",
     "distanceToNext": 6,
     "phase": "Montenegro",
-    "schengen": false,
     "marinaName": "Kotor Town Quay",
     "marinaUrl": "https://www.portofkotor.com/en/marina-kotor/",
     "cultureHighlight": "Kotor Old Town (UNESCO)",
@@ -469,16 +330,8 @@
     "season": "summer",
     "routeWaypoints": [
       [
-        42.47216021841415,
-        18.74173164367676
-      ],
-      [
-        42.48133937765146,
-        18.688516616821293
-      ],
-      [
-        42.449301428414955,
-        18.671951293945316
+        42.41108590085054,
+        18.679448851174076
       ]
     ]
   },
@@ -494,7 +347,6 @@
     "duration": "2 days",
     "distanceToNext": 20,
     "phase": "Montenegro",
-    "schengen": false,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/tivat/5f0df5faed6dc1001fb7bc85",
     "cultureHighlight": "Naval Heritage Collection & Bay of Kotor views",
@@ -507,52 +359,28 @@
     "season": "summer",
     "routeWaypoints": [
       [
-        42.42877840024783,
-        18.635559082031254
+        42.44860511134273,
+        18.67397260033214
       ],
       [
-        42.43992754579425,
-        18.56449127197266
+        42.733190233651484,
+        17.92167925774905
       ],
       [
-        42.43460661010741,
-        18.532905578613285
+        42.691951094278956,
+        18.02944402739801
       ],
       [
-        42.40900913146671,
-        18.53599548339844
+        42.64106910808259,
+        18.064088245641962
       ],
       [
-        42.36970554816487,
-        18.57101440429688
+        42.39457422375712,
+        18.499114532742286
       ],
       [
-        42.345604091630825,
-        18.673667907714847
-      ],
-      [
-        42.3009285475335,
-        18.709373474121097
-      ],
-      [
-        42.268925435483524,
-        18.74954223632813
-      ],
-      [
-        42.25012237968426,
-        18.795890808105472
-      ],
-      [
-        42.26181142512228,
-        18.82095336914063
-      ],
-      [
-        42.26714700815231,
-        18.835029602050785
-      ],
-      [
-        42.28365904606614,
-        18.8470458984375
+        42.25914391222825,
+        18.771171501303076
       ]
     ]
   },
@@ -568,7 +396,6 @@
     "duration": "2 days",
     "distanceToNext": 30,
     "phase": "Montenegro",
-    "schengen": false,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/budva/5f0df5faed6dc1001fb7bc86",
     "cultureHighlight": "Budva Old Town & Citadela",
@@ -581,8 +408,8 @@
     "season": "summer",
     "routeWaypoints": [
       [
-        42.17052852806085,
-        18.93081665039063
+        42.213865026071076,
+        18.89905819440596
       ]
     ]
   },
@@ -598,7 +425,6 @@
     "duration": "2 days",
     "distanceToNext": 21,
     "phase": "Montenegro",
-    "schengen": false,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/bar/5f0df5faed6dc1001fb7bc88",
     "cultureHighlight": "Stari Bar ruins",
@@ -611,16 +437,8 @@
     "season": "summer",
     "routeWaypoints": [
       [
-        42.0956749167229,
-        19.05715942382813
-      ],
-      [
-        42.007468589586004,
-        19.103164672851566
-      ],
-      [
-        41.929868314485816,
-        19.123077392578125
+        41.92819087108554,
+        19.15777359181589
       ]
     ]
   },
@@ -636,7 +454,6 @@
     "duration": "2 days",
     "distanceToNext": 35,
     "phase": "Montenegro",
-    "schengen": false,
     "marinaUrl": "https://www.navily.com/mouillage/ulcinj/5f0df5faed6dc1001fb7bc89",
     "cultureHighlight": "Old Town & Velika Plaza beach",
     "cultureUrl": "https://en.wikipedia.org/wiki/Ulcinj",
@@ -648,8 +465,8 @@
     "season": "summer",
     "routeWaypoints": [
       [
-        41.8315688643881,
-        19.38335730801021
+        41.83957479027509,
+        19.35932541668633
       ]
     ]
   },
@@ -665,7 +482,6 @@
     "duration": "2 days",
     "distanceToNext": 57,
     "phase": "Albania",
-    "schengen": false,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/shengjin/602d7f3a328ce6001f520f88",
     "cultureHighlight": "Albanian Riviera gateway",
@@ -678,8 +494,16 @@
     "season": "summer",
     "routeWaypoints": [
       [
-        41.42625319507272,
-        19.330444335937504
+        41.593645056335255,
+        19.426679978245293
+      ],
+      [
+        41.41608950589862,
+        19.3755919714204
+      ],
+      [
+        41.31492449816177,
+        19.40416485240067
       ]
     ]
   },
@@ -695,7 +519,6 @@
     "duration": "2 days",
     "distanceToNext": 94,
     "phase": "Albania",
-    "schengen": false,
     "marinaUrl": "https://www.navily.com/mouillage/durres/5f0df5faed6dc1001fb7bc90",
     "cultureHighlight": "Roman Amphitheatre",
     "cultureUrl": "https://en.wikipedia.org/wiki/Durr%C3%ABs",
@@ -707,8 +530,8 @@
     "season": "summer",
     "routeWaypoints": [
       [
-        40.54928724908206,
-        19.231567382812504
+        40.65379374192094,
+        19.286616744793484
       ]
     ]
   },
@@ -724,7 +547,6 @@
     "duration": "2 days",
     "distanceToNext": 52,
     "phase": "Albania",
-    "schengen": false,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/vlore/602d7f3a328ce6001f520f91",
     "cultureHighlight": "Independence Monument",
@@ -737,16 +559,16 @@
     "season": "summer",
     "routeWaypoints": [
       [
-        40.43858586704331,
-        19.209594726562504
+        40.44344256520715,
+        19.353765417183126
       ],
       [
-        40.233411907115055,
-        19.346923828125004
+        40.415027725169274,
+        19.273306670849802
       ],
       [
-        40.063358664163296,
-        19.6051025390625
+        40.20361035303449,
+        19.46451113113849
       ]
     ]
   },
@@ -762,7 +584,6 @@
     "duration": "2 days",
     "distanceToNext": 28,
     "phase": "Albania",
-    "schengen": false,
     "marinaUrl": "https://www.navily.com/region/palermo/371",
     "cultureHighlight": "Ali Pasha Castle",
     "cultureUrl": "https://en.wikipedia.org/wiki/Porto_Palermo_Castle",
@@ -774,8 +595,8 @@
     "season": "summer",
     "routeWaypoints": [
       [
-        39.88866516883713,
-        19.898986816406254
+        39.899886568557406,
+        19.891053034993448
       ]
     ]
   },
@@ -791,7 +612,6 @@
     "duration": "2 days",
     "distanceToNext": 12,
     "phase": "Albania",
-    "schengen": false,
     "marinaName": "Port of Sarandë",
     "marinaUrl": "https://www.navily.com/carte/port/1249",
     "cultureHighlight": "Butrint National Park (UNESCO)",
@@ -804,12 +624,8 @@
     "season": "summer",
     "routeWaypoints": [
       [
-        39.83833180263626,
-        19.99237060546875
-      ],
-      [
-        39.80035972468958,
-        19.969367980957035
+        39.85783077589824,
+        19.991223851420898
       ]
     ]
   },
@@ -825,7 +641,6 @@
     "duration": "2 days",
     "distanceToNext": 16,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/kassiopi/14421",
     "cultureHighlight": "Byzantine fortress & fishing village",
@@ -838,20 +653,12 @@
     "season": "summer",
     "routeWaypoints": [
       [
-        39.78954439311165,
-        19.95563507080078
+        39.801261708733925,
+        19.958319189546643
       ],
       [
-        39.7752972152002,
-        19.96421813964844
-      ],
-      [
-        39.685260810467376,
-        19.92576599121094
-      ],
-      [
-        39.66834937813084,
-        19.900016784667972
+        39.735452880753314,
+        19.9496633938788
       ]
     ]
   },
@@ -867,7 +674,6 @@
     "duration": "2 days",
     "distanceToNext": 62,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/kontokali/14420",
     "cultureHighlight": "Corfu Old Town (UNESCO)",
@@ -880,36 +686,12 @@
     "season": "summer",
     "routeWaypoints": [
       [
-        39.65619172865765,
-        19.942932128906254
+        39.63036886444056,
+        19.943735144221183
       ],
       [
-        39.618912565294536,
-        20.061721801757812
-      ],
-      [
-        39.51834388059882,
-        20.133476257324222
-      ],
-      [
-        39.45157054162972,
-        20.188407897949222
-      ],
-      [
-        39.38791729112128,
-        20.20797729492188
-      ],
-      [
-        39.31809720257259,
-        20.26737213134766
-      ],
-      [
-        39.265752810382,
-        20.348396301269535
-      ],
-      [
-        39.26708183219306,
-        20.384101867675785
+        39.29235271321432,
+        20.315626676362207
       ]
     ]
   },
@@ -925,7 +707,6 @@
     "duration": "2 days",
     "distanceToNext": 48,
     "phase": "Greece",
-    "schengen": true,
     "marinaUrl": "https://www.navily.com/mouillage/ormos-valtou/17745",
     "cultureHighlight": "Venetian Castle & colorful waterfront",
     "cultureUrl": "https://en.wikipedia.org/wiki/Parga",
@@ -937,16 +718,8 @@
     "season": "summer",
     "routeWaypoints": [
       [
-        39.04905220645355,
-        20.54855346679688
-      ],
-      [
-        38.95647211778468,
-        20.679016113281254
-      ],
-      [
-        38.93377552819722,
-        20.736351013183597
+        39.21757934362539,
+        20.46445598416601
       ]
     ]
   },
@@ -962,7 +735,6 @@
     "duration": "2 days",
     "distanceToNext": 15,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/agios-thomas/56759",
     "cultureHighlight": "Nicopolis ancient city nearby",
@@ -972,25 +744,7 @@
     "foodUrl": "https://www.visitgreece.gr/mainland/epirus/preveza/",
     "adventureUrl": "https://www.mygreektravellingspoon.com/travel/preveza-travel-guide/",
     "provisionsUrl": "https://www.visitgreece.gr/mainland/epirus/preveza/",
-    "season": "fall",
-    "routeWaypoints": [
-      [
-        38.93097132760883,
-        20.742874145507816
-      ],
-      [
-        38.88448557794294,
-        20.724334716796875
-      ],
-      [
-        38.849333913235476,
-        20.72502136230469
-      ],
-      [
-        38.83877165383055,
-        20.714893341064457
-      ]
-    ]
+    "season": "fall"
   },
   {
     "id": 25,
@@ -1004,7 +758,6 @@
     "duration": "2 days",
     "distanceToNext": 14,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/lefkada/14433",
     "cultureHighlight": "Lefkada town & beaches",
@@ -1017,20 +770,8 @@
     "season": "fall",
     "routeWaypoints": [
       [
-        38.80480136024744,
-        20.731372833251957
-      ],
-      [
-        38.79450007821985,
-        20.724849700927738
-      ],
-      [
-        38.78045047579562,
-        20.730342864990238
-      ],
-      [
-        38.733330660113204,
-        20.74630737304688
+        38.747656084653336,
+        20.770296810438815
       ]
     ]
   },
@@ -1046,7 +787,6 @@
     "duration": "2 days",
     "distanceToNext": 30,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/port/nidri/4757",
     "cultureHighlight": "Waterfall hike & Skorpios Island views",
@@ -1059,12 +799,8 @@
     "season": "fall",
     "routeWaypoints": [
       [
-        38.59876924565357,
-        20.712580296419983
-      ],
-      [
-        38.540958,
-        20.62332
+        38.48689258448572,
+        20.603742058001707
       ]
     ]
   },
@@ -1080,7 +816,6 @@
     "duration": "2 days",
     "distanceToNext": 75,
     "phase": "Greece",
-    "schengen": true,
     "marinaUrl": "https://www.navily.com/carte/mouillage/14497",
     "cultureHighlight": "Venetian architecture & yacht harbor",
     "cultureUrl": "https://en.wikipedia.org/wiki/Fiskardo",
@@ -1092,28 +827,16 @@
     "season": "fall",
     "routeWaypoints": [
       [
-        38.39979663000095,
-        20.63095092773438
+        38.48689258448572,
+        20.603742058001707
       ],
       [
-        38.32765244536364,
-        20.66940307617188
+        38.50684808798946,
+        20.684362563216784
       ],
       [
-        38.29128393027484,
-        20.71506500244141
-      ],
-      [
-        38.26298470036054,
-        21.12808227539063
-      ],
-      [
-        38.29532577698144,
-        21.382141113281254
-      ],
-      [
-        38.29424797320529,
-        21.4288330078125
+        38.28965692604894,
+        21.179104260690814
       ]
     ]
   },
@@ -1129,7 +852,6 @@
     "duration": "2 days",
     "distanceToNext": 30,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/mesolongi/14560",
     "cultureHighlight": "Garden of Heroes & natural lagoon",
@@ -1142,12 +864,12 @@
     "season": "fall",
     "routeWaypoints": [
       [
-        38.2805681152523,
-        21.505639725051818
+        38.32158153447376,
+        21.4155206749163
       ],
       [
-        38.29009,
-        21.625524000000002
+        38.28243396380683,
+        21.519900657141367
       ]
     ]
   },
@@ -1163,7 +885,6 @@
     "duration": "2 days",
     "distanceToNext": 58,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "Patras Marina",
     "marinaUrl": "https://www.allovergreece.com/Marina/Descr/32/en",
     "cultureHighlight": "Patras Carnival & Roman Odeon",
@@ -1176,12 +897,16 @@
     "season": "fall",
     "routeWaypoints": [
       [
-        38.34219290233281,
-        21.935758058494034
+        38.353694173667314,
+        21.842726641844205
       ],
       [
-        38.334726,
-        22.159212
+        38.30972459517129,
+        22.191607325201698
+      ],
+      [
+        38.33193209462221,
+        22.3927071753378
       ]
     ]
   },
@@ -1197,7 +922,6 @@
     "duration": "2 days",
     "distanceToNext": 73,
     "phase": "Greece",
-    "schengen": true,
     "marinaUrl": "https://www.navily.com/mouillage/galaxidi/14562",
     "cultureHighlight": "Historic maritime town",
     "cultureUrl": "https://en.wikipedia.org/wiki/Galaxidi",
@@ -1220,7 +944,6 @@
     "duration": "2 days",
     "distanceToNext": 43,
     "phase": "Greece",
-    "schengen": true,
     "marinaUrl": "https://en.wikipedia.org/wiki/Corinth_Canal",
     "cultureHighlight": "Corinth Canal (6.3km engineering marvel)",
     "cultureUrl": "https://en.wikipedia.org/wiki/Corinth_Canal",
@@ -1243,7 +966,6 @@
     "duration": "2 days",
     "distanceToNext": 27,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/aegina/14630",
     "cultureHighlight": "Temple of Aphaea",
@@ -1253,7 +975,13 @@
     "foodUrl": "https://www.visitgreece.gr/islands/saronic-islands/aegina/",
     "adventureUrl": "https://www.greeka.com/saronic/aegina/sightseeing/",
     "provisionsUrl": "https://www.greeka.com/saronic/aegina/",
-    "season": "fall"
+    "season": "fall",
+    "routeWaypoints": [
+      [
+        37.514311970759984,
+        23.53979123431954
+      ]
+    ]
   },
   {
     "id": 33,
@@ -1267,7 +995,6 @@
     "duration": "2 days",
     "distanceToNext": 17,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/poros/14633",
     "cultureHighlight": "Temple of Poseidon ruins",
@@ -1280,12 +1007,8 @@
     "season": "fall",
     "routeWaypoints": [
       [
-        37.457728722097706,
-        23.560716836762587
-      ],
-      [
-        37.40275,
-        23.461452
+        37.370147449357006,
+        23.458412273477816
       ]
     ]
   },
@@ -1301,7 +1024,6 @@
     "duration": "2 days",
     "distanceToNext": 29,
     "phase": "Greece",
-    "schengen": true,
     "marinaUrl": "https://www.navily.com/port/hydra/14636",
     "cultureHighlight": "Car-free island & naval heritage",
     "cultureUrl": "https://en.wikipedia.org/wiki/Hydra_(island)",
@@ -1313,8 +1035,8 @@
     "season": "fall",
     "routeWaypoints": [
       [
-        37.293720520228696,
-        23.271789550781254
+        37.29449358254689,
+        23.217095593440494
       ]
     ]
   },
@@ -1330,7 +1052,6 @@
     "duration": "2 days",
     "distanceToNext": 93,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/baltiza/14641",
     "cultureHighlight": "Naval history & Bouboulina Museum",
@@ -1340,25 +1061,7 @@
     "foodUrl": "https://www.visitgreece.gr/islands/saronic-islands/spetses/",
     "adventureUrl": "https://www.greeka.com/saronic/spetses/sightseeing/",
     "provisionsUrl": "https://www.greeka.com/saronic/spetses/",
-    "season": "fall",
-    "routeWaypoints": [
-      [
-        37.2527403240144,
-        23.365859985351566
-      ],
-      [
-        37.37343130288926,
-        23.659057617187504
-      ],
-      [
-        37.572882155556194,
-        23.903503417968754
-      ],
-      [
-        37.609879943747146,
-        23.96804809570313
-      ]
-    ]
+    "season": "fall"
   },
   {
     "id": 36,
@@ -1372,7 +1075,6 @@
     "duration": "2 days",
     "distanceToNext": 24,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/sounion/14701",
     "cultureHighlight": "Cape Sounion & Temple of Poseidon",
@@ -1382,7 +1084,17 @@
     "foodUrl": "https://www.visitgreece.gr/mainland/attica/cape-sounio/",
     "adventureUrl": "https://www.visitgreece.gr/mainland/attica/cape-sounio/",
     "provisionsUrl": "https://www.visitgreece.gr/mainland/attica/cape-sounio/",
-    "season": "fall"
+    "season": "fall",
+    "routeWaypoints": [
+      [
+        37.638487773051644,
+        24.037015499209577
+      ],
+      [
+        37.63257720997632,
+        24.099482575942147
+      ]
+    ]
   },
   {
     "id": 37,
@@ -1396,7 +1108,6 @@
     "duration": "2 days",
     "distanceToNext": 60,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/vourkari/14701",
     "cultureHighlight": "Lion of Kea ancient sculpture",
@@ -1409,12 +1120,20 @@
     "season": "fall",
     "routeWaypoints": [
       [
-        37.593539,
-        24.5263
+        37.68809776532506,
+        24.308236250910817
       ],
       [
-        37.520378,
-        24.7276
+        37.699448556255916,
+        24.378158237733775
+      ],
+      [
+        37.52264880219995,
+        24.888143711055793
+      ],
+      [
+        37.493268493747536,
+        24.96203699490556
       ]
     ]
   },
@@ -1430,7 +1149,6 @@
     "duration": "2 days",
     "distanceToNext": 34,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/ermoupoli/14704",
     "cultureHighlight": "Ermoupoli - Capital of Cyclades",
@@ -1454,7 +1172,6 @@
     "duration": "2 days",
     "distanceToNext": 38,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/ornos/14712",
     "cultureHighlight": "Windmills & Little Venice",
@@ -1478,7 +1195,6 @@
     "duration": "2 days",
     "distanceToNext": 20,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/naxos/14716",
     "cultureHighlight": "Portara (Temple of Apollo)",
@@ -1491,16 +1207,16 @@
     "season": "fall",
     "routeWaypoints": [
       [
-        37.174542956111246,
-        25.28160095214844
+        37.15713454799131,
+        25.30883964710805
       ],
       [
-        37.17344871200958,
-        25.214309692382816
+        37.165153927752584,
+        25.236316634702984
       ],
       [
-        37.09571688483893,
-        25.09757995605469
+        37.11803956312588,
+        25.136015535813595
       ]
     ]
   },
@@ -1516,7 +1232,6 @@
     "duration": "2 days",
     "distanceToNext": 71,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/parikia/14719",
     "cultureHighlight": "Panagia Ekatontapiliani church",
@@ -1529,32 +1244,20 @@
     "season": "fall",
     "routeWaypoints": [
       [
-        37.06175259706909,
-        24.991149902343754
+        37.010005673621706,
+        25.08688020563837
       ],
       [
-        36.97183825093165,
-        24.91905212402344
+        36.87570692023453,
+        25.493983570850386
       ],
       [
-        36.8988418123063,
-        25.07011413574219
+        36.756638381624825,
+        25.753348788233346
       ],
       [
-        36.90762703795211,
-        25.38871765136719
-      ],
-      [
-        36.91805817956114,
-        25.527420043945316
-      ],
-      [
-        36.81698084233672,
-        25.620803833007816
-      ],
-      [
-        36.848856608486905,
-        25.77049255371094
+        36.7819495424536,
+        25.883803057787134
       ]
     ]
   },
@@ -1570,7 +1273,6 @@
     "duration": "3 days",
     "distanceToNext": 53,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.cruiserswiki.org/wiki/Amorgos",
     "cultureHighlight": "Chozoviotissa Monastery",
@@ -1583,32 +1285,12 @@
     "season": "fall",
     "routeWaypoints": [
       [
-        36.948794297566394,
-        25.942153930664062
+        36.54035375776824,
+        26.25212424021777
       ],
       [
-        36.92629228365366,
-        26.122055053710938
-      ],
-      [
-        36.634264115641535,
-        26.27243041992188
-      ],
-      [
-        36.579695207405656,
-        26.24496459960938
-      ],
-      [
-        36.492525490540416,
-        26.31912231445313
-      ],
-      [
-        36.49031738714763,
-        26.371307373046875
-      ],
-      [
-        36.52839834681223,
-        26.39190673828125
+        36.49620256384152,
+        26.345220715837595
       ]
     ]
   },
@@ -1624,7 +1306,6 @@
     "duration": "2 days",
     "distanceToNext": 63,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.cruiserswiki.org/wiki/Astypalea",
     "cultureHighlight": "Querini Venetian Castle",
@@ -1637,20 +1318,8 @@
     "season": "fall",
     "routeWaypoints": [
       [
-        36.56425457405503,
-        26.450958251953125
-      ],
-      [
-        36.58134937787054,
-        26.581420898437504
-      ],
-      [
-        36.739434379448674,
-        26.892471313476566
-      ],
-      [
-        36.89321324558287,
-        26.901912689208984
+        36.57497227449929,
+        26.479751933998756
       ]
     ]
   },
@@ -1666,7 +1335,6 @@
     "duration": "2 days",
     "distanceToNext": 48,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/kos/14722",
     "cultureHighlight": "Asclepieion healing temple & Hippocrates",
@@ -1679,24 +1347,16 @@
     "season": "fall",
     "routeWaypoints": [
       [
-        36.88401445049676,
-        27.103271484375
+        36.9329735908115,
+        27.04783689029242
       ],
       [
-        36.93589761453357,
-        27.294158935546875
+        36.95999443017466,
+        27.09977521954149
       ],
       [
-        36.978146688562646,
-        27.379646301269535
-      ],
-      [
-        37.00831024540572,
-        27.417411804199222
-      ],
-      [
-        37.015163930679584,
-        27.43183135986328
+        37.03843724256376,
+        27.386624627908834
       ]
     ]
   },
@@ -1712,7 +1372,6 @@
     "duration": "2 days",
     "distanceToNext": 78,
     "phase": "Turkey",
-    "schengen": false,
     "marinaName": "Milta Bodrum Marina",
     "marinaUrl": "https://www.miltabodrummarina.com/",
     "cultureHighlight": "Bodrum Castle & Mausoleum site",
@@ -1725,48 +1384,8 @@
     "season": "fall",
     "routeWaypoints": [
       [
-        36.99377838872517,
-        27.45311737060547
-      ],
-      [
-        36.98445460325018,
-        27.47337341308594
-      ],
-      [
-        36.681636065615216,
-        27.30514526367188
-      ],
-      [
-        36.54163950596125,
-        27.61550903320313
-      ],
-      [
-        36.50411700054829,
-        27.822875976562504
-      ],
-      [
-        36.53612263184688,
-        28.171691894531254
-      ],
-      [
-        36.71907231552909,
-        28.348846435546875
-      ],
-      [
-        36.76501688279228,
-        28.307304382324222
-      ],
-      [
-        36.79419939748363,
-        28.26765060424805
-      ],
-      [
-        36.814404095815696,
-        28.262286186218265
-      ],
-      [
-        36.82560372309976,
-        28.265290260314945
+        36.92597428433925,
+        28.03736643778019
       ]
     ]
   },
@@ -1782,7 +1401,6 @@
     "duration": "2 days",
     "distanceToNext": 79,
     "phase": "Turkey",
-    "schengen": false,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/marmaris/2898",
     "cultureHighlight": "Marmaris Castle & waterfront",
@@ -1795,40 +1413,8 @@
     "season": "fall",
     "routeWaypoints": [
       [
-        36.80351208910957,
-        28.267478942871097
-      ],
-      [
-        36.787291466820015,
-        28.28910827636719
-      ],
-      [
-        36.72402574695313,
-        28.418884277343754
-      ],
-      [
-        36.696227360541315,
-        28.60771179199219
-      ],
-      [
-        36.685490639009274,
-        28.681526184082035
-      ],
-      [
-        36.5893440354631,
-        28.830871582031254
-      ],
-      [
-        36.53474335181443,
-        29.020385742187504
-      ],
-      [
-        36.537501887278154,
-        29.07669067382813
-      ],
-      [
-        36.54357031890456,
-        29.08287048339844
+        36.62039852679556,
+        28.859408867692675
       ]
     ]
   },
@@ -1844,7 +1430,6 @@
     "duration": "2 days",
     "distanceToNext": 67,
     "phase": "Turkey",
-    "schengen": false,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/gemiler/2895",
     "cultureHighlight": "Lycian rock tombs & Byzantine ruins",
@@ -1857,28 +1442,8 @@
     "season": "fall",
     "routeWaypoints": [
       [
-        36.33946565299958,
-        29.058837890625004
-      ],
-      [
-        36.24205802497115,
-        29.267578125000004
-      ],
-      [
-        36.159498605271864,
-        29.432373046875004
-      ],
-      [
-        36.16836821871064,
-        29.52438354492188
-      ],
-      [
-        36.17917670310116,
-        29.58927154541016
-      ],
-      [
-        36.18167075700458,
-        29.600944519042972
+        36.20032945941441,
+        29.64042738937489
       ]
     ]
   },
@@ -1894,7 +1459,6 @@
     "duration": "3 days",
     "distanceToNext": 44,
     "phase": "Turkey",
-    "schengen": false,
     "marinaName": "Setur Kaş Marina",
     "marinaUrl": "https://www.kasmarina.com.tr/",
     "cultureHighlight": "Lycian tombs & underwater city",
@@ -1907,16 +1471,8 @@
     "season": "fall",
     "routeWaypoints": [
       [
-        36.0624217151089,
-        29.712524414062504
-      ],
-      [
-        36.10903359678316,
-        29.943237304687504
-      ],
-      [
-        36.14231087352999,
-        30.031127929687504
+        36.20972510240603,
+        29.922646924960862
       ]
     ]
   },
@@ -1932,7 +1488,6 @@
     "duration": "2 days",
     "distanceToNext": 12,
     "phase": "Turkey",
-    "schengen": false,
     "marinaUrl": "https://www.navily.com/en/mouillage/kekova-roads/2923",
     "cultureHighlight": "Sunken city of Simena",
     "cultureUrl": "https://en.wikipedia.org/wiki/Kekova",
@@ -1944,8 +1499,8 @@
     "season": "fall",
     "routeWaypoints": [
       [
-        36.28579580846356,
-        30.161933898925785
+        36.20972510240603,
+        29.922646924960862
       ]
     ]
   },
@@ -1961,7 +1516,6 @@
     "duration": "3 days",
     "distanceToNext": 50,
     "phase": "Turkey",
-    "schengen": false,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/finike/2904",
     "cultureHighlight": "Citrus groves & Limyra ruins",
@@ -1974,28 +1528,8 @@
     "season": "fall",
     "routeWaypoints": [
       [
-        36.16559657231973,
-        30.369644165039062
-      ],
-      [
-        36.15007354140755,
-        30.448608398437504
-      ],
-      [
-        36.240950421445,
-        30.528602600097656
-      ],
-      [
-        36.34914442230281,
-        30.577697753906254
-      ],
-      [
-        36.448351464205075,
-        30.535469055175785
-      ],
-      [
-        36.46464356627029,
-        30.536499023437504
+        36.20972510240603,
+        29.922646924960862
       ]
     ]
   },
@@ -2011,7 +1545,6 @@
     "duration": "2 days",
     "distanceToNext": 35,
     "phase": "Turkey",
-    "schengen": false,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/phaselis/2924",
     "cultureHighlight": "Phaselis ancient city",
@@ -2024,8 +1557,8 @@
     "season": "fall",
     "routeWaypoints": [
       [
-        36.779592342620845,
-        30.67794799804688
+        36.20972510240603,
+        29.922646924960862
       ]
     ]
   },
@@ -2041,7 +1574,6 @@
     "duration": "3 days",
     "distanceToNext": 62,
     "phase": "Turkey",
-    "schengen": false,
     "marinaName": "Setur Antalya Marina",
     "marinaUrl": "https://www.seturmarinas.com/Marina/Detail?marinaId=22",
     "cultureHighlight": "Kaleiçi old town & Antalya Museum",
@@ -2054,8 +1586,8 @@
     "season": "fall",
     "routeWaypoints": [
       [
-        36.78399193687664,
-        30.827636718750004
+        36.20972510240603,
+        29.922646924960862
       ]
     ]
   },
@@ -2071,7 +1603,6 @@
     "duration": "2 days",
     "distanceToNext": 60,
     "phase": "Turkey",
-    "schengen": false,
     "marinaUrl": "https://en.wikipedia.org/wiki/Side,_Turkey",
     "cultureHighlight": "Temple of Apollo & Roman theatre",
     "cultureUrl": "https://en.wikipedia.org/wiki/Side,_Turkey",
@@ -2083,8 +1614,8 @@
     "season": "fall",
     "routeWaypoints": [
       [
-        36.59905090311449,
-        31.677677045389128
+        36.20972510240603,
+        29.922646924960862
       ]
     ]
   },
@@ -2100,7 +1631,6 @@
     "duration": "3 days",
     "distanceToNext": 91,
     "phase": "Turkey",
-    "schengen": false,
     "marinaUrl": "https://www.navily.com/en/port/alanya-marina/1427",
     "cultureHighlight": "Alanya Castle & Red Tower",
     "cultureUrl": "https://en.wikipedia.org/wiki/Alanya",
@@ -2112,20 +1642,8 @@
     "season": "fall",
     "routeWaypoints": [
       [
-        36.140092827322654,
-        32.20779418945313
-      ],
-      [
-        36.04021586880114,
-        32.51129150390626
-      ],
-      [
-        35.985785076263035,
-        32.60055541992188
-      ],
-      [
-        36.01133890448606,
-        32.84362792968751
+        35.40999247895643,
+        32.91349559153792
       ]
     ]
   },
@@ -2141,7 +1659,6 @@
     "duration": "3 days",
     "distanceToNext": 93,
     "phase": "Turkey",
-    "schengen": false,
     "marinaUrl": "https://en.wikipedia.org/wiki/Anamur",
     "cultureHighlight": "Anemurium ancient city",
     "cultureUrl": "https://en.wikipedia.org/wiki/Mamure_Castle",
@@ -2150,17 +1667,7 @@
     "foodUrl": "https://www.tripadvisor.com/Tourism-g608889-Anamur_Mersin_Province_Turkish_Mediterranean_Coast-Vacations.html",
     "adventureUrl": "https://www.tripadvisor.com/Attraction_Review-g608889-d3519993-Reviews-Mamure_Kalesi-Anamur_Mersin_Province_Turkish_Mediterranean_Coast.html",
     "provisionsUrl": "https://www.navily.com/mouillage/anamur/42962",
-    "season": "fall",
-    "routeWaypoints": [
-      [
-        35.62158189955968,
-        33.03863525390626
-      ],
-      [
-        35.38681081644444,
-        33.21304321289063
-      ]
-    ]
+    "season": "fall"
   },
   {
     "id": 56,
@@ -2174,7 +1681,6 @@
     "duration": "5 days",
     "distanceToNext": 56,
     "phase": "Northern Cyprus",
-    "schengen": false,
     "marinaName": "Kyrenia Harbor",
     "marinaUrl": "https://www.navily.com/port/kyrenia-new-harbour/2908",
     "cultureHighlight": "Kyrenia Castle & harbor",
@@ -2187,36 +1693,20 @@
     "season": "fall",
     "routeWaypoints": [
       [
-        35.45283961767315,
-        32.89169311523438
+        35.70214038736155,
+        34.57198708747587
       ],
       [
-        35.31848687531321,
-        32.70629882812501
+        35.69090127678406,
+        34.59499285734207
       ],
       [
-        35.12437887405888,
-        32.221499338603884
+        35.63372780599117,
+        34.58412519115704
       ],
       [
-        34.69192185848015,
-        32.323122873760134
-      ],
-      [
-        34.55065743558245,
-        32.833987131572634
-      ],
-      [
-        34.51898125537333,
-        33.12100495383826
-      ],
-      [
-        34.65804033062336,
-        33.45883454368201
-      ],
-      [
-        34.72919834205246,
-        33.53302001953126
+        34.95450111604645,
+        34.1091921116019
       ]
     ]
   },
@@ -2232,7 +1722,6 @@
     "duration": "10 days",
     "distanceToNext": 61,
     "phase": "Cyprus",
-    "schengen": false,
     "marinaName": "Larnaca Marina",
     "marinaUrl": "https://www.navily.com/carte/port/1570",
     "cultureHighlight": "Salt Lake & Hala Sultan Tekke",
@@ -2245,8 +1734,12 @@
     "season": "fall",
     "routeWaypoints": [
       [
-        34.68291096793206,
-        33.39294433593751
+        34.81094761242602,
+        33.61542781320156
+      ],
+      [
+        34.68800808942852,
+        33.26616835533246
       ]
     ]
   },
@@ -2262,7 +1755,6 @@
     "duration": "62 days",
     "distanceToNext": 59,
     "phase": "Cyprus",
-    "schengen": false,
     "marinaName": "Limassol Marina",
     "marinaUrl": "https://www.limassolmarina.com/",
     "cultureHighlight": "Old town & Limassol Castle",
@@ -2275,16 +1767,16 @@
     "season": "fall",
     "routeWaypoints": [
       [
-        34.52466147177175,
-        32.72277832031251
+        34.55623829708477,
+        33.03689854167045
       ],
       [
-        34.66145194126579,
-        32.48794555664063
+        34.55722277740327,
+        32.93218939250489
       ],
       [
-        34.69646117272349,
-        32.44262695312501
+        34.71057448970031,
+        32.450166797441256
       ]
     ]
   },
@@ -2300,7 +1792,6 @@
     "duration": "10 days",
     "distanceToNext": 59,
     "phase": "Cyprus",
-    "schengen": false,
     "marinaName": "Paphos Harbor",
     "marinaUrl": "https://www.navily.com/port/paphos/2911",
     "cultureHighlight": "Paphos Archaeological Park (UNESCO)",
@@ -2313,8 +1804,16 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        34.60382391547706,
-        32.71865844726563
+        34.71057448970031,
+        32.450166797441256
+      ],
+      [
+        34.55722277740327,
+        32.93218939250489
+      ],
+      [
+        34.55623829708477,
+        33.03689854167045
       ]
     ]
   },
@@ -2330,7 +1829,6 @@
     "duration": "1 day",
     "distanceToNext": 60,
     "phase": "Cyprus",
-    "schengen": false,
     "marinaName": "Limassol Marina",
     "marinaUrl": "https://www.limassolmarina.com/",
     "cultureHighlight": "Old town & Limassol Castle",
@@ -2343,8 +1841,12 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        34.67161743636362,
-        33.42590332031251
+        34.68800808942852,
+        33.26616835533246
+      ],
+      [
+        34.81094761242602,
+        33.61542781320156
       ]
     ]
   },
@@ -2360,7 +1862,6 @@
     "duration": "3 days",
     "distanceToNext": 148,
     "phase": "Cyprus",
-    "schengen": false,
     "marinaName": "Larnaca Marina",
     "marinaUrl": "https://www.navily.com/carte/port/1570",
     "cultureHighlight": "Salt Lake & Hala Sultan Tekke",
@@ -2373,28 +1874,32 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        34.97487624147657,
-        34.35424804687501
+        34.81094761242602,
+        33.61542781320156
       ],
       [
-        35.50651802802079,
-        34.61517333984376
+        34.55623829708477,
+        33.03689854167045
       ],
       [
-        35.75431391021905,
-        34.70306396484376
+        34.55722277740327,
+        32.93218939250489
       ],
       [
-        35.50987173838399,
-        33.79394531250001
+        34.71057448970031,
+        32.450166797441256
       ],
       [
-        35.43605776486772,
-        33.49594116210938
+        34.88099675303829,
+        32.31443132172835
       ],
       [
-        35.48415637985317,
-        33.41766357421876
+        35.044293908237535,
+        32.26024245583221
+      ],
+      [
+        35.11011776433653,
+        32.28222607778318
       ]
     ]
   },
@@ -2410,7 +1915,6 @@
     "duration": "3 days",
     "distanceToNext": 91,
     "phase": "Turkey",
-    "schengen": false,
     "marinaUrl": "https://en.wikipedia.org/wiki/Anamur",
     "cultureHighlight": "Anemurium ancient city",
     "cultureUrl": "https://en.wikipedia.org/wiki/Anemurium",
@@ -2422,8 +1926,8 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        36.09929931833337,
-        32.489798637261416
+        35.40999247895643,
+        32.91349559153792
       ]
     ]
   },
@@ -2439,7 +1943,6 @@
     "duration": "3 days",
     "distanceToNext": 60,
     "phase": "Turkey",
-    "schengen": false,
     "marinaUrl": "https://en.wikipedia.org/wiki/Alanya",
     "cultureHighlight": "Alanya Castle",
     "cultureUrl": "https://en.wikipedia.org/wiki/Alanya_Castle",
@@ -2451,8 +1954,8 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        36.599023328520495,
-        31.679053168242486
+        36.20972510240603,
+        29.922646924960862
       ]
     ]
   },
@@ -2468,7 +1971,6 @@
     "duration": "1 day",
     "distanceToNext": 54,
     "phase": "Turkey",
-    "schengen": false,
     "marinaUrl": "https://en.wikipedia.org/wiki/Side,_Turkey",
     "cultureHighlight": "Temple of Apollo & Roman theatre",
     "cultureUrl": "https://en.wikipedia.org/wiki/Side,_Turkey",
@@ -2491,7 +1993,6 @@
     "duration": "3 days",
     "distanceToNext": 84,
     "phase": "Turkey",
-    "schengen": false,
     "marinaName": "Setur Antalya Marina",
     "marinaUrl": "https://www.seturmarinas.com/Marina/Detail?marinaId=22",
     "cultureHighlight": "Antalya Archaeological Museum",
@@ -2504,8 +2005,8 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        36.670308999999996,
-        30.574964
+        36.20972510240603,
+        29.922646924960862
       ]
     ]
   },
@@ -2521,7 +2022,6 @@
     "duration": "3 days",
     "distanceToNext": 47,
     "phase": "Turkey",
-    "schengen": false,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/finike/2904",
     "cultureHighlight": "Limyra ancient city",
@@ -2534,8 +2034,8 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        36.21793758955436,
-        29.984605923263302
+        36.20032945941441,
+        29.64042738937489
       ]
     ]
   },
@@ -2551,7 +2051,6 @@
     "duration": "3 days",
     "distanceToNext": 7,
     "phase": "Turkey",
-    "schengen": false,
     "marinaName": "Setur Kaş Marina",
     "marinaUrl": "https://www.kasmarina.com.tr/",
     "cultureHighlight": "Antiphellos ancient theater",
@@ -2564,12 +2063,8 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        36.183433,
-        29.620887
-      ],
-      [
-        36.166966,
-        29.602374
+        36.15836630502849,
+        29.612341753899884
       ]
     ]
   },
@@ -2585,7 +2080,6 @@
     "duration": "2 days",
     "distanceToNext": 126,
     "phase": "Greece",
-    "schengen": true,
     "marinaUrl": "https://www.navily.com/port/kastellorizo/14768",
     "cultureHighlight": "Blue Grotto & colorful harbor",
     "cultureUrl": "https://en.wikipedia.org/wiki/Kastellorizo",
@@ -2608,7 +2102,6 @@
     "duration": "3 days",
     "distanceToNext": 59,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/lindos/14765",
     "cultureHighlight": "Acropolis of Lindos & Medieval Old Town",
@@ -2621,8 +2114,20 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        35.77062619171316,
-        27.74178455296948
+        36.04653025352812,
+        28.102452857597218
+      ],
+      [
+        35.877524217773626,
+        27.786502292971694
+      ],
+      [
+        35.9074730383871,
+        27.719006353480097
+      ],
+      [
+        35.953279249821975,
+        27.695605254748788
       ]
     ]
   },
@@ -2638,7 +2143,6 @@
     "duration": "2 days",
     "distanceToNext": 87,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.cruiserswiki.org/wiki/Chalki",
     "cultureHighlight": "Traditional sponge-fishing island",
@@ -2662,7 +2166,6 @@
     "duration": "2 days",
     "distanceToNext": 29,
     "phase": "Greece",
-    "schengen": true,
     "marinaUrl": "https://www.cruiserswiki.org/wiki/Karpathos",
     "cultureHighlight": "Olympos village - living folklore museum",
     "cultureUrl": "https://en.wikipedia.org/wiki/Olympos,_Karpathos",
@@ -2674,8 +2177,16 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        35.3285710912542,
-        27.09228515625
+        35.464073140058915,
+        27.24561759502741
+      ],
+      [
+        35.39248326514542,
+        27.12779439294909
+      ],
+      [
+        35.450248006802106,
+        26.99992466051507
       ]
     ]
   },
@@ -2691,7 +2202,6 @@
     "duration": "3 days",
     "distanceToNext": 77,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.cruiserswiki.org/wiki/Kasos",
     "cultureHighlight": "Maritime Museum & Bouka old harbor",
@@ -2704,8 +2214,8 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        35.41029331738247,
-        26.483814449978013
+        35.326767316572166,
+        26.285345445095157
       ]
     ]
   },
@@ -2721,7 +2231,6 @@
     "duration": "2 days",
     "distanceToNext": 36,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/sitia/14770",
     "cultureHighlight": "Toplou Monastery & Vai palm forest",
@@ -2734,8 +2243,8 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        35.22542873333707,
-        25.93597412109375
+        35.245985125580646,
+        26.054939822819843
       ]
     ]
   },
@@ -2751,7 +2260,6 @@
     "duration": "2 days",
     "distanceToNext": 56,
     "phase": "Greece",
-    "schengen": true,
     "marinaUrl": "https://www.navily.com/port/agios-nikolaos/1534",
     "cultureHighlight": "Lake Voulismeni & Spinalonga island",
     "cultureUrl": "https://en.wikipedia.org/wiki/Agios_Nikolaos,_Crete",
@@ -2763,12 +2271,16 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        35.338335663072925,
-        25.549383164878236
+        35.25644603491547,
+        25.774894706771725
       ],
       [
-        35.33976283153646,
-        25.34445658243912
+        35.34835437995514,
+        25.771980184679943
+      ],
+      [
+        35.36279023187436,
+        25.65858117784742
       ]
     ]
   },
@@ -2784,7 +2296,6 @@
     "duration": "3 days",
     "distanceToNext": 61,
     "phase": "Greece",
-    "schengen": true,
     "marinaUrl": "https://www.explorecrete.com/heraklion/en19-heraklion-yachts-marina",
     "cultureHighlight": "Palace of Knossos (UNESCO)",
     "cultureUrl": "https://en.wikipedia.org/wiki/Knossos",
@@ -2796,8 +2307,16 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        35.55618102167933,
-        24.810069657815045
+        35.41446878586132,
+        25.06364285280728
+      ],
+      [
+        35.43739886782326,
+        24.976032976515203
+      ],
+      [
+        35.440716936463076,
+        24.720828538768608
       ]
     ]
   },
@@ -2813,7 +2332,6 @@
     "duration": "2 days",
     "distanceToNext": 44,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/rethymno/14775",
     "cultureHighlight": "Fortezza Venetian citadel",
@@ -2826,16 +2344,12 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        35.55233994415622,
-        24.331970214843754
+        35.596484149496185,
+        24.19273066378215
       ],
       [
-        35.652832827451654,
-        24.082031250000004
-      ],
-      [
-        35.6126508187567,
-        23.983154296875004
+        35.602682481142665,
+        24.076458085870605
       ]
     ]
   },
@@ -2851,7 +2365,6 @@
     "duration": "2 days",
     "distanceToNext": 115,
     "phase": "Greece",
-    "schengen": true,
     "marinaUrl": "https://www.cruiserswiki.org/wiki/Chania",
     "cultureHighlight": "Venetian Harbour & Old Town",
     "cultureUrl": "https://en.wikipedia.org/wiki/Chania",
@@ -2860,7 +2373,13 @@
     "foodUrl": "https://www.incrediblecrete.gr/en/rethymno/",
     "adventureUrl": "https://www.incrediblecrete.gr/en/rethymnon/",
     "provisionsUrl": "https://www.navily.com/port/rethymno-marina/928",
-    "season": "winter"
+    "season": "winter",
+    "routeWaypoints": [
+      [
+        35.67636982933637,
+        23.79447316244387
+      ]
+    ]
   },
   {
     "id": 78,
@@ -2874,7 +2393,6 @@
     "duration": "2 days",
     "distanceToNext": 79,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/kapsali/14461",
     "cultureHighlight": "Chora Castle - Eye of Crete",
@@ -2887,8 +2405,12 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        36.33652785941609,
-        22.615186423395198
+        36.12474344443017,
+        22.983939947059834
+      ],
+      [
+        36.200683907438005,
+        22.89334872163303
       ]
     ]
   },
@@ -2904,7 +2426,6 @@
     "duration": "2 days",
     "distanceToNext": 50,
     "phase": "Greece",
-    "schengen": true,
     "marinaUrl": "https://www.cruisemapper.com/ports/gythion-port-273",
     "cultureHighlight": "Mani tower houses & Cranae Island",
     "cultureUrl": "https://en.wikipedia.org/wiki/Gytheio",
@@ -2916,20 +2437,20 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        36.27749304994348,
-        22.5
+        36.466207433658276,
+        22.52824779808399
       ],
       [
-        36.465471886798134,
-        22.302246093750004
+        36.37940704512605,
+        22.48233499385297
       ],
       [
-        36.86863488530103,
-        22.082519531250004
+        36.50643287279757,
+        22.339180383902423
       ],
       [
-        36.938916182818595,
-        22.035827636718754
+        36.91087392937408,
+        22.122943306549647
       ]
     ]
   },
@@ -2945,7 +2466,6 @@
     "duration": "2 days",
     "distanceToNext": 39,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/kalamata/14466",
     "cultureHighlight": "Old town & railway park",
@@ -2958,24 +2478,20 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        36.92135192790115,
-        21.98638916015625
+        36.79184748963922,
+        21.986607238965487
       ],
       [
-        36.701457527917924,
-        21.95343017578125
+        36.715214892093364,
+        21.891690493865767
       ],
       [
-        36.65079252503471,
-        21.81060791015625
+        36.79901516656293,
+        21.745406755516726
       ],
       [
-        36.7762924811868,
-        21.623840332031254
-      ],
-      [
-        36.86643755175846,
-        21.563415527343754
+        36.81260300951045,
+        21.691947734488146
       ]
     ]
   },
@@ -2991,7 +2507,6 @@
     "duration": "2 days",
     "distanceToNext": 90,
     "phase": "Greece",
-    "schengen": true,
     "marinaUrl": "https://www.navily.com/mouillage/pylos/14498",
     "cultureHighlight": "Navarino Bay & Ottoman fortress",
     "cultureUrl": "https://en.wikipedia.org/wiki/Pylos",
@@ -3003,8 +2518,16 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        37.25915524324429,
-        21.441688901770885
+        36.9516103627188,
+        21.64804650308513
+      ],
+      [
+        37.11686887571628,
+        21.55277748902991
+      ],
+      [
+        37.62891037419608,
+        21.299565462198725
       ]
     ]
   },
@@ -3020,7 +2543,6 @@
     "duration": "2 days",
     "distanceToNext": 40,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/katakolo/14502",
     "cultureHighlight": "Gateway to Ancient Olympia (UNESCO)",
@@ -3044,7 +2566,6 @@
     "duration": "2 days",
     "distanceToNext": 57,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/zakynthos/14508",
     "cultureHighlight": "Navagio Beach (Shipwreck Beach)",
@@ -3057,12 +2578,12 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        37.9593578107923,
-        20.76690673828125
+        37.84658611395248,
+        20.861295899416767
       ],
       [
-        38.028622234587964,
-        20.500488281250004
+        38.0985935662597,
+        20.502466575956333
       ]
     ]
   },
@@ -3078,7 +2599,6 @@
     "duration": "2 days",
     "distanceToNext": 75,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/argostoli/14500",
     "cultureHighlight": "Kefalonia capital & lighthouse",
@@ -3091,20 +2611,20 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        38.06971703320484,
-        20.360412597656254
+        38.13853355194183,
+        20.383082602661013
       ],
       [
-        38.2273928792016,
-        20.165405273437504
+        38.18003849226139,
+        20.328431722935438
       ],
       [
-        38.50519140240356,
-        20.492248535156254
+        38.37216637383364,
+        20.386147816891015
       ],
       [
-        38.54494326173161,
-        20.583572387695316
+        38.47952406127977,
+        20.522086725412933
       ]
     ]
   },
@@ -3120,7 +2640,6 @@
     "duration": "4 days",
     "distanceToNext": 61,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/sivota/14436",
     "cultureHighlight": "Agia Mavra Castle & Sivota village",
@@ -3133,12 +2652,8 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        38.83756825896614,
-        20.724334716796875
-      ],
-      [
-        39.0062,
-        20.3771
+        39.15290970255063,
+        20.250931558150807
       ]
     ]
   },
@@ -3154,7 +2669,6 @@
     "duration": "3 days",
     "distanceToNext": 52,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/gaios/14453",
     "cultureHighlight": "Blue Caves & intimate harbor",
@@ -3167,8 +2681,8 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        39.443786686898505,
-        20.10433156570846
+        39.435284852163335,
+        20.10342745814519
       ]
     ]
   },
@@ -3184,7 +2698,6 @@
     "duration": "4 days",
     "distanceToNext": 50,
     "phase": "Greece",
-    "schengen": true,
     "marinaName": "Corfu Marina",
     "marinaUrl": "https://www.navily.com/port/gouvia-marina/14412",
     "cultureHighlight": "Corfu Old Town (UNESCO)",
@@ -3197,12 +2710,16 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        39.60997512711425,
-        19.714211380411342
+        39.63036886444056,
+        19.943735144221183
       ],
       [
-        39.777222,
-        19.590578
+        39.801261708733925,
+        19.958319189546643
+      ],
+      [
+        39.83770269403575,
+        19.84807374163541
       ]
     ]
   },
@@ -3218,7 +2735,6 @@
     "duration": "3 days",
     "distanceToNext": 91,
     "phase": "Greece",
-    "schengen": true,
     "marinaUrl": "https://www.cruiserswiki.org/wiki/Othoni",
     "cultureHighlight": "Remote Greek island - Calypso legend",
     "cultureUrl": "https://en.wikipedia.org/wiki/Othoni",
@@ -3241,7 +2757,6 @@
     "duration": "1 day",
     "distanceToNext": 43,
     "phase": "Italy",
-    "schengen": true,
     "marinaUrl": "https://www.cruiserswiki.org/wiki/Santa_Maria_de_Leuca",
     "cultureHighlight": "Basilica De Finibus Terrae & Lighthouse",
     "cultureUrl": "https://en.wikipedia.org/wiki/Santa_Maria_di_Leuca",
@@ -3253,20 +2768,20 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        39.77054750039529,
-        18.204345703125004
+        39.78511931084042,
+        18.341496382872073
       ],
       [
-        39.829631721333755,
-        18.064270019531254
+        39.903813651399446,
+        18.057115221654975
       ],
       [
-        39.93501296038254,
-        17.957153320312504
+        39.98983146073197,
+        17.979256560380218
       ],
       [
-        39.98974718404572,
-        17.921447753906254
+        40.05373247090707,
+        17.950469460218187
       ]
     ]
   },
@@ -3282,7 +2797,6 @@
     "duration": "1 day",
     "distanceToNext": 80,
     "phase": "Italy",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/gallipoli/1634",
     "cultureHighlight": "Baroque Old Town on island",
@@ -3295,12 +2809,8 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        40.198171,
-        17.737385
-      ],
-      [
-        40.29247506394459,
-        17.460776419168646
+        40.409632652695606,
+        17.189525901694974
       ]
     ]
   },
@@ -3316,7 +2826,6 @@
     "duration": "1 day",
     "distanceToNext": 57,
     "phase": "Italy",
-    "schengen": true,
     "marinaUrl": "https://www.cruiserswiki.org/wiki/Taranto",
     "cultureHighlight": "Aragonese Castle & MARTA Museum",
     "cultureUrl": "https://en.wikipedia.org/wiki/Castello_Aragonese_(Taranto)",
@@ -3328,8 +2837,8 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        40.29000168607602,
-        16.949157714843754
+        40.47078713425686,
+        17.210560524067358
       ]
     ]
   },
@@ -3345,7 +2854,6 @@
     "duration": "1 day",
     "distanceToNext": 54,
     "phase": "Italy",
-    "schengen": true,
     "marinaName": "Marina di Policoro",
     "marinaUrl": "https://marinedi.com/en/marina-di-policoro/",
     "cultureHighlight": "Heraclea archaeological site",
@@ -3358,8 +2866,8 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        39.918162846609455,
-        16.663513183593754
+        39.962668886359175,
+        16.648582045777022
       ]
     ]
   },
@@ -3375,7 +2883,6 @@
     "duration": "1 day",
     "distanceToNext": 22,
     "phase": "Italy",
-    "schengen": true,
     "marinaName": "Marina Laghi di Sibari",
     "marinaUrl": "https://www.cruiserswiki.org/wiki/Sibari",
     "cultureHighlight": "Ancient Sybaris archaeological site",
@@ -3388,8 +2895,8 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        39.69873414348142,
-        16.627807617187504
+        39.67210595671695,
+        16.55913352643557
       ]
     ]
   },
@@ -3405,7 +2912,6 @@
     "duration": "2 days",
     "distanceToNext": 69,
     "phase": "Italy",
-    "schengen": true,
     "marinaUrl": "https://www.cruiserswiki.org/wiki/Rossano",
     "cultureHighlight": "Codex Purpureus Rossanensis (UNESCO Memory)",
     "cultureUrl": "https://en.wikipedia.org/wiki/Rossano",
@@ -3417,20 +2923,16 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        39.71141252523694,
-        16.732177734375004
+        39.62367340564018,
+        16.790395054980785
       ],
       [
-        39.56240916379545,
-        16.98355135045596
+        39.41440504710831,
+        17.17255621653399
       ],
       [
-        39.37370231600928,
-        17.22525056920596
-      ],
-      [
-        39.251397769004924,
-        17.201843261718754
+        39.21190965978392,
+        17.163018584907196
       ]
     ]
   },
@@ -3446,7 +2948,6 @@
     "duration": "2 days",
     "distanceToNext": 21,
     "phase": "Italy",
-    "schengen": true,
     "marinaUrl": "https://www.navily.com/port/marina-di-crotone/1540",
     "cultureHighlight": "Archaeological Museum & Greek ruins",
     "cultureUrl": "https://en.wikipedia.org/wiki/Crotone",
@@ -3458,8 +2959,12 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        38.905995699991166,
-        17.243041992187504
+        39.02730203904268,
+        17.223526286569133
+      ],
+      [
+        38.88698123010991,
+        17.111690590801715
       ]
     ]
   },
@@ -3475,7 +2980,6 @@
     "duration": "2 days",
     "distanceToNext": 83,
     "phase": "Italy",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.navily.com/mouillage/le-castella/1635",
     "cultureHighlight": "Aragonese Castle in the sea",
@@ -3488,8 +2992,8 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        38.51503719578127,
-        16.835518397353496
+        38.422786721918534,
+        16.584518265611443
       ]
     ]
   },
@@ -3505,7 +3009,6 @@
     "duration": "2 days",
     "distanceToNext": 73,
     "phase": "Italy",
-    "schengen": true,
     "marinaName": "Porto delle Grazie",
     "marinaUrl": "https://portodellegrazie.com/en/",
     "cultureHighlight": "Historic Calabrian coastal town",
@@ -3518,20 +3021,20 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        37.76420119453826,
-        16.092224121093754
+        37.967099859151574,
+        16.125831514724496
       ],
       [
-        37.82497195707117,
-        15.875244140625002
+        37.92177174705546,
+        16.073214903592667
       ],
       [
-        37.94636345087475,
-        15.595092773437502
+        37.91190081777935,
+        15.758923641647696
       ],
       [
-        38.0091482264894,
-        15.595092773437502
+        38.00793614099779,
+        15.61804508978245
       ]
     ]
   },
@@ -3547,7 +3050,6 @@
     "duration": "3 days",
     "distanceToNext": 46,
     "phase": "Italy",
-    "schengen": true,
     "marinaName": "",
     "marinaUrl": "https://www.cruiserswiki.org/wiki/Reggio_di_Calabria",
     "cultureHighlight": "Riace Bronzes at National Museum",
@@ -3571,7 +3073,6 @@
     "duration": "2 days",
     "distanceToNext": 85,
     "phase": "Italy",
-    "schengen": true,
     "marinaUrl": "https://www.ey4u.com/east-sicily-yacht-services/taormina-yacht-services-yacht-agents-and-anchorages-in-giardini-naxos-marina/",
     "cultureHighlight": "Ancient Theatre of Taormina",
     "cultureUrl": "https://en.wikipedia.org/wiki/Ancient_theatre_of_Taormina",
@@ -3594,7 +3095,6 @@
     "duration": "3 days",
     "distanceToNext": 73,
     "phase": "Italy",
-    "schengen": true,
     "marinaUrl": "https://www.navily.com/de/port/marina-yatching-siracusa-ortigia/205",
     "cultureHighlight": "Syracuse & Ortygia (UNESCO)",
     "cultureUrl": "https://whc.unesco.org/en/list/1200/",
@@ -3606,20 +3106,20 @@
     "season": "winter",
     "routeWaypoints": [
       [
-        36.81368259124586,
-        15.224304199218752
+        37.01165676378265,
+        15.349257819678469
       ],
       [
-        36.62434536776987,
-        15.169372558593752
+        36.66770956456339,
+        15.148255925728671
       ],
       [
-        36.61552763134925,
-        14.949645996093752
+        36.64177152351823,
+        15.090313656580484
       ],
       [
-        36.6551995018735,
-        14.842529296875002
+        36.68614960737649,
+        14.777503031879245
       ]
     ]
   },
@@ -3635,7 +3135,6 @@
     "duration": "2 days",
     "distanceToNext": 0,
     "phase": "Italy",
-    "schengen": true,
     "marinaName": "Marina di Ragusa",
     "marinaUrl": "https://www.navily.com/port/marina-di-ragusa/932",
     "cultureHighlight": "Baroque towns of Val di Noto",
