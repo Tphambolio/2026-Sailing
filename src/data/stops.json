@@ -44,7 +44,7 @@
     "duration": "2 days",
     "distanceToNext": 53,
     "phase": "Croatia",
-    "marinaUrl": "https://www.navily.com/mouillage/levrnaka/5f3fdcaa4b0e55001fd09c37",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Kornati",
     "cultureHighlight": "Kornati National Park",
     "cultureUrl": "https://en.wikipedia.org/wiki/Kornati",
     "notes": "National park",
@@ -58,7 +58,8 @@
         43.76565008059892,
         15.411831183792945
       ]
-    ]
+    ],
+    "marinaName": "Levrnaka Anchorage"
   },
   {
     "id": 3,
@@ -146,8 +147,8 @@
     "duration": "2 days",
     "distanceToNext": 32,
     "phase": "Croatia",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/vinogradisce/5f0df5c6ed6dc1001fb7bc6d",
+    "marinaName": "Palmižana Anchorage",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Pakleni_Islands",
     "cultureHighlight": "Hvar Town & Fortica fortress",
     "cultureUrl": "https://en.wikipedia.org/wiki/Hvar",
     "notes": "Protected anchorage at Pakleni Islands; dinghy 10min to Hvar town for provisions & culture",
@@ -175,8 +176,8 @@
     "duration": "2 days",
     "distanceToNext": 85,
     "phase": "Croatia",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/komiza/5f0df5c6ed6dc1001fb7bc79",
+    "marinaName": "Komiža Harbour",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Komi%C5%BEa",
     "cultureHighlight": "Fishing village on Vis Island",
     "cultureUrl": "https://en.wikipedia.org/wiki/Komi%C5%BEa",
     "notes": "Remote Vis island",
@@ -204,8 +205,8 @@
     "duration": "2 days",
     "distanceToNext": 47,
     "phase": "Croatia",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/korcula/5f0df5c6ed6dc1001fb7bc77",
+    "marinaName": "Korčula Town Harbour",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Kor%C4%8Dula",
     "cultureHighlight": "Korčula Old Town (Marco Polo's birthplace)",
     "cultureUrl": "https://en.wikipedia.org/wiki/Kor%C4%8Dula",
     "notes": "Protected anchorage west of old town; dinghy to historic center, Marco Polo museum",
@@ -233,7 +234,7 @@
     "duration": "2 days",
     "distanceToNext": 42,
     "phase": "Croatia",
-    "marinaUrl": "https://www.navily.com/mouillage/okuklje/5f0df5faed6dc1001fb7bc81",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Mljet#Anchorages",
     "cultureHighlight": "Mljet National Park & salt lakes",
     "cultureUrl": "https://en.wikipedia.org/wiki/Mljet_National_Park",
     "notes": "National park",
@@ -247,7 +248,8 @@
         42.69121930785589,
         17.766641581666413
       ]
-    ]
+    ],
+    "marinaName": "Pomena / Polače Anchorage"
   },
   {
     "id": 9,
@@ -290,7 +292,7 @@
     "duration": "2 days",
     "distanceToNext": 20,
     "phase": "Montenegro",
-    "marinaUrl": "https://www.navily.com/mouillage/herceg-novi/5f0df5faed6dc1001fb7bc83",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Herceg_Novi",
     "cultureHighlight": "Forte Mare & Old Town",
     "cultureUrl": "https://en.wikipedia.org/wiki/Herceg_Novi",
     "notes": "Entry to Montenegro",
@@ -304,7 +306,8 @@
         42.43350815733268,
         18.532856408167646
       ]
-    ]
+    ],
+    "marinaName": "Herceg Novi Anchorage"
   },
   {
     "id": 11,
@@ -347,8 +350,8 @@
     "duration": "2 days",
     "distanceToNext": 20,
     "phase": "Montenegro",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/tivat/5f0df5faed6dc1001fb7bc85",
+    "marinaName": "Porto Montenegro",
+    "marinaUrl": "https://www.portomontenegro.com/marina/",
     "cultureHighlight": "Naval Heritage Collection & Bay of Kotor views",
     "cultureUrl": "https://en.wikipedia.org/wiki/Tivat",
     "notes": "Protected anchorage in Bay of Tivat; dinghy to town for provisions, naval museum",
@@ -396,8 +399,8 @@
     "duration": "2 days",
     "distanceToNext": 30,
     "phase": "Montenegro",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/budva/5f0df5faed6dc1001fb7bc86",
+    "marinaName": "Budva Town Anchorage",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Budva",
     "cultureHighlight": "Budva Old Town & Citadela",
     "cultureUrl": "https://en.wikipedia.org/wiki/Budva",
     "notes": "Anchorage in Budva Bay; dinghy or swim to beach, walk to medieval Old Town & Citadela",
@@ -425,8 +428,8 @@
     "duration": "2 days",
     "distanceToNext": 21,
     "phase": "Montenegro",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/bar/5f0df5faed6dc1001fb7bc88",
+    "marinaName": "Bar Harbour",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Bar,_Montenegro",
     "cultureHighlight": "Stari Bar ruins",
     "cultureUrl": "https://en.wikipedia.org/wiki/Bar,_Montenegro",
     "notes": "Anchorage off Bar; dinghy to port for provisions, taxi to Stari Bar ancient ruins (4km)",
@@ -454,7 +457,7 @@
     "duration": "2 days",
     "distanceToNext": 35,
     "phase": "Montenegro",
-    "marinaUrl": "https://www.navily.com/mouillage/ulcinj/5f0df5faed6dc1001fb7bc89",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Ulcinj",
     "cultureHighlight": "Old Town & Velika Plaza beach",
     "cultureUrl": "https://en.wikipedia.org/wiki/Ulcinj",
     "notes": "Last Montenegro stop",
@@ -468,7 +471,8 @@
         41.83957479027509,
         19.35932541668633
       ]
-    ]
+    ],
+    "marinaName": "Ulcinj Anchorage"
   },
   {
     "id": 16,
@@ -482,8 +486,8 @@
     "duration": "2 days",
     "distanceToNext": 57,
     "phase": "Albania",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/shengjin/602d7f3a328ce6001f520f88",
+    "marinaName": "Shëngjin Harbour",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Sh%C3%ABngjin",
     "cultureHighlight": "Albanian Riviera gateway",
     "cultureUrl": "https://en.wikipedia.org/wiki/Sh%C3%ABngjin",
     "notes": "Entry to Albania; anchorage in bay, dinghy to beach & town for provisions",
@@ -519,7 +523,7 @@
     "duration": "2 days",
     "distanceToNext": 94,
     "phase": "Albania",
-    "marinaUrl": "https://www.navily.com/mouillage/durres/5f0df5faed6dc1001fb7bc90",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Durr%C3%ABs",
     "cultureHighlight": "Roman Amphitheatre",
     "cultureUrl": "https://en.wikipedia.org/wiki/Durr%C3%ABs",
     "notes": "Historic port city",
@@ -533,7 +537,8 @@
         40.65379374192094,
         19.286616744793484
       ]
-    ]
+    ],
+    "marinaName": "Durrës Anchorage"
   },
   {
     "id": 18,
@@ -547,8 +552,8 @@
     "duration": "2 days",
     "distanceToNext": 52,
     "phase": "Albania",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/vlore/602d7f3a328ce6001f520f91",
+    "marinaName": "Vlorë Bay Anchorage",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Vlor%C3%AB",
     "cultureHighlight": "Independence Monument",
     "cultureUrl": "https://en.wikipedia.org/wiki/Vlor%C3%AB",
     "notes": "Anchorage in Vlore Bay; protected from NW, dinghy to promenade & Independence Monument",
@@ -584,7 +589,7 @@
     "duration": "2 days",
     "distanceToNext": 28,
     "phase": "Albania",
-    "marinaUrl": "https://www.navily.com/region/palermo/371",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Porto_Palermo",
     "cultureHighlight": "Ali Pasha Castle",
     "cultureUrl": "https://en.wikipedia.org/wiki/Porto_Palermo_Castle",
     "notes": "Stunning natural harbor",
@@ -598,7 +603,8 @@
         39.899886568557406,
         19.891053034993448
       ]
-    ]
+    ],
+    "marinaName": "Porto Palermo Bay"
   },
   {
     "id": 20,
@@ -613,7 +619,7 @@
     "distanceToNext": 12,
     "phase": "Albania",
     "marinaName": "Port of Sarandë",
-    "marinaUrl": "https://www.navily.com/carte/port/1249",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Sarand%C3%AB",
     "cultureHighlight": "Butrint National Park (UNESCO)",
     "cultureUrl": "https://whc.unesco.org/en/list/570/",
     "notes": "Last Albania stop",
@@ -641,8 +647,8 @@
     "duration": "2 days",
     "distanceToNext": 16,
     "phase": "Greece",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/kassiopi/14421",
+    "marinaName": "Kassiopi Harbour",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Kassiopi",
     "cultureHighlight": "Byzantine fortress & fishing village",
     "cultureUrl": "https://en.wikipedia.org/wiki/Kassiopi",
     "notes": "Entry to Greece - Corfu",
@@ -674,8 +680,8 @@
     "duration": "2 days",
     "distanceToNext": 62,
     "phase": "Greece",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/kontokali/14420",
+    "marinaName": "Kontokali Bay Anchorage",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Kontokali",
     "cultureHighlight": "Corfu Old Town (UNESCO)",
     "cultureUrl": "https://whc.unesco.org/en/list/978/",
     "notes": "Protected anchorage at Kontokali Bay; dinghy or bus to Corfu UNESCO Old Town",
@@ -707,7 +713,7 @@
     "duration": "2 days",
     "distanceToNext": 48,
     "phase": "Greece",
-    "marinaUrl": "https://www.navily.com/mouillage/ormos-valtou/17745",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Parga",
     "cultureHighlight": "Venetian Castle & colorful waterfront",
     "cultureUrl": "https://en.wikipedia.org/wiki/Parga",
     "notes": "Picturesque town",
@@ -721,7 +727,8 @@
         39.21757934362539,
         20.46445598416601
       ]
-    ]
+    ],
+    "marinaName": "Valtos Bay (Parga)"
   },
   {
     "id": 24,
@@ -735,8 +742,8 @@
     "duration": "2 days",
     "distanceToNext": 15,
     "phase": "Greece",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/agios-thomas/56759",
+    "marinaName": "Preveza Town Quay",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Preveza",
     "cultureHighlight": "Nicopolis ancient city nearby",
     "cultureUrl": "https://en.wikipedia.org/wiki/Preveza",
     "notes": "Anchorage at Agios Thomas bay; protected, dinghy to Preveza town, visit Nicopolis ruins",
@@ -758,8 +765,8 @@
     "duration": "2 days",
     "distanceToNext": 14,
     "phase": "Greece",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/lefkada/14433",
+    "marinaName": "Lefkada Town Quay",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Lefkada_(city)",
     "cultureHighlight": "Lefkada town & beaches",
     "cultureUrl": "https://www.visitgreece.gr/islands/ionian-islands/lefkas/",
     "notes": "Anchorage near Lefkada town; good holding, dinghy to town center & beaches",
@@ -787,8 +794,8 @@
     "duration": "2 days",
     "distanceToNext": 30,
     "phase": "Greece",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/port/nidri/4757",
+    "marinaName": "Nydri Anchorage",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Nydri",
     "cultureHighlight": "Waterfall hike & Skorpios Island views",
     "cultureUrl": "https://en.wikipedia.org/wiki/Nidri",
     "notes": "Lively town",
@@ -816,7 +823,7 @@
     "duration": "2 days",
     "distanceToNext": 75,
     "phase": "Greece",
-    "marinaUrl": "https://www.navily.com/carte/mouillage/14497",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Fiskardo",
     "cultureHighlight": "Venetian architecture & yacht harbor",
     "cultureUrl": "https://en.wikipedia.org/wiki/Fiskardo",
     "notes": "Last Ionian stop - head to Corinth",
@@ -838,7 +845,8 @@
         38.28965692604894,
         21.179104260690814
       ]
-    ]
+    ],
+    "marinaName": "Fiskardo Harbour"
   },
   {
     "id": 28,
@@ -852,8 +860,8 @@
     "duration": "2 days",
     "distanceToNext": 30,
     "phase": "Greece",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/mesolongi/14560",
+    "marinaName": "Messolonghi Lagoon",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Missolonghi",
     "cultureHighlight": "Garden of Heroes & natural lagoon",
     "cultureUrl": "https://en.wikipedia.org/wiki/Missolonghi",
     "notes": "Anchorage in lagoon entrance; shallow draft area, dinghy to town - Lord Byron heritage",
@@ -922,7 +930,7 @@
     "duration": "2 days",
     "distanceToNext": 73,
     "phase": "Greece",
-    "marinaUrl": "https://www.navily.com/mouillage/galaxidi/14562",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Galaxidi",
     "cultureHighlight": "Historic maritime town",
     "cultureUrl": "https://en.wikipedia.org/wiki/Galaxidi",
     "notes": "Charming port town",
@@ -930,7 +938,8 @@
     "foodUrl": "https://www.discovergreece.com/greek-mainland/destinations/galaxidi",
     "adventureUrl": "https://www.visitdelphi.gr/en/",
     "provisionsUrl": "https://www.navily.com/mouillage/galaxidi/783",
-    "season": "fall"
+    "season": "fall",
+    "marinaName": "Galaxidi Harbour"
   },
   {
     "id": 31,
@@ -951,8 +960,9 @@
     "wikiUrl": "https://en.wikipedia.org/wiki/Corinth_Canal",
     "foodUrl": "https://www.visitgreece.gr/mainland/peloponnese/corinth/",
     "adventureUrl": "https://www.visitgreece.gr/mainland/peloponnese/corinth/",
-    "provisionsUrl": "https://www.navily.com/mouillage/corinth-canal-east/12307",
-    "season": "fall"
+    "provisionsUrl": "https://en.wikipedia.org/wiki/Corinth_Canal",
+    "season": "fall",
+    "marinaName": "Corinth Canal Transit"
   },
   {
     "id": 32,
@@ -966,8 +976,8 @@
     "duration": "2 days",
     "distanceToNext": 27,
     "phase": "Greece",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/aegina/14630",
+    "marinaName": "Aegina Town Harbour",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Aegina_(town)",
     "cultureHighlight": "Temple of Aphaea",
     "cultureUrl": "https://en.wikipedia.org/wiki/Temple_of_Aphaia",
     "notes": "Anchorage off Aegina town; protected, dinghy to fish market & Temple of Aphaea",
@@ -995,8 +1005,8 @@
     "duration": "2 days",
     "distanceToNext": 17,
     "phase": "Greece",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/poros/14633",
+    "marinaName": "Poros Town Harbour",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Poros",
     "cultureHighlight": "Temple of Poseidon ruins",
     "cultureUrl": "https://en.wikipedia.org/wiki/Poros",
     "notes": "Anchorage in Poros channel; scenic waterfront, dinghy to town & Temple of Poseidon",
@@ -1024,7 +1034,7 @@
     "duration": "2 days",
     "distanceToNext": 29,
     "phase": "Greece",
-    "marinaUrl": "https://www.navily.com/port/hydra/14636",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Hydra_(island)",
     "cultureHighlight": "Car-free island & naval heritage",
     "cultureUrl": "https://en.wikipedia.org/wiki/Hydra_(island)",
     "notes": "No vehicles - donkeys only",
@@ -1038,7 +1048,8 @@
         37.29449358254689,
         23.217095593440494
       ]
-    ]
+    ],
+    "marinaName": "Hydra Harbour"
   },
   {
     "id": 35,
@@ -1052,8 +1063,8 @@
     "duration": "2 days",
     "distanceToNext": 93,
     "phase": "Greece",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/baltiza/14641",
+    "marinaName": "Spetses Old Harbour",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Spetses",
     "cultureHighlight": "Naval history & Bouboulina Museum",
     "cultureUrl": "https://en.wikipedia.org/wiki/Spetses",
     "notes": "Protected Baltiza inlet anchorage; dinghy to Spetses town, Bouboulina Museum, naval heritage",
@@ -1075,8 +1086,8 @@
     "duration": "2 days",
     "distanceToNext": 24,
     "phase": "Greece",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/sounion/14701",
+    "marinaName": "Sounion Bay Anchorage",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Cape_Sounion",
     "cultureHighlight": "Cape Sounion & Temple of Poseidon",
     "cultureUrl": "https://en.wikipedia.org/wiki/Temple_of_Poseidon,_Sounion",
     "notes": "Stunning anchorage at Cape Sounion; Temple of Poseidon sunset, swim ashore or dinghy",
@@ -1108,8 +1119,8 @@
     "duration": "2 days",
     "distanceToNext": 60,
     "phase": "Greece",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/vourkari/14701",
+    "marinaName": "Korissia Bay (Kea)",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Kea_(island)",
     "cultureHighlight": "Lion of Kea ancient sculpture",
     "cultureUrl": "https://en.wikipedia.org/wiki/Kea_(island)",
     "notes": "First Cycladic island",
@@ -1149,8 +1160,8 @@
     "duration": "2 days",
     "distanceToNext": 34,
     "phase": "Greece",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/ermoupoli/14704",
+    "marinaName": "Ermoupoli Harbour",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Ermoupoli",
     "cultureHighlight": "Ermoupoli - Capital of Cyclades",
     "cultureUrl": "https://en.wikipedia.org/wiki/Ermoupoli",
     "notes": "Anchorage off Ermoupoli; good holding, dinghy to neoclassical Cyclades capital",
@@ -1172,8 +1183,8 @@
     "duration": "2 days",
     "distanceToNext": 38,
     "phase": "Greece",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/ornos/14712",
+    "marinaName": "Ornos Bay Anchorage",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Mykonos",
     "cultureHighlight": "Windmills & Little Venice",
     "cultureUrl": "https://en.wikipedia.org/wiki/Mykonos",
     "notes": "Protected anchorage at Ornos Bay; sheltered from meltemi, bus to Mykonos town & windmills",
@@ -1195,8 +1206,8 @@
     "duration": "2 days",
     "distanceToNext": 20,
     "phase": "Greece",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/naxos/14716",
+    "marinaName": "Naxos Town Harbour",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Naxos",
     "cultureHighlight": "Portara (Temple of Apollo)",
     "cultureUrl": "https://en.wikipedia.org/wiki/Naxos",
     "notes": "Anchorage off Naxos town; protected N side, dinghy to iconic Portara & old town",
@@ -1232,8 +1243,8 @@
     "duration": "2 days",
     "distanceToNext": 71,
     "phase": "Greece",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/parikia/14719",
+    "marinaName": "Parikia Bay Anchorage",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Parikia",
     "cultureHighlight": "Panagia Ekatontapiliani church",
     "cultureUrl": "https://en.wikipedia.org/wiki/Paros",
     "notes": "Anchorage in Parikia Bay; good holding, dinghy to Byzantine church & old town",
@@ -1273,8 +1284,8 @@
     "duration": "3 days",
     "distanceToNext": 53,
     "phase": "Greece",
-    "marinaName": "",
-    "marinaUrl": "https://www.cruiserswiki.org/wiki/Amorgos",
+    "marinaName": "Katapola Bay",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Amorgos",
     "cultureHighlight": "Chozoviotissa Monastery",
     "cultureUrl": "https://en.wikipedia.org/wiki/Panagia_Hozoviotissa",
     "notes": "Unspoiled Cycladic gem, Big Blue filming location",
@@ -1306,8 +1317,8 @@
     "duration": "2 days",
     "distanceToNext": 63,
     "phase": "Greece",
-    "marinaName": "",
-    "marinaUrl": "https://www.cruiserswiki.org/wiki/Astypalea",
+    "marinaName": "Maltezana Bay",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Astypalaia",
     "cultureHighlight": "Querini Venetian Castle",
     "cultureUrl": "https://en.wikipedia.org/wiki/Astypalaia",
     "notes": "Butterfly-shaped island",
@@ -1335,8 +1346,8 @@
     "duration": "2 days",
     "distanceToNext": 48,
     "phase": "Greece",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/kos/14722",
+    "marinaName": "Kos Town Anchorage",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Kos",
     "cultureHighlight": "Asclepieion healing temple & Hippocrates",
     "cultureUrl": "https://en.wikipedia.org/wiki/Kos",
     "notes": "Anchorage off Kos town; protected, dinghy to Hippocrates Tree & Asclepieion temple",
@@ -1401,8 +1412,8 @@
     "duration": "2 days",
     "distanceToNext": 79,
     "phase": "Turkey",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/marmaris/2898",
+    "marinaName": "Marmaris Bay Anchorage",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Marmaris",
     "cultureHighlight": "Marmaris Castle & waterfront",
     "cultureUrl": "https://en.wikipedia.org/wiki/Marmaris",
     "notes": "Anchorage in Marmaris Bay; very protected, dinghy to castle & waterfront bazaar",
@@ -1430,8 +1441,8 @@
     "duration": "2 days",
     "distanceToNext": 67,
     "phase": "Turkey",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/gemiler/2895",
+    "marinaName": "Gemiler Island Anchorage",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Gemiler_Island",
     "cultureHighlight": "Lycian rock tombs & Byzantine ruins",
     "cultureUrl": "https://en.wikipedia.org/wiki/Fethiye",
     "notes": "Stunning Gemiler Island anchorage; Byzantine church ruins on island, dinghy to Oludeniz beach",
@@ -1488,7 +1499,7 @@
     "duration": "2 days",
     "distanceToNext": 12,
     "phase": "Turkey",
-    "marinaUrl": "https://www.navily.com/en/mouillage/kekova-roads/2923",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Kekova",
     "cultureHighlight": "Sunken city of Simena",
     "cultureUrl": "https://en.wikipedia.org/wiki/Kekova",
     "notes": "Unique sunken ruins",
@@ -1502,7 +1513,8 @@
         36.20972510240603,
         29.922646924960862
       ]
-    ]
+    ],
+    "marinaName": "Kekova Roads"
   },
   {
     "id": 50,
@@ -1516,8 +1528,8 @@
     "duration": "3 days",
     "distanceToNext": 50,
     "phase": "Turkey",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/finike/2904",
+    "marinaName": "Finike Bay Anchorage",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Finike",
     "cultureHighlight": "Citrus groves & Limyra ruins",
     "cultureUrl": "https://en.wikipedia.org/wiki/Finike",
     "notes": "Anchorage in Finike Bay; protected, dinghy to town for provisions, visit Limyra ruins",
@@ -1545,8 +1557,8 @@
     "duration": "2 days",
     "distanceToNext": 35,
     "phase": "Turkey",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/phaselis/2924",
+    "marinaName": "Phaselis Bay Anchorage",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Phaselis",
     "cultureHighlight": "Phaselis ancient city",
     "cultureUrl": "https://en.wikipedia.org/wiki/Phaselis",
     "notes": "Historic anchorage at Phaselis Bay; swim ashore to ancient Lycian ruins, crystal clear water",
@@ -1617,7 +1629,8 @@
         36.20972510240603,
         29.922646924960862
       ]
-    ]
+    ],
+    "marinaName": "Side Anchorage"
   },
   {
     "id": 54,
@@ -1631,7 +1644,7 @@
     "duration": "3 days",
     "distanceToNext": 91,
     "phase": "Turkey",
-    "marinaUrl": "https://www.navily.com/en/port/alanya-marina/1427",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Alanya",
     "cultureHighlight": "Alanya Castle & Red Tower",
     "cultureUrl": "https://en.wikipedia.org/wiki/Alanya",
     "notes": "Historic harbor",
@@ -1645,7 +1658,8 @@
         35.40999247895643,
         32.91349559153792
       ]
-    ]
+    ],
+    "marinaName": "Alanya Marina"
   },
   {
     "id": 55,
@@ -1667,7 +1681,8 @@
     "foodUrl": "https://www.tripadvisor.com/Tourism-g608889-Anamur_Mersin_Province_Turkish_Mediterranean_Coast-Vacations.html",
     "adventureUrl": "https://www.tripadvisor.com/Attraction_Review-g608889-d3519993-Reviews-Mamure_Kalesi-Anamur_Mersin_Province_Turkish_Mediterranean_Coast.html",
     "provisionsUrl": "https://www.navily.com/mouillage/anamur/42962",
-    "season": "fall"
+    "season": "fall",
+    "marinaName": "Anamur Harbour"
   },
   {
     "id": 56,
@@ -1682,7 +1697,7 @@
     "distanceToNext": 56,
     "phase": "Northern Cyprus",
     "marinaName": "Kyrenia Harbor",
-    "marinaUrl": "https://www.navily.com/port/kyrenia-new-harbour/2908",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Kyrenia",
     "cultureHighlight": "Kyrenia Castle & harbor",
     "cultureUrl": "https://en.wikipedia.org/wiki/Kyrenia",
     "notes": "Entry to Cyprus",
@@ -1723,7 +1738,7 @@
     "distanceToNext": 61,
     "phase": "Cyprus",
     "marinaName": "Larnaca Marina",
-    "marinaUrl": "https://www.navily.com/carte/port/1570",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Larnaca",
     "cultureHighlight": "Salt Lake & Hala Sultan Tekke",
     "cultureUrl": "https://en.wikipedia.org/wiki/Larnaca",
     "notes": "Extended stay",
@@ -1793,7 +1808,7 @@
     "distanceToNext": 59,
     "phase": "Cyprus",
     "marinaName": "Paphos Harbor",
-    "marinaUrl": "https://www.navily.com/port/paphos/2911",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Paphos",
     "cultureHighlight": "Paphos Archaeological Park (UNESCO)",
     "cultureUrl": "https://whc.unesco.org/en/list/79/",
     "notes": "UNESCO mosaics",
@@ -1863,7 +1878,7 @@
     "distanceToNext": 148,
     "phase": "Cyprus",
     "marinaName": "Larnaca Marina",
-    "marinaUrl": "https://www.navily.com/carte/port/1570",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Larnaca",
     "cultureHighlight": "Salt Lake & Hala Sultan Tekke",
     "cultureUrl": "https://en.wikipedia.org/wiki/Hala_Sultan_Tekke",
     "notes": "Start return from Cyprus",
@@ -1929,7 +1944,8 @@
         35.40999247895643,
         32.91349559153792
       ]
-    ]
+    ],
+    "marinaName": "Anamur Harbour"
   },
   {
     "id": 63,
@@ -1957,7 +1973,8 @@
         36.20972510240603,
         29.922646924960862
       ]
-    ]
+    ],
+    "marinaName": "Alanya Marina"
   },
   {
     "id": 64,
@@ -1979,7 +1996,8 @@
     "foodUrl": "https://www.allaboutturkey.com/side.html",
     "adventureUrl": "https://www.allaboutturkey.com/side.html",
     "provisionsUrl": "https://www.navily.com/port/side/994",
-    "season": "winter"
+    "season": "winter",
+    "marinaName": "Side Anchorage"
   },
   {
     "id": 65,
@@ -2022,8 +2040,8 @@
     "duration": "3 days",
     "distanceToNext": 47,
     "phase": "Turkey",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/finike/2904",
+    "marinaName": "Finike Bay Anchorage",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Finike",
     "cultureHighlight": "Limyra ancient city",
     "cultureUrl": "https://en.wikipedia.org/wiki/Limyra",
     "notes": "Return route; anchorage in Finike Bay, visit Limyra & Arycanda ruins",
@@ -2080,7 +2098,7 @@
     "duration": "2 days",
     "distanceToNext": 126,
     "phase": "Greece",
-    "marinaUrl": "https://www.navily.com/port/kastellorizo/14768",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Kastellorizo",
     "cultureHighlight": "Blue Grotto & colorful harbor",
     "cultureUrl": "https://en.wikipedia.org/wiki/Kastellorizo",
     "notes": "Greek island 2km off Turkey coast",
@@ -2088,7 +2106,8 @@
     "foodUrl": "https://www.visitgreece.gr/islands/dodecanese/castellorizo/",
     "adventureUrl": "https://visitkastellorizo.gr/",
     "provisionsUrl": "https://www.navily.com/mouillage/kastellorizo/44689",
-    "season": "winter"
+    "season": "winter",
+    "marinaName": "Kastellorizo Harbour"
   },
   {
     "id": 69,
@@ -2102,8 +2121,8 @@
     "duration": "3 days",
     "distanceToNext": 59,
     "phase": "Greece",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/lindos/14765",
+    "marinaName": "Lindos Bay Anchorage",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Lindos",
     "cultureHighlight": "Acropolis of Lindos & Medieval Old Town",
     "cultureUrl": "https://whc.unesco.org/en/list/493/",
     "notes": "Stunning Lindos Bay anchorage; walk to ancient Acropolis, whitewashed village, bus to Rhodes Old Town UNESCO",
@@ -2143,8 +2162,8 @@
     "duration": "2 days",
     "distanceToNext": 87,
     "phase": "Greece",
-    "marinaName": "",
-    "marinaUrl": "https://www.cruiserswiki.org/wiki/Chalki",
+    "marinaName": "Emporio Harbour (Chalki)",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Halki_(Greece)",
     "cultureHighlight": "Traditional sponge-fishing island",
     "cultureUrl": "https://en.wikipedia.org/wiki/Chalki_(Greece)",
     "notes": "Peaceful Dodecanese island",
@@ -2166,7 +2185,7 @@
     "duration": "2 days",
     "distanceToNext": 29,
     "phase": "Greece",
-    "marinaUrl": "https://www.cruiserswiki.org/wiki/Karpathos",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Karpathos",
     "cultureHighlight": "Olympos village - living folklore museum",
     "cultureUrl": "https://en.wikipedia.org/wiki/Olympos,_Karpathos",
     "notes": "Between Turkey and Crete",
@@ -2188,7 +2207,8 @@
         35.450248006802106,
         26.99992466051507
       ]
-    ]
+    ],
+    "marinaName": "Karpathos Harbour"
   },
   {
     "id": 72,
@@ -2202,8 +2222,8 @@
     "duration": "3 days",
     "distanceToNext": 77,
     "phase": "Greece",
-    "marinaName": "",
-    "marinaUrl": "https://www.cruiserswiki.org/wiki/Kasos",
+    "marinaName": "Fry Harbour (Kasos)",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Kasos",
     "cultureHighlight": "Maritime Museum & Bouka old harbor",
     "cultureUrl": "https://en.wikipedia.org/wiki/Kasos",
     "notes": "Traditional seafaring island",
@@ -2231,8 +2251,8 @@
     "duration": "2 days",
     "distanceToNext": 36,
     "phase": "Greece",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/sitia/14770",
+    "marinaName": "Sitia Harbour",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Sitia",
     "cultureHighlight": "Toplou Monastery & Vai palm forest",
     "cultureUrl": "https://en.wikipedia.org/wiki/Sitia",
     "notes": "Anchorage in Sitia Bay; protected, dinghy to charming town, visit Toplou Monastery & Vai palms",
@@ -2260,7 +2280,7 @@
     "duration": "2 days",
     "distanceToNext": 56,
     "phase": "Greece",
-    "marinaUrl": "https://www.navily.com/port/agios-nikolaos/1534",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Agios_Nikolaos,_Crete",
     "cultureHighlight": "Lake Voulismeni & Spinalonga island",
     "cultureUrl": "https://en.wikipedia.org/wiki/Agios_Nikolaos,_Crete",
     "notes": "Charming harbor town",
@@ -2282,7 +2302,8 @@
         35.36279023187436,
         25.65858117784742
       ]
-    ]
+    ],
+    "marinaName": "Agios Nikolaos Marina"
   },
   {
     "id": 75,
@@ -2318,7 +2339,8 @@
         35.440716936463076,
         24.720828538768608
       ]
-    ]
+    ],
+    "marinaName": "Heraklion Marina"
   },
   {
     "id": 76,
@@ -2332,8 +2354,8 @@
     "duration": "2 days",
     "distanceToNext": 44,
     "phase": "Greece",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/rethymno/14775",
+    "marinaName": "Rethymno Old Harbour",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Rethymno",
     "cultureHighlight": "Fortezza Venetian citadel",
     "cultureUrl": "https://en.wikipedia.org/wiki/Fortezza_of_Rethymno",
     "notes": "Anchorage off Rethymno; calm conditions required, dinghy to Venetian old town & Fortezza",
@@ -2365,7 +2387,7 @@
     "duration": "2 days",
     "distanceToNext": 115,
     "phase": "Greece",
-    "marinaUrl": "https://www.cruiserswiki.org/wiki/Chania",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Chania",
     "cultureHighlight": "Venetian Harbour & Old Town",
     "cultureUrl": "https://en.wikipedia.org/wiki/Chania",
     "notes": "Western Crete - head to Kythira",
@@ -2379,7 +2401,8 @@
         35.67636982933637,
         23.79447316244387
       ]
-    ]
+    ],
+    "marinaName": "Chania Old Port"
   },
   {
     "id": 78,
@@ -2393,8 +2416,8 @@
     "duration": "2 days",
     "distanceToNext": 79,
     "phase": "Greece",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/kapsali/14461",
+    "marinaName": "Kapsali Bay",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Kythira",
     "cultureHighlight": "Chora Castle - Eye of Crete",
     "cultureUrl": "https://en.wikipedia.org/wiki/Kythira",
     "notes": "Very protected Kapsali Bay anchorage; twin beaches, walk up to Chora Castle",
@@ -2426,7 +2449,7 @@
     "duration": "2 days",
     "distanceToNext": 50,
     "phase": "Greece",
-    "marinaUrl": "https://www.cruisemapper.com/ports/gythion-port-273",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Gytheio",
     "cultureHighlight": "Mani tower houses & Cranae Island",
     "cultureUrl": "https://en.wikipedia.org/wiki/Gytheio",
     "notes": "Ancient port of Sparta",
@@ -2452,7 +2475,8 @@
         36.91087392937408,
         22.122943306549647
       ]
-    ]
+    ],
+    "marinaName": "Gytheio Harbour"
   },
   {
     "id": 80,
@@ -2466,8 +2490,8 @@
     "duration": "2 days",
     "distanceToNext": 39,
     "phase": "Greece",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/kalamata/14466",
+    "marinaName": "Kalamata Harbour",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Kalamata",
     "cultureHighlight": "Old town & railway park",
     "cultureUrl": "https://www.visitgreece.gr/mainland/peloponnese/kalamata/",
     "notes": "Anchorage in Kalamata Bay; good holding, dinghy to town for olives, old town & railway park",
@@ -2507,7 +2531,7 @@
     "duration": "2 days",
     "distanceToNext": 90,
     "phase": "Greece",
-    "marinaUrl": "https://www.navily.com/mouillage/pylos/14498",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Pylos",
     "cultureHighlight": "Navarino Bay & Ottoman fortress",
     "cultureUrl": "https://en.wikipedia.org/wiki/Pylos",
     "notes": "Site of Battle of Navarino",
@@ -2529,7 +2553,8 @@
         37.62891037419608,
         21.299565462198725
       ]
-    ]
+    ],
+    "marinaName": "Pylos Bay (Navarino)"
   },
   {
     "id": 82,
@@ -2543,8 +2568,8 @@
     "duration": "2 days",
     "distanceToNext": 40,
     "phase": "Greece",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/katakolo/14502",
+    "marinaName": "Katakolo Harbour",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Katakolo",
     "cultureHighlight": "Gateway to Ancient Olympia (UNESCO)",
     "cultureUrl": "https://whc.unesco.org/en/list/517/",
     "notes": "Anchorage at Katakolo; calm conditions, taxi to Ancient Olympia UNESCO site (35km)",
@@ -2566,8 +2591,8 @@
     "duration": "2 days",
     "distanceToNext": 57,
     "phase": "Greece",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/zakynthos/14508",
+    "marinaName": "Zakynthos Town Harbour",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Zakynthos_(city)",
     "cultureHighlight": "Navagio Beach (Shipwreck Beach)",
     "cultureUrl": "https://en.wikipedia.org/wiki/Navagio",
     "notes": "Anchorage in Zakynthos harbor; protected, dinghy to town, boat trip to Navagio Beach",
@@ -2599,8 +2624,8 @@
     "duration": "2 days",
     "distanceToNext": 75,
     "phase": "Greece",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/argostoli/14500",
+    "marinaName": "Argostoli Bay",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Argostoli",
     "cultureHighlight": "Kefalonia capital & lighthouse",
     "cultureUrl": "https://en.wikipedia.org/wiki/Argostoli",
     "notes": "Anchorage in Argostoli Bay; good holding, dinghy to Kefalonia capital, sea turtles",
@@ -2640,8 +2665,8 @@
     "duration": "4 days",
     "distanceToNext": 61,
     "phase": "Greece",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/sivota/14436",
+    "marinaName": "Sivota Bay",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Sivota",
     "cultureHighlight": "Agia Mavra Castle & Sivota village",
     "cultureUrl": "https://en.wikipedia.org/wiki/Lefkada",
     "notes": "Very protected anchorage at Sivota; charming village, tavernas, walk to provisions",
@@ -2669,8 +2694,8 @@
     "duration": "3 days",
     "distanceToNext": 52,
     "phase": "Greece",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/gaios/14453",
+    "marinaName": "Gaios Harbour",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Gaios",
     "cultureHighlight": "Blue Caves & intimate harbor",
     "cultureUrl": "https://en.wikipedia.org/wiki/Paxos",
     "notes": "Anchorage between islets at Gaios; stunning setting, dinghy to charming village & Blue Caves",
@@ -2699,7 +2724,7 @@
     "distanceToNext": 50,
     "phase": "Greece",
     "marinaName": "Corfu Marina",
-    "marinaUrl": "https://www.navily.com/port/gouvia-marina/14412",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Corfu",
     "cultureHighlight": "Corfu Old Town (UNESCO)",
     "cultureUrl": "https://whc.unesco.org/en/list/978/",
     "notes": "Last Greece stop - prepare for Italy crossing",
@@ -2735,7 +2760,7 @@
     "duration": "3 days",
     "distanceToNext": 91,
     "phase": "Greece",
-    "marinaUrl": "https://www.cruiserswiki.org/wiki/Othoni",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Othoni",
     "cultureHighlight": "Remote Greek island - Calypso legend",
     "cultureUrl": "https://en.wikipedia.org/wiki/Othoni",
     "notes": "Northwesternmost Greek island",
@@ -2743,7 +2768,8 @@
     "foodUrl": "https://www.visitgreece.gr/islands/ionian/corfu/",
     "adventureUrl": "https://www.visitgreece.gr/islands/ionian/corfu/",
     "provisionsUrl": "https://www.navily.com/mouillage/othoni/45394",
-    "season": "winter"
+    "season": "winter",
+    "marinaName": "Othoni Anchorage"
   },
   {
     "id": 89,
@@ -2757,7 +2783,7 @@
     "duration": "1 day",
     "distanceToNext": 43,
     "phase": "Italy",
-    "marinaUrl": "https://www.cruiserswiki.org/wiki/Santa_Maria_de_Leuca",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Santa_Maria_di_Leuca",
     "cultureHighlight": "Basilica De Finibus Terrae & Lighthouse",
     "cultureUrl": "https://en.wikipedia.org/wiki/Santa_Maria_di_Leuca",
     "notes": "Italy landfall - heel of boot",
@@ -2783,7 +2809,8 @@
         40.05373247090707,
         17.950469460218187
       ]
-    ]
+    ],
+    "marinaName": "Santa Maria di Leuca Harbour"
   },
   {
     "id": 90,
@@ -2797,8 +2824,8 @@
     "duration": "1 day",
     "distanceToNext": 80,
     "phase": "Italy",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/gallipoli/1634",
+    "marinaName": "Gallipoli Harbour",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Gallipoli,_Apulia",
     "cultureHighlight": "Baroque Old Town on island",
     "cultureUrl": "https://en.wikipedia.org/wiki/Gallipoli,_Apulia",
     "notes": "Anchorage off Gallipoli; protected bay, dinghy to stunning Baroque island old town",
@@ -2826,7 +2853,7 @@
     "duration": "1 day",
     "distanceToNext": 57,
     "phase": "Italy",
-    "marinaUrl": "https://www.cruiserswiki.org/wiki/Taranto",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Taranto",
     "cultureHighlight": "Aragonese Castle & MARTA Museum",
     "cultureUrl": "https://en.wikipedia.org/wiki/Castello_Aragonese_(Taranto)",
     "notes": "Ancient Greek colony",
@@ -2840,7 +2867,8 @@
         40.47078713425686,
         17.210560524067358
       ]
-    ]
+    ],
+    "marinaName": "Porto Mercantile Taranto"
   },
   {
     "id": 92,
@@ -2884,7 +2912,7 @@
     "distanceToNext": 22,
     "phase": "Italy",
     "marinaName": "Marina Laghi di Sibari",
-    "marinaUrl": "https://www.cruiserswiki.org/wiki/Sibari",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Sibari",
     "cultureHighlight": "Ancient Sybaris archaeological site",
     "cultureUrl": "https://en.wikipedia.org/wiki/Sybaris",
     "notes": "Large marina complex in Gulf of Taranto",
@@ -2912,7 +2940,7 @@
     "duration": "2 days",
     "distanceToNext": 69,
     "phase": "Italy",
-    "marinaUrl": "https://www.cruiserswiki.org/wiki/Rossano",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Rossano",
     "cultureHighlight": "Codex Purpureus Rossanensis (UNESCO Memory)",
     "cultureUrl": "https://en.wikipedia.org/wiki/Rossano",
     "notes": "Byzantine heritage town",
@@ -2934,7 +2962,8 @@
         39.21190965978392,
         17.163018584907196
       ]
-    ]
+    ],
+    "marinaName": "Rossano Anchorage"
   },
   {
     "id": 95,
@@ -2948,7 +2977,7 @@
     "duration": "2 days",
     "distanceToNext": 21,
     "phase": "Italy",
-    "marinaUrl": "https://www.navily.com/port/marina-di-crotone/1540",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Crotone",
     "cultureHighlight": "Archaeological Museum & Greek ruins",
     "cultureUrl": "https://en.wikipedia.org/wiki/Crotone",
     "notes": "Ancient Magna Graecia",
@@ -2966,7 +2995,8 @@
         38.88698123010991,
         17.111690590801715
       ]
-    ]
+    ],
+    "marinaName": "Marina di Crotone"
   },
   {
     "id": 96,
@@ -2980,8 +3010,8 @@
     "duration": "2 days",
     "distanceToNext": 83,
     "phase": "Italy",
-    "marinaName": "",
-    "marinaUrl": "https://www.navily.com/mouillage/le-castella/1635",
+    "marinaName": "Le Castella Anchorage",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Isola_di_Capo_Rizzuto",
     "cultureHighlight": "Aragonese Castle in the sea",
     "cultureUrl": "https://en.wikipedia.org/wiki/Le_Castella",
     "notes": "Iconic anchorage at Le Castella; stunning views of Aragonese sea fortress, swim to castle",
@@ -3050,8 +3080,8 @@
     "duration": "3 days",
     "distanceToNext": 46,
     "phase": "Italy",
-    "marinaName": "",
-    "marinaUrl": "https://www.cruiserswiki.org/wiki/Reggio_di_Calabria",
+    "marinaName": "Porto di Reggio Calabria",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Reggio_Calabria",
     "cultureHighlight": "Riace Bronzes at National Museum",
     "cultureUrl": "https://en.wikipedia.org/wiki/Riace_bronzes",
     "notes": "Strait of Messina, famous Greek bronzes",
@@ -3073,7 +3103,7 @@
     "duration": "2 days",
     "distanceToNext": 85,
     "phase": "Italy",
-    "marinaUrl": "https://www.ey4u.com/east-sicily-yacht-services/taormina-yacht-services-yacht-agents-and-anchorages-in-giardini-naxos-marina/",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Giardini_Naxos",
     "cultureHighlight": "Ancient Theatre of Taormina",
     "cultureUrl": "https://en.wikipedia.org/wiki/Ancient_theatre_of_Taormina",
     "notes": "Visit Taormina & Mt Etna",
@@ -3081,7 +3111,8 @@
     "foodUrl": "https://www.italia.it/en/sicily/things-to-do/giardini-naxos-nightlife",
     "adventureUrl": "https://www.sicilyactive.com/en/giardini-naxos-sicily",
     "provisionsUrl": "https://www.navily.com/port/giardini-naxos/1018",
-    "season": "winter"
+    "season": "winter",
+    "marinaName": "Giardini Naxos Bay"
   },
   {
     "id": 100,
@@ -3095,7 +3126,7 @@
     "duration": "3 days",
     "distanceToNext": 73,
     "phase": "Italy",
-    "marinaUrl": "https://www.navily.com/de/port/marina-yatching-siracusa-ortigia/205",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Syracuse,_Sicily",
     "cultureHighlight": "Syracuse & Ortygia (UNESCO)",
     "cultureUrl": "https://whc.unesco.org/en/list/1200/",
     "notes": "UNESCO baroque town",
@@ -3121,7 +3152,8 @@
         36.68614960737649,
         14.777503031879245
       ]
-    ]
+    ],
+    "marinaName": "Marina Yachting Siracusa"
   },
   {
     "id": 101,
@@ -3136,7 +3168,7 @@
     "distanceToNext": 0,
     "phase": "Italy",
     "marinaName": "Marina di Ragusa",
-    "marinaUrl": "https://www.navily.com/port/marina-di-ragusa/932",
+    "marinaUrl": "https://en.wikipedia.org/wiki/Marina_di_Ragusa",
     "cultureHighlight": "Baroque towns of Val di Noto",
     "cultureUrl": "https://en.wikipedia.org/wiki/Marina_di_Ragusa",
     "notes": "Final stop - end of journey",
