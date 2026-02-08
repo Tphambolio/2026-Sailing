@@ -2187,7 +2187,7 @@
     "arrival": "2026-12-07",
     "departure": "2026-12-10",
     "duration": "3 days",
-    "distanceToNext": 93,
+    "distanceToNext": 148,
     "phase": "Turkey",
     "marinaUrl": "https://en.wikipedia.org/wiki/Anamur",
     "cultureHighlight": "Anemurium ancient city",
@@ -2198,71 +2198,44 @@
     "adventureUrl": "https://www.tripadvisor.com/Attraction_Review-g608889-d3519993-Reviews-Mamure_Kalesi-Anamur_Mersin_Province_Turkish_Mediterranean_Coast.html",
     "provisionsUrl": "https://www.navily.com/mouillage/anamur/42962",
     "season": "winter",
-    "marinaName": "Anamur Harbour"
-  },
-  {
-    "id": 67,
-    "name": "Girne (Kyrenia)",
-    "country": "Northern Cyprus",
-    "lat": 35.34,
-    "lon": 33.32,
-    "type": "marina",
-    "arrival": "2026-12-10",
-    "departure": "2026-12-15",
-    "duration": "5 days",
-    "distanceToNext": 56,
-    "phase": "Northern Cyprus",
-    "marinaName": "Kyrenia Harbor",
-    "marinaUrl": "https://en.wikipedia.org/wiki/Kyrenia",
-    "cultureHighlight": "Kyrenia Castle & harbor",
-    "cultureUrl": "https://en.wikipedia.org/wiki/Kyrenia",
-    "notes": "Entry to Cyprus",
-    "wikiUrl": "https://en.wikipedia.org/wiki/Kyrenia",
-    "foodUrl": "https://www.northcyprus.cc/kyrenia/",
-    "adventureUrl": "https://www.northcyprus.cc/kyrenia/",
-    "provisionsUrl": "https://www.navily.com/mouillage/kyrenia/47231",
-    "season": "winter",
+    "marinaName": "Anamur Harbour",
     "routeWaypoints": [
       [
-        35.43576511113305,
-        33.87932974709886
+        35.501744008333965,
+        33.251685741765975
       ],
       [
-        35.704065088843585,
-        34.2157602977446
+        35.37805536508922,
+        33.69882532235829
       ],
       [
-        35.68732667184399,
-        34.64574892415652
+        35.88763836872395,
+        34.357442969570315
       ],
       [
-        35.249248361151515,
-        33.9684240630375
+        35.355422854415195,
+        35.01491051537874
       ],
       [
-        35.054994283838134,
-        34.0390756631848
+        35.10528069693867,
+        34.072191297864045
       ],
       [
-        34.36443847422862,
-        34.44915701774396
-      ],
-      [
-        34.92931225508108,
-        33.86463277051285
+        34.280546030692285,
+        34.18736409458257
       ]
     ]
   },
   {
-    "id": 68,
+    "id": 67,
     "name": "Larnaca",
     "country": "Cyprus",
     "lat": 34.9167,
     "lon": 33.65,
     "type": "marina",
-    "arrival": "2026-12-15",
-    "departure": "2026-12-25",
-    "duration": "10 days",
+    "arrival": "2026-12-10",
+    "departure": "2026-12-23",
+    "duration": "13 days",
     "distanceToNext": 61,
     "phase": "Cyprus",
     "marinaName": "Larnaca Marina",
@@ -2283,14 +2256,14 @@
     ]
   },
   {
-    "id": 69,
+    "id": 68,
     "name": "Limassol",
     "country": "Cyprus",
     "lat": 34.6757,
     "lon": 33.0442,
     "type": "marina",
-    "arrival": "2026-12-25",
-    "departure": "2027-01-26",
+    "arrival": "2026-12-23",
+    "departure": "2027-01-24",
     "duration": "32 days",
     "distanceToNext": 59,
     "phase": "Cyprus",
@@ -2320,15 +2293,15 @@
     ]
   },
   {
-    "id": 70,
+    "id": 69,
     "name": "Paphos",
     "country": "Cyprus",
     "lat": 34.7548,
     "lon": 32.4086,
     "type": "marina",
-    "arrival": "2027-01-26",
+    "arrival": "2027-01-24",
     "departure": "2027-02-05",
-    "duration": "10 days",
+    "duration": "12 days",
     "distanceToNext": 59,
     "phase": "Cyprus",
     "marinaName": "Paphos Harbor",
@@ -2357,7 +2330,7 @@
     ]
   },
   {
-    "id": 71,
+    "id": 70,
     "name": "Limassol",
     "country": "Cyprus",
     "lat": 34.6757,
@@ -2386,7 +2359,7 @@
     ]
   },
   {
-    "id": 72,
+    "id": 71,
     "name": "Larnaca",
     "country": "Cyprus",
     "lat": 34.9167,
@@ -2435,7 +2408,7 @@
     ]
   },
   {
-    "id": 73,
+    "id": 72,
     "name": "Anamur",
     "country": "Turkey",
     "lat": 36.0753,
@@ -2468,7 +2441,7 @@
     "marinaName": "Anamur Harbour"
   },
   {
-    "id": 74,
+    "id": 73,
     "name": "Alanya",
     "country": "Turkey",
     "lat": 36.5437,
@@ -2497,7 +2470,7 @@
     "marinaName": "Alanya Marina"
   },
   {
-    "id": 75,
+    "id": 74,
     "name": "Side",
     "country": "Turkey",
     "lat": 36.7672,
@@ -2520,7 +2493,7 @@
     "marinaName": "Side Ancient Harbour"
   },
   {
-    "id": 76,
+    "id": 75,
     "name": "Antalya",
     "country": "Turkey",
     "lat": 36.8527,
@@ -2549,7 +2522,7 @@
     ]
   },
   {
-    "id": 77,
+    "id": 76,
     "name": "Finike",
     "country": "Turkey",
     "lat": 36.3,
@@ -2578,7 +2551,7 @@
     ]
   },
   {
-    "id": 78,
+    "id": 77,
     "name": "Kaş",
     "country": "Turkey",
     "lat": 36.1999,
@@ -2623,7 +2596,7 @@
     ]
   },
   {
-    "id": 79,
+    "id": 78,
     "name": "Kastellorizo",
     "country": "Greece",
     "lat": 36.15,
@@ -2646,7 +2619,7 @@
     "marinaName": "Megisti Harbour (Mandraki Anchorage)"
   },
   {
-    "id": 80,
+    "id": 79,
     "name": "Lindos (Rhodes)",
     "country": "Greece",
     "lat": 36.09,
@@ -2675,7 +2648,7 @@
     ]
   },
   {
-    "id": 81,
+    "id": 80,
     "name": "Chalki",
     "country": "Greece",
     "lat": 36.2217,
@@ -2698,7 +2671,7 @@
     "season": "winter"
   },
   {
-    "id": 82,
+    "id": 81,
     "name": "Karpathos",
     "country": "Greece",
     "lat": 35.5106,
@@ -2727,7 +2700,7 @@
     "marinaName": "Karpathos Harbour"
   },
   {
-    "id": 83,
+    "id": 82,
     "name": "Kasos",
     "country": "Greece",
     "lat": 35.4167,
@@ -2756,7 +2729,7 @@
     ]
   },
   {
-    "id": 84,
+    "id": 83,
     "name": "Sitia",
     "country": "Greece",
     "lat": 35.21,
@@ -2785,7 +2758,7 @@
     ]
   },
   {
-    "id": 85,
+    "id": 84,
     "name": "Agios Nikolaos",
     "country": "Greece",
     "lat": 35.1917,
@@ -2826,7 +2799,7 @@
     "marinaName": "Agios Nikolaos Marina"
   },
   {
-    "id": 86,
+    "id": 85,
     "name": "Heraklion",
     "country": "Greece",
     "lat": 35.3427,
@@ -2855,7 +2828,7 @@
     "marinaName": "Heraklion Marina"
   },
   {
-    "id": 87,
+    "id": 86,
     "name": "Rethymno",
     "country": "Greece",
     "lat": 35.37,
@@ -2884,7 +2857,7 @@
     ]
   },
   {
-    "id": 88,
+    "id": 87,
     "name": "Chania",
     "country": "Greece",
     "lat": 35.5161,
@@ -2913,7 +2886,7 @@
     "marinaName": "Chania Old Port"
   },
   {
-    "id": 89,
+    "id": 88,
     "name": "Kapsali (Kythira)",
     "country": "Greece",
     "lat": 36.14,
@@ -2942,7 +2915,7 @@
     ]
   },
   {
-    "id": 90,
+    "id": 89,
     "name": "Gytheio",
     "country": "Greece",
     "lat": 36.7611,
@@ -2983,7 +2956,7 @@
     "marinaName": "Gythion Marina"
   },
   {
-    "id": 91,
+    "id": 90,
     "name": "Kalamata",
     "country": "Greece",
     "lat": 37.03,
@@ -3024,7 +2997,7 @@
     ]
   },
   {
-    "id": 92,
+    "id": 91,
     "name": "Pylos",
     "country": "Greece",
     "lat": 36.9128,
@@ -3053,7 +3026,7 @@
     "marinaName": "Navarino Bay Anchorage (Pylos)"
   },
   {
-    "id": 93,
+    "id": 92,
     "name": "Katakolo",
     "country": "Greece",
     "lat": 37.675,
@@ -3076,7 +3049,7 @@
     "season": "winter"
   },
   {
-    "id": 94,
+    "id": 93,
     "name": "Zakynthos",
     "country": "Greece",
     "lat": 37.785,
@@ -3113,7 +3086,7 @@
     ]
   },
   {
-    "id": 95,
+    "id": 94,
     "name": "Argostoli",
     "country": "Greece",
     "lat": 38.18,
@@ -3170,7 +3143,7 @@
     ]
   },
   {
-    "id": 96,
+    "id": 95,
     "name": "Sivota (Lefkada)",
     "country": "Greece",
     "lat": 38.63,
@@ -3199,7 +3172,7 @@
     ]
   },
   {
-    "id": 97,
+    "id": 96,
     "name": "Gaios (Paxos)",
     "country": "Greece",
     "lat": 39.2,
@@ -3228,7 +3201,7 @@
     ]
   },
   {
-    "id": 98,
+    "id": 97,
     "name": "Corfu",
     "country": "Greece",
     "lat": 39.6243,
@@ -3277,7 +3250,7 @@
     ]
   },
   {
-    "id": 99,
+    "id": 98,
     "name": "Othoni",
     "country": "Greece",
     "lat": 39.856,
@@ -3300,7 +3273,7 @@
     "marinaName": "Ormos Fyki (Fyki Bay)"
   },
   {
-    "id": 100,
+    "id": 99,
     "name": "Santa Maria di Leuca",
     "country": "Italy",
     "lat": 39.7963,
@@ -3329,7 +3302,7 @@
     "marinaName": "Santa Maria di Leuca Harbour"
   },
   {
-    "id": 101,
+    "id": 100,
     "name": "Gallipoli",
     "country": "Italy",
     "lat": 40.06,
@@ -3358,7 +3331,7 @@
     ]
   },
   {
-    "id": 102,
+    "id": 101,
     "name": "Taranto",
     "country": "Italy",
     "lat": 40.4787,
@@ -3387,7 +3360,7 @@
     "marinaName": "Porto Mercantile Taranto"
   },
   {
-    "id": 103,
+    "id": 102,
     "name": "Policoro",
     "country": "Italy",
     "lat": 40.2,
@@ -3416,7 +3389,7 @@
     ]
   },
   {
-    "id": 104,
+    "id": 103,
     "name": "Sibari",
     "country": "Italy",
     "lat": 39.7333,
@@ -3445,7 +3418,7 @@
     ]
   },
   {
-    "id": 105,
+    "id": 104,
     "name": "Rossano",
     "country": "Italy",
     "lat": 39.5764,
@@ -3482,7 +3455,7 @@
     "marinaName": "Porto di Corigliano Calabro"
   },
   {
-    "id": 106,
+    "id": 105,
     "name": "Crotone",
     "country": "Italy",
     "lat": 39.0845,
@@ -3511,7 +3484,7 @@
     "marinaName": "Marina di Crotone"
   },
   {
-    "id": 107,
+    "id": 106,
     "name": "Le Castella",
     "country": "Italy",
     "lat": 38.915,
@@ -3540,7 +3513,7 @@
     ]
   },
   {
-    "id": 108,
+    "id": 107,
     "name": "Roccella Ionica",
     "country": "Italy",
     "lat": 38.3278,
@@ -3573,7 +3546,7 @@
     ]
   },
   {
-    "id": 109,
+    "id": 108,
     "name": "Reggio Calabria",
     "country": "Italy",
     "lat": 38.1147,
@@ -3596,7 +3569,7 @@
     "season": "winter"
   },
   {
-    "id": 110,
+    "id": 109,
     "name": "Giardini Naxos",
     "country": "Italy",
     "lat": 37.8253,
@@ -3619,7 +3592,7 @@
     "marinaName": "Marina Yachting Giardini Naxos"
   },
   {
-    "id": 111,
+    "id": 110,
     "name": "Syracuse",
     "country": "Italy",
     "lat": 37.06,
@@ -3648,7 +3621,7 @@
     "marinaName": "Marina Yachting Siracusa"
   },
   {
-    "id": 112,
+    "id": 111,
     "name": "Marina di Ragusa",
     "country": "Italy",
     "lat": 36.7855,
