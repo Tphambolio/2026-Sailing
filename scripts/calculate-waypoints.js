@@ -26,15 +26,21 @@ const LAND_SAMPLES = 25;
 
 // Margin (0-0.5) to skip samples near start/end of a segment.
 // Stops are on land (harbors/towns), so we skip the coastal zone.
-// 0.06 → sample from t=0.06 to t=0.94
-const STOP_MARGIN = 0.06;
+// 0.12 → sample from t=0.12 to t=0.88 (generous for 10m coastline data)
+const STOP_MARGIN = 0.12;
 
 // Offsets to try (in degrees) when finding offshore waypoints
 // 0.01° ≈ 1.1km at Mediterranean latitudes
-const OFFSETS = [
-  0.01, 0.015, 0.02, 0.03, 0.04, 0.05, 0.06, 0.08,
-  0.1, 0.12, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.8
+const OFFSETS_SMALL = [
+  0.01, 0.015, 0.02, 0.03, 0.04, 0.05, 0.06, 0.08, 0.1, 0.12, 0.15
 ];
+// Larger offsets only for single-waypoint strategies (not recursive)
+const OFFSETS_LARGE = [
+  0.01, 0.015, 0.02, 0.03, 0.04, 0.05, 0.06, 0.08,
+  0.1, 0.12, 0.15, 0.2, 0.25, 0.3
+];
+// For backwards compat
+const OFFSETS = OFFSETS_LARGE;
 
 const VALIDATE_MODE = process.argv.includes('--validate');
 
@@ -102,6 +108,26 @@ function perpendicular(dx, dy) {
   return [-dy / len, dx / len];
 }
 
+/**
+ * Sort waypoints by their projection onto the start→end vector.
+ * Prevents zigzag patterns from recursive splitting.
+ */
+function sortWaypointsByProgress(sLon, sLat, eLon, eLat, waypoints) {
+  if (waypoints.length <= 1) return waypoints;
+  const dx = eLon - sLon;
+  const dy = eLat - sLat;
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq === 0) return waypoints;
+
+  return [...waypoints].sort((a, b) => {
+    const [aLat, aLon] = a;
+    const [bLat, bLon] = b;
+    const tA = ((aLon - sLon) * dx + (aLat - sLat) * dy) / lenSq;
+    const tB = ((bLon - sLon) * dx + (bLat - sLat) * dy) / lenSq;
+    return tA - tB;
+  });
+}
+
 // ─── Waypoint Calculation ──────────────────────────────────────
 
 /**
@@ -144,41 +170,23 @@ function calculateWaypoints(sLon, sLat, eLon, eLat, land, depth = 0) {
     return [];
   }
 
-  if (depth > 4) return [];
+  if (depth > 2) return [];
 
-  // Strategy 1: Single waypoint at midpoint
+  const dx = eLon - sLon, dy = eLat - sLat;
+  const [perpX, perpY] = perpendicular(dx, dy);
+
+  // Strategy 1: Single waypoint at midpoint (use large offsets)
   const mid = findClearWaypoint(sLon, sLat, eLon, eLat, land, 0.5);
   if (mid) return [mid];
 
-  // Strategy 2: Single waypoint at other positions
+  // Strategy 2: Single waypoint at other positions (use large offsets)
   for (const t of [0.33, 0.67, 0.25, 0.75]) {
     const wp = findClearWaypoint(sLon, sLat, eLon, eLat, land, t);
     if (wp) return [wp];
   }
 
-  // Strategy 3: Recursive split
-  const dx = eLon - sLon, dy = eLat - sLat;
-  const midLon = (sLon + eLon) / 2, midLat = (sLat + eLat) / 2;
-  const [perpX, perpY] = perpendicular(dx, dy);
-
-  for (const offset of OFFSETS) {
-    for (const dir of [1, -1]) {
-      const spLon = midLon + perpX * offset * dir;
-      const spLat = midLat + perpY * offset * dir;
-      if (isOnLand(spLon, spLat, land)) continue;
-
-      const half1 = calculateWaypoints(sLon, sLat, spLon, spLat, land, depth + 1);
-      const half2 = calculateWaypoints(spLon, spLat, eLon, eLat, land, depth + 1);
-      const combined = [...half1, [spLat, spLon], ...half2];
-
-      if (pathClear(sLon, sLat, combined, eLon, eLat, land)) {
-        return combined;
-      }
-    }
-  }
-
-  // Strategy 4: Parallel 3-point offset
-  for (const offset of OFFSETS.slice(0, 14)) {
+  // Strategy 3: Parallel 3-point offset (smooth, avoids zigzag)
+  for (const offset of OFFSETS_LARGE) {
     for (const dir of [1, -1]) {
       const pts = [0.25, 0.5, 0.75].map(t => {
         const pLon = sLon + dx * t + perpX * offset * dir;
@@ -188,6 +196,40 @@ function calculateWaypoints(sLon, sLat, eLon, eLat, land, depth = 0) {
 
       if (pts.some(([lat, lon]) => isOnLand(lon, lat, land))) continue;
       if (pathClear(sLon, sLat, pts, eLon, eLat, land)) return pts;
+    }
+  }
+
+  // Strategy 4: Parallel 5-point offset (for complex routes)
+  for (const offset of OFFSETS_LARGE) {
+    for (const dir of [1, -1]) {
+      const pts = [0.15, 0.3, 0.5, 0.7, 0.85].map(t => {
+        const pLon = sLon + dx * t + perpX * offset * dir;
+        const pLat = sLat + dy * t + perpY * offset * dir;
+        return [pLat, pLon];
+      });
+
+      if (pts.some(([lat, lon]) => isOnLand(lon, lat, land))) continue;
+      if (pathClear(sLon, sLat, pts, eLon, eLat, land)) return pts;
+    }
+  }
+
+  // Strategy 5: Recursive split (small offsets only, limited depth)
+  if (depth < 2) {
+    const midLon = (sLon + eLon) / 2, midLat = (sLat + eLat) / 2;
+    for (const offset of OFFSETS_SMALL) {
+      for (const dir of [1, -1]) {
+        const spLon = midLon + perpX * offset * dir;
+        const spLat = midLat + perpY * offset * dir;
+        if (isOnLand(spLon, spLat, land)) continue;
+
+        const half1 = calculateWaypoints(sLon, sLat, spLon, spLat, land, depth + 1);
+        const half2 = calculateWaypoints(spLon, spLat, eLon, eLat, land, depth + 1);
+        const combined = [...half1, [spLat, spLon], ...half2];
+
+        if (pathClear(sLon, sLat, combined, eLon, eLat, land)) {
+          return combined;
+        }
+      }
     }
   }
 
@@ -236,10 +278,23 @@ async function main() {
         console.log(`  ✗ ${label}: crosses land${existing ? ` (${existing} wp broken)` : ''}`);
         failed++;
       }
-    } else if (waypoints.length > 0 && pathClear(cur.lon, cur.lat, waypoints, nxt.lon, nxt.lat, coastline)) {
-      cur.routeWaypoints = waypoints;
-      console.log(`✓ ${label}: ${waypoints.length} waypoint(s)`);
-      fixed++;
+    } else if (waypoints.length > 0) {
+      // Sort waypoints by progression along the route to prevent zigzag
+      const sorted = sortWaypointsByProgress(cur.lon, cur.lat, nxt.lon, nxt.lat, waypoints);
+      if (pathClear(cur.lon, cur.lat, sorted, nxt.lon, nxt.lat, coastline)) {
+        cur.routeWaypoints = sorted;
+        console.log(`✓ ${label}: ${sorted.length} waypoint(s)`);
+        fixed++;
+      } else if (pathClear(cur.lon, cur.lat, waypoints, nxt.lon, nxt.lat, coastline)) {
+        // Fall back to unsorted if sorted breaks the path
+        cur.routeWaypoints = waypoints;
+        console.log(`✓ ${label}: ${waypoints.length} waypoint(s) (unsorted)`);
+        fixed++;
+      } else {
+        console.log(`✗ ${label}: could not auto-fix (waypoints don't clear)`);
+        if (cur.routeWaypoints) delete cur.routeWaypoints;
+        failed++;
+      }
     } else {
       console.log(`✗ ${label}: could not auto-fix`);
       if (cur.routeWaypoints) delete cur.routeWaypoints;
