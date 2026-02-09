@@ -14,7 +14,10 @@ export interface OsmSearchResult {
 }
 
 const NOMINATIM_BASE = 'https://nominatim.openstreetmap.org';
-const OVERPASS_BASE = 'https://overpass-api.de/api/interpreter';
+const OVERPASS_ENDPOINTS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+];
 const USER_AGENT = 'MediterraneanOdyssey/1.0';
 
 // Rate limit: Nominatim requires max 1 req/sec
@@ -86,13 +89,21 @@ export async function searchMarinasNear(
     out center;
   `;
 
-  const response = await fetch(OVERPASS_BASE, {
-    method: 'POST',
-    body: `data=${encodeURIComponent(query)}`,
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-  });
+  let response: Response | null = null;
+  for (const endpoint of OVERPASS_ENDPOINTS) {
+    try {
+      response = await fetch(endpoint, {
+        method: 'POST',
+        body: `data=${encodeURIComponent(query)}`,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      });
+      if (response.ok) break;
+    } catch {
+      continue;
+    }
+  }
 
-  if (!response.ok) throw new Error(`Overpass error: ${response.status}`);
+  if (!response?.ok) throw new Error(`Overpass error: ${response?.status ?? 'all endpoints failed'}`);
 
   const data = await response.json();
 

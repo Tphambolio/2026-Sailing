@@ -59,10 +59,28 @@ export default function StopEditor({ stop, countries, onSave, onDelete, onCancel
         setSearchError('Town not found in Mediterranean');
         return;
       }
-      const results = await searchMarinasNear(geo.lat, geo.lon);
-      setSearchResults(results);
-      if (results.length === 0) {
-        setSearchError(`No marinas/anchorages found near ${geo.displayName.split(',')[0]}`);
+
+      // Try Overpass for marinas, but don't fail the whole search if it's down
+      let results: OsmSearchResult[] = [];
+      try {
+        results = await searchMarinasNear(geo.lat, geo.lon);
+      } catch (err) {
+        console.warn('Overpass API failed, using geocode only:', err);
+      }
+
+      if (results.length > 0) {
+        setSearchResults(results);
+      } else {
+        // Fall back to geocoded location as a single result
+        const townName = geo.displayName.split(',')[0];
+        setSearchResults([{
+          id: 0,
+          name: townName,
+          lat: geo.lat,
+          lon: geo.lon,
+          type: 'anchorage',
+        }]);
+        setSearchError(results.length === 0 ? `Showing location for ${townName} (marina search unavailable)` : '');
       }
     } catch (err) {
       setSearchError('Search failed — check your connection');
