@@ -1965,21 +1965,49 @@
         32.2
       ],
       [
-        34.8,
-        32.1
-      ],
-      [
-        34.5,
-        33
-      ],
-      [
-        34.7,
-        33.4
+        35.2,
+        32.2
       ]
     ]
   },
   {
     "id": 67,
+    "name": "Latchi",
+    "country": "Cyprus",
+    "lat": 35.042,
+    "lon": 32.395,
+    "type": "anchorage",
+    "duration": "2 days",
+    "phase": "Cyprus",
+    "marinaName": "Latchi Harbour",
+    "marinaUrl": "https://www.cruiserswiki.org/wiki/Latchi",
+    "cultureHighlight": "Akamas Peninsula & Baths of Aphrodite",
+    "cultureUrl": "https://en.wikipedia.org/wiki/Akamas_peninsula",
+    "notes": "First Cyprus stop, Akamas hiking, sea caves"
+  },
+  {
+    "id": 68,
+    "name": "Limassol",
+    "country": "Cyprus",
+    "lat": 34.6757,
+    "lon": 33.0442,
+    "type": "marina",
+    "duration": "3 days",
+    "phase": "Cyprus",
+    "marinaName": "Limassol Marina",
+    "marinaUrl": "https://www.limassolmarina.com/",
+    "cultureHighlight": "Old town & Limassol Castle",
+    "cultureUrl": "https://en.wikipedia.org/wiki/Limassol",
+    "notes": "Break up Latchi-Larnaca transit, provisioning",
+    "routeWaypoints": [
+      [
+        34.55841804248044,
+        33.560979400069684
+      ]
+    ]
+  },
+  {
+    "id": 69,
     "name": "Larnaca",
     "country": "Cyprus",
     "lat": 34.9167,
