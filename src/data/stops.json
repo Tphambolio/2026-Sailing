@@ -2013,16 +2013,13 @@
     "lat": 34.9167,
     "lon": 33.65,
     "type": "marina",
-    "arrival": "2026-12-10",
-    "departure": "2026-12-23",
-    "duration": "13 days",
-    "distanceToNext": 61,
+    "duration": "80 days",
     "phase": "Cyprus",
     "marinaName": "Larnaca Marina",
     "marinaUrl": "https://en.wikipedia.org/wiki/Larnaca",
     "cultureHighlight": "Salt Lake & Hala Sultan Tekke",
     "cultureUrl": "https://en.wikipedia.org/wiki/Larnaca",
-    "notes": "Extended stay",
+    "notes": "Winter layover — 2 months. Day trips to Nicosia, Troodos mountains",
     "wikiUrl": "https://en.wikipedia.org/wiki/Hala_Sultan_Tekke",
     "foodUrl": "https://larnakaregion.com/",
     "adventureUrl": "https://www.visitcyprus.com/index.php/en/discovercyprus/sun-sea/diving",
@@ -2036,158 +2033,38 @@
     ]
   },
   {
-    "id": 68,
-    "name": "Limassol",
-    "country": "Cyprus",
-    "lat": 34.6757,
-    "lon": 33.0442,
-    "type": "marina",
-    "arrival": "2026-12-23",
-    "departure": "2027-01-24",
-    "duration": "32 days",
-    "distanceToNext": 59,
-    "phase": "Cyprus",
-    "marinaName": "Limassol Marina",
-    "marinaUrl": "https://www.limassolmarina.com/",
-    "cultureHighlight": "Old town & Limassol Castle",
-    "cultureUrl": "https://www.visitcyprus.com/index.php/en/discovercyprus/limassol",
-    "notes": "Winter base - long-term stay",
-    "foodUrl": "https://www.limassoltourism.com/",
-    "adventureUrl": "https://www.adventuremountainpark.com/",
-    "provisionsUrl": "https://www.limassolmarina.com/",
-    "wikiUrl": "https://en.wikipedia.org/wiki/Limassol",
-    "season": "winter",
-    "routeWaypoints": [
-      [
-        34.36793338713116,
-        32.99848591946139
-      ],
-      [
-        34.635862401146206,
-        32.71652026578141
-      ],
-      [
-        34.658017988250066,
-        32.54814749308617
-      ]
-    ]
-  },
-  {
-    "id": 69,
-    "name": "Paphos",
-    "country": "Cyprus",
-    "lat": 34.7548,
-    "lon": 32.4086,
-    "type": "marina",
-    "arrival": "2027-01-24",
-    "departure": "2027-02-05",
-    "duration": "12 days",
-    "distanceToNext": 59,
-    "phase": "Cyprus",
-    "marinaName": "Paphos Harbor",
-    "marinaUrl": "https://en.wikipedia.org/wiki/Paphos",
-    "cultureHighlight": "Paphos Archaeological Park (UNESCO)",
-    "cultureUrl": "https://whc.unesco.org/en/list/79/",
-    "notes": "UNESCO mosaics",
-    "wikiUrl": "https://whc.unesco.org/en/list/79/",
-    "foodUrl": "https://www.visitpafos.org.cy/",
-    "adventureUrl": "https://www.visitcyprus.com/destinations/akamas",
-    "provisionsUrl": "https://www.navily.com/port/paphos-harbour/917",
-    "season": "winter",
-    "routeWaypoints": [
-      [
-        34.658017988250066,
-        32.54814749308617
-      ],
-      [
-        34.635862401146206,
-        32.71652026578141
-      ],
-      [
-        34.36793338713116,
-        32.99848591946139
-      ]
-    ]
-  },
-  {
     "id": 70,
     "name": "Limassol",
     "country": "Cyprus",
     "lat": 34.6757,
     "lon": 33.0442,
     "type": "marina",
-    "arrival": "2027-02-05",
-    "departure": "2027-02-06",
-    "duration": "1 day",
-    "distanceToNext": 60,
+    "duration": "2 days",
     "phase": "Cyprus",
     "marinaName": "Limassol Marina",
     "marinaUrl": "https://www.limassolmarina.com/",
     "cultureHighlight": "Old town & Limassol Castle",
     "cultureUrl": "https://en.wikipedia.org/wiki/Limassol",
-    "notes": "Brief stop en route to Larnaca",
-    "foodUrl": "https://www.limassoltourism.com/",
-    "adventureUrl": "https://www.adventuremountainpark.com/",
-    "provisionsUrl": "https://www.limassolmarina.com/",
-    "wikiUrl": "https://en.wikipedia.org/wiki/Limassol",
-    "season": "winter",
-    "routeWaypoints": [
-      [
-        34.480307171755946,
-        33.22726075875455
-      ],
-      [
-        34.516457171755945,
-        33.31604575875455
-      ],
-      [
-        34.56465717175595,
-        33.43442575875454
-      ],
-      [
-        34.61285717175595,
-        33.552805758754545
-      ],
-      [
-        34.64900717175595,
-        33.641590758754546
-      ]
-    ]
+    "notes": "Return transit, provisioning before open water"
   },
   {
     "id": 71,
-    "name": "Larnaca",
+    "name": "Latchi",
     "country": "Cyprus",
-    "lat": 34.9167,
-    "lon": 33.6361,
-    "type": "marina",
-    "arrival": "2027-02-06",
-    "departure": "2027-02-09",
-    "duration": "3 days",
-    "distanceToNext": 148,
+    "lat": 35.042,
+    "lon": 32.395,
+    "type": "anchorage",
+    "duration": "2 days",
     "phase": "Cyprus",
-    "marinaName": "Larnaca Marina",
-    "marinaUrl": "https://en.wikipedia.org/wiki/Larnaca",
-    "cultureHighlight": "Salt Lake & Hala Sultan Tekke",
-    "cultureUrl": "https://en.wikipedia.org/wiki/Hala_Sultan_Tekke",
-    "notes": "Start return from Cyprus",
-    "wikiUrl": "https://en.wikipedia.org/wiki/Hala_Sultan_Tekke",
-    "foodUrl": "https://larnakaregion.com/",
-    "adventureUrl": "https://www.visitcyprus.com/index.php/en/discovercyprus/sun-sea/diving",
-    "provisionsUrl": "https://www.navily.com/port/larnaca-marina/920",
-    "season": "winter",
+    "marinaName": "Latchi Harbour",
+    "marinaUrl": "https://www.cruiserswiki.org/wiki/Latchi",
+    "cultureHighlight": "Akamas Peninsula & Baths of Aphrodite",
+    "cultureUrl": "https://en.wikipedia.org/wiki/Akamas_peninsula",
+    "notes": "Last Cyprus stop before Turkey crossing",
     "routeWaypoints": [
       [
-        34.7,
-        33.4
-      ],
-      [
-        34.5,
-        33
-      ],
-      [
-        34.8,
-        32.1
+        35.2,
+        32.2
       ],
       [
         35.6,

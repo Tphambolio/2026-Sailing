@@ -28,10 +28,10 @@ const manualFixes = [
   ['Bodrum', 'Marmaris', [[36.9, 27.5], [36.65, 27.8], [36.6, 27.95], [36.62, 28.1]]],
 
   // === TURKEY ↔ CYPRUS (long open water crossings) ===
-  // Anamur → Latchi: south then west of Cyprus
+  // Anamur → Latchi (inbound): south then west of Cyprus
   ['Anamur', 'Latchi', [[35.6, 32.2], [35.2, 32.2]]],
-  // Larnaca → Anamur: reverse, east of Cyprus
-  ['Larnaca', 'Anamur', [[34.7, 33.4], [34.5, 33.0], [34.8, 32.1], [35.6, 32.2]]],
+  // Latchi → Anamur (return): reverse, NW Cyprus to Turkey
+  ['Latchi', 'Anamur', [[35.2, 32.2], [35.6, 32.2]]],
 
   // === PELOPONNESE ===
   // Gytheio → Kalamata: around Mani Peninsula
