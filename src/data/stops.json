@@ -1983,7 +1983,10 @@
     "marinaUrl": "https://www.cruiserswiki.org/wiki/Cyprus",
     "cultureHighlight": "Akamas Peninsula & Baths of Aphrodite",
     "cultureUrl": "https://en.wikipedia.org/wiki/Akamas",
-    "notes": "First Cyprus stop, Akamas hiking, sea caves"
+    "notes": "First Cyprus stop, Akamas hiking, sea caves",
+    "arrival": "2026-12-10",
+    "departure": "2026-12-12",
+    "season": "winter"
   },
   {
     "id": 68,
@@ -2004,7 +2007,10 @@
         34.55841804248044,
         33.560979400069684
       ]
-    ]
+    ],
+    "arrival": "2026-12-12",
+    "departure": "2026-12-15",
+    "season": "winter"
   },
   {
     "id": 69,
@@ -2013,13 +2019,13 @@
     "lat": 34.9167,
     "lon": 33.65,
     "type": "marina",
-    "duration": "80 days",
+    "duration": "52 days",
     "phase": "Cyprus",
     "marinaName": "Larnaca Marina",
     "marinaUrl": "https://en.wikipedia.org/wiki/Larnaca",
     "cultureHighlight": "Salt Lake & Hala Sultan Tekke",
     "cultureUrl": "https://en.wikipedia.org/wiki/Larnaca",
-    "notes": "Winter layover — 2 months. Day trips to Nicosia, Troodos mountains",
+    "notes": "Winter layover — 7 weeks. Day trips to Nicosia, Troodos mountains",
     "wikiUrl": "https://en.wikipedia.org/wiki/Hala_Sultan_Tekke",
     "foodUrl": "https://larnakaregion.com/",
     "adventureUrl": "https://www.visitcyprus.com/index.php/en/discovercyprus/sun-sea/diving",
@@ -2030,7 +2036,9 @@
         34.55841804248044,
         33.560979400069684
       ]
-    ]
+    ],
+    "arrival": "2026-12-15",
+    "departure": "2027-02-05"
   },
   {
     "id": 70,
@@ -2045,7 +2053,10 @@
     "marinaUrl": "https://www.limassolmarina.com/",
     "cultureHighlight": "Old town & Limassol Castle",
     "cultureUrl": "https://en.wikipedia.org/wiki/Limassol",
-    "notes": "Return transit, provisioning before open water"
+    "notes": "Return transit, provisioning before open water",
+    "arrival": "2027-02-05",
+    "departure": "2027-02-07",
+    "season": "winter"
   },
   {
     "id": 71,
@@ -2070,7 +2081,10 @@
         35.6,
         32.2
       ]
-    ]
+    ],
+    "arrival": "2027-02-07",
+    "departure": "2027-02-09",
+    "season": "winter"
   },
   {
     "id": 72,
