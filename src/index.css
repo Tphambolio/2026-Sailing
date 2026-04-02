@@ -2,14 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Dark theme base styles */
+/* Nautical Editorial Design Tokens - Azure Navigator */
 :root {
-  --color-bg-primary: #0f172a;
-  --color-bg-secondary: #1e293b;
-  --color-bg-tertiary: #334155;
-  --color-text-primary: #f1f5f9;
+  --color-bg-deep-navy: #0b1326;
+  --color-bg-glass: rgba(11, 19, 38, 0.8);
+  --color-accent-coral: #ffb690;
+  --color-accent-azure: #7bd0ff;
+  --color-text-primary: #dae2fd;
   --color-text-secondary: #94a3b8;
-  --color-accent: #06b6d4;
+  --color-white: #ffffff;
 }
 
 html {
@@ -17,7 +18,7 @@ html {
 }
 
 body {
-  @apply bg-dark-900 text-slate-100 font-sans antialiased;
+  @apply bg-[#0b1326] text-[#dae2fd] font-['Manrope'] antialiased;
   margin: 0;
   min-height: 100vh;
 }
@@ -26,107 +27,53 @@ body {
   @apply w-full h-screen;
 }
 
-/* Custom scrollbar for dark theme */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+/* Typography Overrides */
+h1, h2, h3, h4, .font-heading {
+  @apply font-['Space_Grotesk'] tracking-tight;
 }
 
-::-webkit-scrollbar-track {
-  @apply bg-dark-800;
+.font-editorial {
+  @apply font-['Space_Grotesk'] font-bold uppercase tracking-[0.2em];
 }
 
-::-webkit-scrollbar-thumb {
-  @apply bg-dark-600 rounded-full;
+/* Glassmorphism Components */
+.glass-panel {
+  @apply bg-[#0b1326]/70 backdrop-blur-xl border border-white/10;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-dark-700;
+.glass-button {
+  @apply bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/10 transition-all duration-300;
 }
 
-/* Leaflet map overrides for dark theme */
+/* Custom Marker Styles */
+.custom-marker-container div {
+  @apply shadow-[0_0_15px_rgba(255,182,144,0.3)] border-2 border-white/20 !important;
+}
+
+.marker-pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 182, 144, 0.4); }
+  70% { box-shadow: 0 0 0 15px rgba(255, 182, 144, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 182, 144, 0); }
+}
+
+/* Layout Utilities */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Leaflet Overrides */
 .leaflet-container {
-  @apply bg-dark-900;
+  @apply bg-[#0b1326] !important;
 }
 
-.leaflet-control-zoom a {
-  @apply bg-dark-800 text-slate-100 border-dark-700;
+.compact-popup .leaflet-popup-content-wrapper {
+  @apply bg-[#0b1326]/90 backdrop-blur-lg border border-white/10 text-white rounded-xl shadow-2xl !important;
 }
 
-.leaflet-control-zoom a:hover {
-  @apply bg-dark-700;
-}
-
-.leaflet-popup-content-wrapper {
-  @apply bg-dark-800 text-slate-100 rounded-lg shadow-xl;
-  padding: 0 !important;
-}
-
-.leaflet-popup-content {
-  margin: 8px 10px !important;
-}
-
-.leaflet-popup-tip {
-  @apply bg-dark-800;
-}
-
-/* Custom marker styles */
-.custom-marker {
-  @apply flex items-center justify-center rounded-full border-2 font-bold text-sm;
-  width: 32px;
-  height: 32px;
-}
-
-.marker-marina {
-  @apply bg-blue-500 border-blue-400 text-white;
-}
-
-.marker-anchorage {
-  @apply bg-orange-500 border-orange-400 text-white;
-}
-
-/* Glow effects for hover states */
-.glow-cyan {
-  box-shadow: 0 0 20px rgba(6, 182, 212, 0.5);
-}
-
-.glow-blue {
-  box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
-}
-
-/* Animation utilities */
-@keyframes fade-in {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.animate-fade-in {
-  animation: fade-in 0.3s ease-out;
-}
-
-@keyframes slide-up {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
-}
-
-.animate-slide-up {
-  animation: slide-up 0.3s ease-out;
-}
-
-@keyframes slide-left {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
-}
-
-.animate-slide-left {
-  animation: slide-left 0.3s ease-out;
-}
-
-/* Distance measure cursor */
-.leaflet-container.cursor-crosshair {
-  cursor: crosshair !important;
-}
-
-.leaflet-container.cursor-crosshair .leaflet-marker-icon {
-  cursor: crosshair !important;
+.compact-popup .leaflet-popup-tip {
+  @apply bg-[#0b1326]/90 !important;
 }
