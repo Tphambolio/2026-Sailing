@@ -8,29 +8,30 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Custom dark theme colors
+        // Azure Navigator Brand Colors
+        'deep-navy': '#0b1326',
+        'coral': '#ffb690',
+        'azure': '#7bd0ff',
+        'text-primary': '#dae2fd',
+        'text-secondary': '#94a3b8',
+        // Preserve your original phase colors if needed, 
+        // but the new UI uses the brand palette above.
         dark: {
           900: '#0f172a',
           800: '#1e293b',
           700: '#334155',
           600: '#475569',
         },
-        // Phase colors (vibrant accents)
-        phase: {
-          venice: '#06b6d4',      // cyan
-          montenegro: '#8b5cf6',  // violet
-          greece: '#f59e0b',      // amber
-          turkey: '#ef4444',      // red
-          cyprus: '#10b981',      // emerald
-          return: '#ec4899',      // pink
-        },
-        // Stop type colors
-        marina: '#3b82f6',        // blue
-        anchorage: '#f97316',     // orange
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        'space': ['Space Grotesk', 'sans-serif'],
+        'manrope': ['Manrope', 'sans-serif'],
+        // Fallback for existing 'sans' usage
+        sans: ['Manrope', 'Inter', 'system-ui', 'sans-serif'],
       },
+      backgroundImage: {
+        'glass-gradient': 'linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))',
+      }
     },
   },
   plugins: [],
