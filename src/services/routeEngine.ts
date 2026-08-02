@@ -222,6 +222,7 @@ export function computeStats(stops: Stop[]): TripStats {
 export function insertStop(stops: Stop[], afterIndex: number, newStop: Partial<Stop>): Stop[] {
   const defaultStop: Stop = {
     id: 0,
+    key: `new-stop-${Date.now().toString(36)}`,
     name: 'New Stop',
     country: '',
     lat: 0,

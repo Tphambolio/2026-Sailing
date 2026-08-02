@@ -13,7 +13,8 @@
     "distanceToNext": 0,
     "season": "summer",
     "phase": "Croatia",
-    "visited": true
+    "visited": true,
+    "key": "sibenik"
   },
   {
     "id": 0,
@@ -29,7 +30,8 @@
     "season": "summer",
     "phase": "Croatia",
     "visited": true,
-    "notes": "Confirmed via the actual chartplotter route file (SD card) — exact anchorage turnaround point"
+    "notes": "Confirmed via the actual chartplotter route file (SD card) — exact anchorage turnaround point",
+    "key": "arta-mala"
   },
   {
     "id": 0,
@@ -44,7 +46,8 @@
     "distanceToNext": 0,
     "season": "summer",
     "phase": "Croatia",
-    "visited": true
+    "visited": true,
+    "key": "ilovik"
   },
   {
     "id": 0,
@@ -59,7 +62,8 @@
     "distanceToNext": 0,
     "season": "summer",
     "phase": "Croatia",
-    "visited": true
+    "visited": true,
+    "key": "marina-cres"
   },
   {
     "id": 0,
@@ -74,7 +78,8 @@
     "distanceToNext": 0,
     "season": "summer",
     "phase": "Croatia",
-    "visited": true
+    "visited": true,
+    "key": "malinska-krk"
   },
   {
     "id": 0,
@@ -96,7 +101,8 @@
         44.75,
         13.9
       ]
-    ]
+    ],
+    "key": "uvala-kalavojna"
   },
   {
     "id": 0,
@@ -111,7 +117,8 @@
     "distanceToNext": 0,
     "season": "summer",
     "phase": "Croatia",
-    "visited": true
+    "visited": true,
+    "key": "uvala-funtana"
   },
   {
     "id": 0,
@@ -127,7 +134,8 @@
     "distanceToNext": 0,
     "season": "summer",
     "phase": "Italy",
-    "visited": true
+    "visited": true,
+    "key": "muggia"
   },
   {
     "id": 0,
@@ -143,7 +151,8 @@
     "season": "summer",
     "phase": "Croatia",
     "visited": true,
-    "notes": "Verified via OpenStreetMap (real place)"
+    "notes": "Verified via OpenStreetMap (real place)",
+    "key": "rt-skaraba-rovinj"
   },
   {
     "id": 0,
@@ -159,7 +168,8 @@
     "season": "summer",
     "phase": "Croatia",
     "visited": true,
-    "notes": "Coordinates are a best-effort estimate — verify/adjust on the map"
+    "notes": "Coordinates are a best-effort estimate — verify/adjust on the map",
+    "key": "uvala-cintera"
   },
   {
     "id": 0,
@@ -174,7 +184,8 @@
     "distanceToNext": 0,
     "season": "summer",
     "phase": "Croatia",
-    "visited": true
+    "visited": true,
+    "key": "medulin"
   },
   {
     "id": 0,
@@ -190,7 +201,8 @@
     "season": "summer",
     "phase": "Croatia",
     "visited": true,
-    "notes": "Verified via OpenStreetMap (real place)"
+    "notes": "Verified via OpenStreetMap (real place)",
+    "key": "uvala-balvanida"
   },
   {
     "id": 0,
@@ -205,7 +217,8 @@
     "distanceToNext": 0,
     "season": "summer",
     "phase": "Croatia",
-    "visited": true
+    "visited": true,
+    "key": "ilovik-e771"
   },
   {
     "id": 0,
@@ -221,7 +234,8 @@
     "season": "summer",
     "phase": "Croatia",
     "visited": true,
-    "notes": "Verified via OpenStreetMap (real place)"
+    "notes": "Verified via OpenStreetMap (real place)",
+    "key": "uvala-podgarbe"
   },
   {
     "id": 0,
@@ -236,7 +250,8 @@
     "distanceToNext": 0,
     "season": "summer",
     "phase": "Croatia",
-    "visited": true
+    "visited": true,
+    "key": "olive-island-marina-sutomiscica"
   },
   {
     "id": 0,
@@ -252,7 +267,8 @@
     "season": "summer",
     "phase": "Croatia",
     "visited": true,
-    "notes": "Verified via OpenStreetMap (real place)"
+    "notes": "Verified via OpenStreetMap (real place)",
+    "key": "mimonjak-bay-nr-jezera"
   },
   {
     "id": 0,
@@ -267,7 +283,8 @@
     "distanceToNext": 0,
     "season": "summer",
     "phase": "Croatia",
-    "visited": true
+    "visited": true,
+    "key": "jezera-aci-marina"
   },
   {
     "id": 0,
@@ -283,7 +300,8 @@
     "season": "summer",
     "phase": "Croatia",
     "visited": true,
-    "notes": "Verified via OpenStreetMap (real place)"
+    "notes": "Verified via OpenStreetMap (real place)",
+    "key": "sibenik-capljena-bay"
   },
   {
     "id": 0,
@@ -299,7 +317,8 @@
     "season": "summer",
     "phase": "Croatia",
     "visited": true,
-    "notes": "Verified via OpenStreetMap (real place)"
+    "notes": "Verified via OpenStreetMap (real place)",
+    "key": "borovica"
   },
   {
     "id": 0,
@@ -314,7 +333,8 @@
     "distanceToNext": 0,
     "season": "summer",
     "phase": "Croatia",
-    "visited": true
+    "visited": true,
+    "key": "vinisce"
   },
   {
     "id": 0,
@@ -330,7 +350,8 @@
     "season": "summer",
     "phase": "Croatia",
     "visited": true,
-    "notes": "Coordinates are a best-effort estimate — verify/adjust on the map"
+    "notes": "Coordinates are a best-effort estimate — verify/adjust on the map",
+    "key": "uvala-duboka-pakleni-islands"
   },
   {
     "id": 0,
@@ -346,7 +367,8 @@
     "distanceToNext": 0,
     "season": "summer",
     "phase": "Croatia",
-    "visited": true
+    "visited": true,
+    "key": "palmizana-aci-marina"
   },
   {
     "id": 10,
@@ -375,7 +397,8 @@
         42.46,
         18.55
       ]
-    ]
+    ],
+    "key": "herceg-novi"
   },
   {
     "id": 11,
@@ -403,7 +426,8 @@
         42.475,
         18.68
       ]
-    ]
+    ],
+    "key": "rose"
   },
   {
     "id": 12,
@@ -431,7 +455,8 @@
         42.44,
         18.76
       ]
-    ]
+    ],
+    "key": "perast"
   },
   {
     "id": 13,
@@ -468,7 +493,8 @@
         42.45,
         18.69
       ]
-    ]
+    ],
+    "key": "kotor"
   },
   {
     "id": 14,
@@ -505,7 +531,8 @@
         42.292243356588486,
         18.306581822675874
       ]
-    ]
+    ],
+    "key": "tivat"
   },
   {
     "id": 15,
@@ -529,7 +556,8 @@
         42.262101233442685,
         18.621993805285253
       ]
-    ]
+    ],
+    "key": "lustica-bay"
   },
   {
     "id": 16,
@@ -553,7 +581,8 @@
         42.22824233154733,
         18.695287205516273
       ]
-    ]
+    ],
+    "key": "bigova"
   },
   {
     "id": 17,
@@ -576,7 +605,8 @@
     "foodUrl": "https://www.montenegro.travel/en",
     "adventureUrl": "https://www.montenegro.travel/en",
     "provisionsUrl": "https://www.yachtpantry.com/montenegro/about-us",
-    "season": "summer"
+    "season": "summer",
+    "key": "budva"
   },
   {
     "id": 18,
@@ -600,7 +630,8 @@
         42.221531716067254,
         18.906881112526445
       ]
-    ]
+    ],
+    "key": "sveti-stefan"
   },
   {
     "id": 19,
@@ -624,7 +655,8 @@
         42.053311829631745,
         18.947750360097732
       ]
-    ]
+    ],
+    "key": "petrovac"
   },
   {
     "id": 20,
@@ -653,7 +685,8 @@
         41.929089243850896,
         19.023143034477986
       ]
-    ]
+    ],
+    "key": "bar"
   },
   {
     "id": 21,
@@ -682,7 +715,8 @@
         19.38613048100766
       ]
     ],
-    "marinaName": "Port Ulcinj"
+    "marinaName": "Port Ulcinj",
+    "key": "ulcinj"
   },
   {
     "id": 22,
@@ -711,7 +745,8 @@
         41.519503072933404,
         19.190983805257705
       ]
-    ]
+    ],
+    "key": "shengjin"
   },
   {
     "id": 23,
@@ -748,7 +783,8 @@
         41.033351211417276,
         19.20036458914027
       ]
-    ]
+    ],
+    "key": "durres"
   },
   {
     "id": 24,
@@ -780,7 +816,8 @@
         40.47947294623119,
         19.158341444160193
       ]
-    ]
+    ],
+    "key": "karpen-beach"
   },
   {
     "id": 25,
@@ -821,7 +858,8 @@
         40.37633863102545,
         19.40801618324796
       ]
-    ]
+    ],
+    "key": "vlore"
   },
   {
     "id": 26,
@@ -861,7 +899,8 @@
         40.210231312062334,
         19.480044514466076
       ]
-    ]
+    ],
+    "key": "orikum"
   },
   {
     "id": 27,
@@ -879,7 +918,8 @@
     "marinaName": "Drymades Bay Anchorage",
     "marinaUrl": "https://en.wikipedia.org/wiki/Dhermi",
     "cultureHighlight": "White-pebble Albanian Riviera beach",
-    "notes": "Dramatic cliff backdrop, crystal-clear water, excellent swimming"
+    "notes": "Dramatic cliff backdrop, crystal-clear water, excellent swimming",
+    "key": "drymades-beach"
   },
   {
     "id": 28,
@@ -903,7 +943,8 @@
         40.042145591226934,
         19.739972966284878
       ]
-    ]
+    ],
+    "key": "himara"
   },
   {
     "id": 29,
@@ -932,7 +973,8 @@
         19.80063777435081
       ]
     ],
-    "marinaName": "Porto Palermo Bay"
+    "marinaName": "Porto Palermo Bay",
+    "key": "porto-palermo"
   },
   {
     "id": 30,
@@ -961,7 +1003,8 @@
         39.828975648902755,
         19.963161966911706
       ]
-    ]
+    ],
+    "key": "sarande"
   },
   {
     "id": 31,
@@ -985,7 +1028,8 @@
         39.861957796088056,
         19.9675619404701
       ]
-    ]
+    ],
+    "key": "ksamil"
   },
   {
     "id": 32,
@@ -1026,7 +1070,8 @@
         39.68167392043211,
         19.894681700997324
       ]
-    ]
+    ],
+    "key": "kassiopi"
   },
   {
     "id": 33,
@@ -1063,7 +1108,8 @@
         39.29656482716028,
         20.20833743047049
       ]
-    ]
+    ],
+    "key": "kontokali-bay-corfu"
   },
   {
     "id": 34,
@@ -1092,7 +1138,8 @@
         20.497278304533413
       ]
     ],
-    "marinaName": "Ormos Valtou (Parga)"
+    "marinaName": "Ormos Valtou (Parga)",
+    "key": "parga"
   },
   {
     "id": 35,
@@ -1115,7 +1162,8 @@
     "foodUrl": "https://en.wikipedia.org/wiki/Preveza",
     "adventureUrl": "https://www.mygreektravellingspoon.com/travel/preveza-travel-guide/",
     "provisionsUrl": "https://en.wikipedia.org/wiki/Preveza",
-    "season": "summer"
+    "season": "summer",
+    "key": "preveza"
   },
   {
     "id": 36,
@@ -1144,7 +1192,8 @@
         38.749659639742674,
         20.762919341493916
       ]
-    ]
+    ],
+    "key": "lefkada-town"
   },
   {
     "id": 37,
@@ -1181,7 +1230,8 @@
         38.575898049130714,
         20.654144059283997
       ]
-    ]
+    ],
+    "key": "nydri"
   },
   {
     "id": 38,
@@ -1210,7 +1260,8 @@
         20.827859295759662
       ]
     ],
-    "marinaName": "Fiskardo Harbour"
+    "marinaName": "Fiskardo Harbour",
+    "key": "fiskardo"
   },
   {
     "id": 39,
@@ -1239,7 +1290,8 @@
         38.223880476605515,
         21.45675654012436
       ]
-    ]
+    ],
+    "key": "messolonghi"
   },
   {
     "id": 40,
@@ -1280,7 +1332,8 @@
         38.17902913009253,
         22.428903132577997
       ]
-    ]
+    ],
+    "key": "patras"
   },
   {
     "id": 41,
@@ -1303,7 +1356,8 @@
     "adventureUrl": "https://www.visitdelphi.gr/en/",
     "provisionsUrl": "https://www.navily.com/port/galaxidhi/1469",
     "season": "fall",
-    "marinaName": "Galaxidi Harbour"
+    "marinaName": "Galaxidi Harbour",
+    "key": "galaxidi"
   },
   {
     "id": 42,
@@ -1326,7 +1380,8 @@
     "adventureUrl": "https://en.wikipedia.org/wiki/Corinth_Canal",
     "provisionsUrl": "https://en.wikipedia.org/wiki/Corinth_Canal",
     "season": "fall",
-    "marinaName": "Corinth Canal Transit"
+    "marinaName": "Corinth Canal Transit",
+    "key": "corinth-canal"
   },
   {
     "id": 43,
@@ -1349,7 +1404,8 @@
     "foodUrl": "https://www.greeka.com/saronic/aegina/eat-drink/",
     "adventureUrl": "https://www.greeka.com/saronic/aegina/sightseeing/",
     "provisionsUrl": "https://www.greeka.com/saronic/aegina/",
-    "season": "fall"
+    "season": "fall",
+    "key": "aegina"
   },
   {
     "id": 44,
@@ -1378,7 +1434,8 @@
         37.45745797767816,
         23.54071866941007
       ]
-    ]
+    ],
+    "key": "poros"
   },
   {
     "id": 45,
@@ -1401,7 +1458,8 @@
     "adventureUrl": "https://www.greeka.com/saronic/hydra/sightseeing/",
     "provisionsUrl": "https://www.navily.com/port/hydra/1114",
     "season": "fall",
-    "marinaName": "Mandraki Bay"
+    "marinaName": "Mandraki Bay",
+    "key": "hydra"
   },
   {
     "id": 46,
@@ -1424,7 +1482,8 @@
     "foodUrl": "https://www.greeka.com/saronic/spetses/eat-drink/",
     "adventureUrl": "https://www.greeka.com/saronic/spetses/sightseeing/",
     "provisionsUrl": "https://www.greeka.com/saronic/spetses/",
-    "season": "fall"
+    "season": "fall",
+    "key": "spetses"
   },
   {
     "id": 47,
@@ -1453,7 +1512,8 @@
         37.643373186958804,
         24.17583370925929
       ]
-    ]
+    ],
+    "key": "cape-sounion"
   },
   {
     "id": 48,
@@ -1482,7 +1542,8 @@
         37.82850197260025,
         24.611695559058155
       ]
-    ]
+    ],
+    "key": "kea"
   },
   {
     "id": 49,
@@ -1505,7 +1566,8 @@
     "foodUrl": "https://www.syrosisland.gr/en/",
     "adventureUrl": "https://www.greeka.com/cyclades/syros/things-to-do/",
     "provisionsUrl": "https://www.syrosisland.gr/en/",
-    "season": "fall"
+    "season": "fall",
+    "key": "ermoupoli-syros"
   },
   {
     "id": 50,
@@ -1528,7 +1590,8 @@
     "foodUrl": "https://www.greeka.com/cyclades/mykonos/eat-drink/",
     "adventureUrl": "https://www.mykonosgreece.com/trip-to-delos/",
     "provisionsUrl": "https://www.greeka.com/cyclades/mykonos/",
-    "season": "fall"
+    "season": "fall",
+    "key": "ornos-bay-mykonos"
   },
   {
     "id": 51,
@@ -1557,7 +1620,8 @@
         37.29921452813854,
         25.239792041943247
       ]
-    ]
+    ],
+    "key": "naxos"
   },
   {
     "id": 52,
@@ -1602,7 +1666,8 @@
         36.8112227598927,
         25.673064520788603
       ]
-    ]
+    ],
+    "key": "parikia-paros"
   },
   {
     "id": 53,
@@ -1631,7 +1696,8 @@
         36.77630805027483,
         26.1706669782117
       ]
-    ]
+    ],
+    "key": "amorgos"
   },
   {
     "id": 54,
@@ -1660,7 +1726,8 @@
         36.63847951434978,
         26.68553577116192
       ]
-    ]
+    ],
+    "key": "astypalaia"
   },
   {
     "id": 55,
@@ -1689,7 +1756,8 @@
         36.92291308603827,
         27.320654683120804
       ]
-    ]
+    ],
+    "key": "kos"
   },
   {
     "id": 56,
@@ -1730,7 +1798,8 @@
         36.62,
         28.1
       ]
-    ]
+    ],
+    "key": "bodrum"
   },
   {
     "id": 57,
@@ -1759,7 +1828,8 @@
         36.55955062336464,
         28.617331483761742
       ]
-    ]
+    ],
+    "key": "marmaris"
   },
   {
     "id": 58,
@@ -1788,7 +1858,8 @@
         36.17890942427675,
         29.100770445274488
       ]
-    ]
+    ],
+    "key": "gemiler-island-fethiye"
   },
   {
     "id": 59,
@@ -1825,7 +1896,8 @@
         36.17375642067174,
         29.88154325978624
       ]
-    ]
+    ],
+    "key": "kas"
   },
   {
     "id": 60,
@@ -1854,7 +1926,8 @@
         30.251253479161328
       ]
     ],
-    "marinaName": "Ucagiz Limani (Kekova Roads)"
+    "marinaName": "Ucagiz Limani (Kekova Roads)",
+    "key": "kekova"
   },
   {
     "id": 61,
@@ -1883,7 +1956,8 @@
         36.14949990895212,
         30.489329318257976
       ]
-    ]
+    ],
+    "key": "finike"
   },
   {
     "id": 62,
@@ -1912,7 +1986,8 @@
         36.66562152236825,
         30.719612764693096
       ]
-    ]
+    ],
+    "key": "phaselis-bay-kemer"
   },
   {
     "id": 63,
@@ -1941,7 +2016,8 @@
         36.629269954461535,
         31.013899219530888
       ]
-    ]
+    ],
+    "key": "antalya"
   },
   {
     "id": 64,
@@ -1970,7 +2046,8 @@
         31.677677045389128
       ]
     ],
-    "marinaName": "Side Ancient Harbour"
+    "marinaName": "Side Ancient Harbour",
+    "key": "side"
   },
   {
     "id": 65,
@@ -2011,7 +2088,8 @@
         35.77625848847587,
         32.749522007678415
       ]
-    ]
+    ],
+    "key": "alanya"
   },
   {
     "id": 66,
@@ -2044,7 +2122,8 @@
         35.2,
         32.2
       ]
-    ]
+    ],
+    "key": "anamur"
   },
   {
     "id": 67,
@@ -2062,7 +2141,8 @@
     "notes": "First Cyprus stop, Akamas hiking, sea caves",
     "arrival": "2026-12-10",
     "departure": "2026-12-12",
-    "season": "winter"
+    "season": "winter",
+    "key": "latchi"
   },
   {
     "id": 68,
@@ -2086,7 +2166,8 @@
     ],
     "arrival": "2026-12-12",
     "departure": "2026-12-15",
-    "season": "winter"
+    "season": "winter",
+    "key": "limassol"
   },
   {
     "id": 69,
@@ -2114,7 +2195,8 @@
       ]
     ],
     "arrival": "2026-12-15",
-    "departure": "2027-02-05"
+    "departure": "2027-02-05",
+    "key": "larnaca"
   },
   {
     "id": 70,
@@ -2132,7 +2214,8 @@
     "notes": "Return transit, provisioning before open water",
     "arrival": "2027-02-05",
     "departure": "2027-02-07",
-    "season": "winter"
+    "season": "winter",
+    "key": "limassol-3eac"
   },
   {
     "id": 71,
@@ -2160,7 +2243,8 @@
     ],
     "arrival": "2027-02-07",
     "departure": "2027-02-09",
-    "season": "winter"
+    "season": "winter",
+    "key": "latchi-15a9"
   },
   {
     "id": 72,
@@ -2201,7 +2285,8 @@
         36.17892731833337,
         32.34897063726142
       ]
-    ]
+    ],
+    "key": "anamur-629d"
   },
   {
     "id": 73,
@@ -2230,7 +2315,8 @@
         31.679053168242486
       ]
     ],
-    "marinaName": "Alanya Marina"
+    "marinaName": "Alanya Marina",
+    "key": "alanya-0869"
   },
   {
     "id": 74,
@@ -2253,7 +2339,8 @@
     "adventureUrl": "https://www.allaboutturkey.com/side.html",
     "provisionsUrl": "https://www.navily.com/port/side/994",
     "season": "winter",
-    "marinaName": "Side Ancient Harbour"
+    "marinaName": "Side Ancient Harbour",
+    "key": "side-d354"
   },
   {
     "id": 75,
@@ -2298,7 +2385,8 @@
         36.1925475603347,
         30.399441855981216
       ]
-    ]
+    ],
+    "key": "antalya-fcd1"
   },
   {
     "id": 76,
@@ -2339,7 +2427,8 @@
         35.91054125754071,
         29.54724873546343
       ]
-    ]
+    ],
+    "key": "finike-e5df"
   },
   {
     "id": 77,
@@ -2384,7 +2473,8 @@
         36.024776433337344,
         29.668131507131996
       ]
-    ]
+    ],
+    "key": "kas-d866"
   },
   {
     "id": 78,
@@ -2407,7 +2497,8 @@
     "adventureUrl": "https://visitkastellorizo.gr/",
     "provisionsUrl": "https://www.navily.com/mouillage/kastellorizo/44689",
     "season": "winter",
-    "marinaName": "Megisti Harbour (Mandraki Anchorage)"
+    "marinaName": "Megisti Harbour (Mandraki Anchorage)",
+    "key": "kastellorizo"
   },
   {
     "id": 79,
@@ -2444,7 +2535,8 @@
         35.89985714378487,
         27.650963414727112
       ]
-    ]
+    ],
+    "key": "lindos-rhodes"
   },
   {
     "id": 80,
@@ -2467,7 +2559,8 @@
     "foodUrl": "https://www.greeka.com/dodecanese/halki/",
     "adventureUrl": "https://www.greeka.com/dodecanese/halki/beaches/",
     "provisionsUrl": "https://www.navily.com/port/chalki/1964",
-    "season": "winter"
+    "season": "winter",
+    "key": "chalki"
   },
   {
     "id": 81,
@@ -2504,7 +2597,8 @@
         26.989933429314977
       ]
     ],
-    "marinaName": "Karpathos Harbour"
+    "marinaName": "Karpathos Harbour",
+    "key": "karpathos"
   },
   {
     "id": 82,
@@ -2533,7 +2627,8 @@
         35.429681980858966,
         26.478907339973617
       ]
-    ]
+    ],
+    "key": "kasos"
   },
   {
     "id": 83,
@@ -2562,7 +2657,8 @@
         35.40062244684542,
         25.898812207729527
       ]
-    ]
+    ],
+    "key": "sitia"
   },
   {
     "id": 84,
@@ -2603,7 +2699,8 @@
         25.294150507078406
       ]
     ],
-    "marinaName": "Agios Nikolaos Marina"
+    "marinaName": "Agios Nikolaos Marina",
+    "key": "agios-nikolaos"
   },
   {
     "id": 85,
@@ -2632,7 +2729,8 @@
         24.812124572268807
       ]
     ],
-    "marinaName": "Heraklion Marina"
+    "marinaName": "Heraklion Marina",
+    "key": "heraklion"
   },
   {
     "id": 86,
@@ -2661,7 +2759,8 @@
         35.765021414161296,
         24.22345571294592
       ]
-    ]
+    ],
+    "key": "rethymno"
   },
   {
     "id": 87,
@@ -2690,7 +2789,8 @@
         23.51701211881315
       ]
     ],
-    "marinaName": "Chania Old Port"
+    "marinaName": "Chania Old Port",
+    "key": "chania"
   },
   {
     "id": 88,
@@ -2719,7 +2819,8 @@
         36.33652785941609,
         22.615186423395198
       ]
-    ]
+    ],
+    "key": "kapsali-kythira"
   },
   {
     "id": 89,
@@ -2752,7 +2853,8 @@
         36.7,
         22
       ]
-    ]
+    ],
+    "key": "gytheio"
   },
   {
     "id": 90,
@@ -2809,7 +2911,8 @@
         36.703777311365066,
         21.613356740698464
       ]
-    ]
+    ],
+    "key": "kalamata"
   },
   {
     "id": 91,
@@ -2838,7 +2941,8 @@
         21.441688901770885
       ]
     ],
-    "marinaName": "Navarino Bay Anchorage (Pylos)"
+    "marinaName": "Navarino Bay Anchorage (Pylos)",
+    "key": "pylos"
   },
   {
     "id": 92,
@@ -2861,7 +2965,8 @@
     "foodUrl": "https://www.katakolon.org/katakolon-restaurants-food-and-drink/",
     "adventureUrl": "https://olympiasightseeing.com/",
     "provisionsUrl": "https://www.katakolon.org/",
-    "season": "winter"
+    "season": "winter",
+    "key": "katakolo"
   },
   {
     "id": 93,
@@ -2898,7 +3003,8 @@
         37.97405437441769,
         20.479298397152178
       ]
-    ]
+    ],
+    "key": "zakynthos"
   },
   {
     "id": 94,
@@ -2959,7 +3065,8 @@
         38.56265770131196,
         20.612991734528855
       ]
-    ]
+    ],
+    "key": "argostoli"
   },
   {
     "id": 95,
@@ -2988,7 +3095,8 @@
         38.95889698848287,
         20.70559297953139
       ]
-    ]
+    ],
+    "key": "sivota-lefkada"
   },
   {
     "id": 96,
@@ -3017,7 +3125,8 @@
         39.438513905748756,
         20.095834638090384
       ]
-    ]
+    ],
+    "key": "gaios-paxos"
   },
   {
     "id": 97,
@@ -3050,7 +3159,8 @@
         39.812778698308605,
         19.70439209567093
       ]
-    ]
+    ],
+    "key": "corfu"
   },
   {
     "id": 98,
@@ -3073,7 +3183,8 @@
     "adventureUrl": "https://www.greeka.com/ionian/corfu/things-to-do/",
     "provisionsUrl": "https://www.navily.com/mouillage/othoni/45394",
     "season": "winter",
-    "marinaName": "Ormos Fyki (Fyki Bay)"
+    "marinaName": "Ormos Fyki (Fyki Bay)",
+    "key": "othoni"
   },
   {
     "id": 99,
@@ -3102,7 +3213,8 @@
         18.03111913382372
       ]
     ],
-    "marinaName": "Santa Maria di Leuca Harbour"
+    "marinaName": "Santa Maria di Leuca Harbour",
+    "key": "santa-maria-di-leuca"
   },
   {
     "id": 100,
@@ -3139,7 +3251,8 @@
         40.21937215409845,
         17.13632046777987
       ]
-    ]
+    ],
+    "key": "gallipoli"
   },
   {
     "id": 101,
@@ -3168,7 +3281,8 @@
         40.11571113703598,
         17.057339245442943
       ]
-    ]
+    ],
+    "key": "taranto"
   },
   {
     "id": 102,
@@ -3197,7 +3311,8 @@
         39.77758752360694,
         16.823036538891188
       ]
-    ]
+    ],
+    "key": "policoro"
   },
   {
     "id": 103,
@@ -3226,7 +3341,8 @@
         39.65,
         16.7
       ]
-    ]
+    ],
+    "key": "sibari"
   },
   {
     "id": 104,
@@ -3259,7 +3375,8 @@
         39.25,
         17.2
       ]
-    ]
+    ],
+    "key": "rossano"
   },
   {
     "id": 105,
@@ -3296,7 +3413,8 @@
         17.105164501463594
       ]
     ],
-    "marinaName": "Marina di Crotone"
+    "marinaName": "Marina di Crotone",
+    "key": "crotone"
   },
   {
     "id": 106,
@@ -3325,7 +3443,8 @@
         38.536309756625016,
         16.814364717882796
       ]
-    ]
+    ],
+    "key": "le-castella"
   },
   {
     "id": 107,
@@ -3362,7 +3481,8 @@
         37.95,
         15.6
       ]
-    ]
+    ],
+    "key": "roccella-ionica"
   },
   {
     "id": 108,
@@ -3385,7 +3505,8 @@
     "foodUrl": "https://www.italia.it/en/calabria/reggio-calabria",
     "adventureUrl": "https://www.italia.it/en/calabria/reggio-calabria",
     "provisionsUrl": "https://www.navily.com/port/reggio-calabria/1019",
-    "season": "winter"
+    "season": "winter",
+    "key": "reggio-calabria"
   },
   {
     "id": 109,
@@ -3408,7 +3529,8 @@
     "adventureUrl": "https://www.sicilyactive.com/en/giardini-naxos-sicily",
     "provisionsUrl": "https://www.navily.com/port/marina-yachting-gsg-giardini-naxos-taormina/2124",
     "season": "winter",
-    "marinaName": "Marina Yachting Giardini Naxos"
+    "marinaName": "Marina Yachting Giardini Naxos",
+    "key": "giardini-naxos"
   },
   {
     "id": 110,
@@ -3441,7 +3563,8 @@
         36.7,
         14.9
       ]
-    ]
+    ],
+    "key": "syracuse"
   },
   {
     "id": 111,
@@ -3464,6 +3587,7 @@
     "foodUrl": "https://www.biancoeblu.com/en/marina-di-ragusa",
     "adventureUrl": "https://accommodation-sicily.com/val-di-noto/marina-di-ragusa/",
     "provisionsUrl": "https://www.portoturisticomarinadiragusa.it/en/the-marina/",
-    "season": "winter"
+    "season": "winter",
+    "key": "marina-di-ragusa"
   }
 ]

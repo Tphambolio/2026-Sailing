@@ -12,6 +12,8 @@ import { CalendarView } from './components/Calendar';
 import RouteEditor from './components/RouteEditor';
 import StopEditor from './components/StopEditor';
 import TableView from './components/TableView';
+import NotesModal from './components/NotesModal';
+import { useAuth } from './context/AuthContext';
 
 // Alias for existing calculateDistance usage
 const calculateDistance = haversine;
@@ -223,6 +225,8 @@ function calculateBearing(lat1: number, lon1: number, lat2: number, lon2: number
 }
 
 function App() {
+  const { user, signInWithProvider, signOut } = useAuth();
+  const [notesModalStop, setNotesModalStop] = useState<Stop | null>(null);
   const [stops, setStops] = useState<Stop[]>([]);
   const [phases, setPhases] = useState<Phase[]>([]);
   const [stats, setStats] = useState<TripStats | null>(null);
@@ -643,6 +647,24 @@ function App() {
                 </button>
               </div>
             )}
+            {/* Sign in / out — unlocks editing notes & photos */}
+            {user ? (
+              <button
+                onClick={() => signOut()}
+                className="hidden sm:block px-2 py-1 rounded text-xs text-slate-300 hover:bg-slate-700"
+                title={`Signed in as ${user.email || user.user_metadata?.name || 'you'} — click to sign out`}
+              >
+                👤 Sign out
+              </button>
+            ) : (
+              <button
+                onClick={() => signInWithProvider('google')}
+                className="hidden sm:block px-2 py-1 rounded text-xs text-slate-300 hover:bg-slate-700"
+                title="Sign in to add notes & photos"
+              >
+                Sign in
+              </button>
+            )}
             {/* Desktop sidebar toggle */}
             <button onClick={() => setSidebarOpen(!sidebarOpen)} className="hidden md:block p-2 hover:bg-slate-700 rounded-lg">{sidebarOpen ? '◀' : '▶'}</button>
           </div>
@@ -888,6 +910,7 @@ function App() {
                     {selectedStop.provisionsUrl && <a href={selectedStop.provisionsUrl} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300">🛒 Shop</a>}
                     <button onClick={() => handleLogArrival(selectedStop)} className="text-sky-400 hover:text-sky-300" title="Log today as the actual arrival date">{'📌'} Arrived today</button>
                     <button onClick={() => handleLogDeparture(selectedStop)} className="text-sky-400 hover:text-sky-300" title="Log today as the actual departure date">{'🏁'} Departed today</button>
+                    <button onClick={() => setNotesModalStop(selectedStop)} className="text-emerald-400 hover:text-emerald-300 font-medium" title="Read or add notes & photos for this stop">{'📝'} Notes</button>
                     <button onClick={() => setSelectedStop(null)} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white">✕</button>
                   </div>
                 </div>
@@ -1035,6 +1058,10 @@ function App() {
           } : undefined}
           onCancel={handleCancelEdit}
         />
+      )}
+
+      {notesModalStop && (
+        <NotesModal stop={notesModalStop} onClose={() => setNotesModalStop(null)} />
       )}
     </div>
   );

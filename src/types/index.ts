@@ -2,6 +2,7 @@
 
 export interface Stop {
   id: number;
+  key: string;                // stable slug, unaffected by reordering — used to link notes/photos
   name: string;
   country: string;
   lat: number;
