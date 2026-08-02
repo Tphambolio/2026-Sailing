@@ -465,7 +465,9 @@ function App() {
   // falling back to the most recently visited stop.
   const currentStop = useMemo(() => {
     const today = todayISO();
-    const inProgress = stops.find(s => {
+    // Search from the end: when one stop's departure equals the next's arrival (the
+    // usual case), prefer the later stop — the one just arrived at, not the one left.
+    const inProgress = [...stops].reverse().find(s => {
       const arrival = effectiveArrival(s);
       const departure = effectiveDeparture(s);
       return arrival && departure && arrival <= today && today <= departure;
