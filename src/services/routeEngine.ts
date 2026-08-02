@@ -1,8 +1,89 @@
 // Route engine — auto-heal, phases, and stats computation
 
-import type { Stop, Phase, TripStats } from '../types';
+import type { Stop, Phase, TripStats, SchengenStatus } from '../types';
 import { NON_SCHENGEN, COUNTRY_COLORS } from '../data/constants';
-import { haversine, addDays, parseDuration, formatDuration, daysBetween, seasonFromDate, getYear } from '../utils/geo';
+import { haversine, addDays, parseDuration, formatDuration, daysBetween, seasonFromDate, getYear, todayISO } from '../utils/geo';
+
+/**
+ * The date a stop was actually arrived at, falling back to the planned date.
+ */
+export function effectiveArrival(stop: Stop): string {
+  return stop.actualArrival || stop.arrival;
+}
+
+/**
+ * The date a stop was actually departed from, falling back to the planned date.
+ */
+export function effectiveDeparture(stop: Stop): string {
+  return stop.actualDeparture || stop.departure;
+}
+
+export interface DateRange {
+  start: string;
+  end: string;
+}
+
+/**
+ * Schengen stay ranges (effective/actual-if-logged dates) for every Schengen stop on the route.
+ */
+export function buildSchengenRanges(stops: Stop[]): DateRange[] {
+  return stops
+    .filter(s => !NON_SCHENGEN.includes(s.country))
+    .map(s => ({ start: effectiveArrival(s), end: effectiveDeparture(s) }))
+    .filter(r => r.start && r.end);
+}
+
+/**
+ * Count Schengen days across a set of ranges that fall within [windowStart, windowEnd].
+ * ISO date strings compare correctly with plain string comparison.
+ */
+export function schengenDaysInRange(ranges: DateRange[], windowStart: string, windowEnd: string): number {
+  let total = 0;
+  ranges.forEach(r => {
+    const start = r.start < windowStart ? windowStart : r.start;
+    const end = r.end > windowEnd ? windowEnd : r.end;
+    if (start < end) total += daysBetween(start, end);
+  });
+  return total;
+}
+
+/**
+ * Accurate 90/180 Schengen status as of a reference date (defaults to today).
+ * - usedInWindow only counts days that have actually elapsed by `asOf`.
+ * - overstayDate projects forward through the remaining planned/actual itinerary and
+ *   flags the first future date where the rolling 180-day count would exceed 90.
+ */
+export function computeSchengenStatus(stops: Stop[], asOf: string = todayISO()): SchengenStatus {
+  const ranges = buildSchengenRanges(stops);
+  const windowStart = addDays(asOf, -180);
+  const usedInWindow = schengenDaysInRange(ranges, windowStart, asOf);
+  const remaining = Math.max(0, 90 - usedInWindow);
+
+  // Earliest day still counted in the current window — once it ages out (180 days later), a day frees up
+  let earliestCounted: string | null = null;
+  ranges.forEach(r => {
+    const start = r.start < windowStart ? windowStart : r.start;
+    const end = r.end > asOf ? asOf : r.end;
+    if (start < end && (!earliestCounted || start < earliestCounted)) earliestCounted = start;
+  });
+  const nextFreeDate = earliestCounted ? addDays(earliestCounted, 180) : null;
+
+  // Forward projection: check the rolling count as of each future Schengen stop's departure
+  let overstayDate: string | null = null;
+  for (const stop of stops) {
+    if (NON_SCHENGEN.includes(stop.country)) continue;
+    const departure = effectiveDeparture(stop);
+    if (!departure || departure <= asOf) continue;
+    const wStart = addDays(departure, -180);
+    const rolling = schengenDaysInRange(ranges, wStart, departure);
+    if (rolling > 90) {
+      overstayDate = departure;
+      break;
+    }
+  }
+
+  return { usedInWindow, remaining, windowStart, nextFreeDate, overstayDate };
+}
 
 /**
  * Auto-heal the entire route after any edit.
@@ -60,8 +141,10 @@ export function computePhases(stops: Stop[]): Phase[] {
 
     const entry = countryMap.get(stop.country) || { stops: 0, days: 0 };
     entry.stops += 1;
-    if (stop.arrival && stop.departure) {
-      entry.days += daysBetween(stop.arrival, stop.departure);
+    const arrival = effectiveArrival(stop);
+    const departure = effectiveDeparture(stop);
+    if (arrival && departure) {
+      entry.days += daysBetween(arrival, departure);
     }
     countryMap.set(stop.country, entry);
   });
@@ -87,8 +170,8 @@ export function computeStats(stops: Stop[]): TripStats {
     return { totalDays: 0, sailingDays: 0, restDays: 0, extendedStayDays: 0, totalSchengenDays: 0, schengen2026: 0, schengen2027: 0 };
   }
 
-  const firstArrival = stops[0].arrival;
-  const lastDeparture = stops[stops.length - 1].departure;
+  const firstArrival = effectiveArrival(stops[0]);
+  const lastDeparture = effectiveDeparture(stops[stops.length - 1]);
   const totalDays = firstArrival && lastDeparture ? daysBetween(firstArrival, lastDeparture) : 0;
 
   // Sailing days = stops that transition to the next stop (have distance > 0)
@@ -101,8 +184,10 @@ export function computeStats(stops: Stop[]): TripStats {
   let totalSchengenDays = 0;
 
   stops.forEach(stop => {
-    if (!stop.arrival || !stop.departure) return;
-    const stayDays = daysBetween(stop.arrival, stop.departure);
+    const arrival = effectiveArrival(stop);
+    const departure = effectiveDeparture(stop);
+    if (!arrival || !departure) return;
+    const stayDays = daysBetween(arrival, departure);
     totalStayDays += stayDays;
 
     if (stayDays > 2) {
@@ -113,7 +198,7 @@ export function computeStats(stops: Stop[]): TripStats {
     const isSchengen = !NON_SCHENGEN.includes(stop.country);
     if (isSchengen) {
       totalSchengenDays += stayDays;
-      const year = getYear(stop.arrival);
+      const year = getYear(arrival);
       schengenDaysByYear[year] = (schengenDaysByYear[year] || 0) + stayDays;
     }
   });

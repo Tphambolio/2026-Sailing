@@ -36,6 +36,11 @@ export interface Stop {
 
   // Route waypoints to avoid land crossings
   routeWaypoints?: [number, number][];
+
+  // Reality tracking — actual visit status, may differ from the planned schedule above
+  visited?: boolean;
+  actualArrival?: string;    // ISO date string, overrides `arrival` for Schengen/progress math when set
+  actualDeparture?: string;  // ISO date string, overrides `departure` when set
 }
 
 export interface Phase {
@@ -55,6 +60,15 @@ export interface TripStats {
   totalSchengenDays: number;
   schengen2026: number;
   schengen2027: number;
+}
+
+// Live Schengen 90/180 status computed as of a reference date (usually today)
+export interface SchengenStatus {
+  usedInWindow: number;        // Schengen days counted in the trailing 180-day window
+  remaining: number;           // 90 - usedInWindow, floored at 0
+  windowStart: string;         // ISO date — start of the 180-day lookback
+  nextFreeDate: string | null; // date the oldest counted day ages out, freeing up a day
+  overstayDate: string | null; // first future date the planned itinerary would exceed 90 days, if any
 }
 
 // Filter state for the sidebar

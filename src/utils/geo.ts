@@ -88,3 +88,14 @@ export function seasonFromDate(dateStr: string): 'summer' | 'fall' | 'winter' {
 export function getYear(dateStr: string): number {
   return parseInt(dateStr.split('-')[0], 10);
 }
+
+/**
+ * Today's date as an ISO date string (YYYY-MM-DD), in local time
+ */
+export function todayISO(): string {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
