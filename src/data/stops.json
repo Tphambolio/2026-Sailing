@@ -80,8 +80,8 @@
     "id": 0,
     "name": "Uvala Kalavojna",
     "country": "Croatia",
-    "lat": 45.08,
-    "lon": 14.15,
+    "lat": 44.9626109,
+    "lon": 14.0534625,
     "type": "anchorage",
     "arrival": "2026-07-11",
     "departure": "2026-07-12",
@@ -90,7 +90,13 @@
     "season": "summer",
     "phase": "Croatia",
     "visited": true,
-    "notes": "Coordinates are a best-effort estimate — verify/adjust on the map"
+    "notes": "Verified via OpenStreetMap (real place, Rakalj/Marčana). Route to Funtana rounds Cape Kamenjak (Istria's south tip) since there is no water gap through the peninsula.",
+    "routeWaypoints": [
+      [
+        44.75,
+        13.9
+      ]
+    ]
   },
   {
     "id": 0,
@@ -127,8 +133,8 @@
     "id": 0,
     "name": "Rt Škaraba (Rovinj)",
     "country": "Croatia",
-    "lat": 45.05,
-    "lon": 13.62,
+    "lat": 45.0632595,
+    "lon": 13.637666,
     "type": "anchorage",
     "arrival": "2026-07-16",
     "departure": "2026-07-17",
@@ -137,7 +143,7 @@
     "season": "summer",
     "phase": "Croatia",
     "visited": true,
-    "notes": "Coordinates are a best-effort estimate — verify/adjust on the map"
+    "notes": "Verified via OpenStreetMap (real place)"
   },
   {
     "id": 0,
@@ -174,8 +180,8 @@
     "id": 0,
     "name": "Uvala Balvanida",
     "country": "Croatia",
-    "lat": 44.65,
-    "lon": 14.27,
+    "lat": 44.4914556,
+    "lon": 14.5005279,
     "type": "anchorage",
     "arrival": "2026-07-20",
     "departure": "2026-07-21",
@@ -184,7 +190,7 @@
     "season": "summer",
     "phase": "Croatia",
     "visited": true,
-    "notes": "Coordinates are a best-effort estimate — verify/adjust on the map"
+    "notes": "Verified via OpenStreetMap (real place)"
   },
   {
     "id": 0,
@@ -205,8 +211,8 @@
     "id": 0,
     "name": "Uvala Podgarbe",
     "country": "Croatia",
-    "lat": 44.36,
-    "lon": 14.7,
+    "lat": 44.2147768,
+    "lon": 14.8651477,
     "type": "anchorage",
     "arrival": "2026-07-22",
     "departure": "2026-07-23",
@@ -215,7 +221,7 @@
     "season": "summer",
     "phase": "Croatia",
     "visited": true,
-    "notes": "Coordinates are a best-effort estimate — verify/adjust on the map"
+    "notes": "Verified via OpenStreetMap (real place)"
   },
   {
     "id": 0,
@@ -236,8 +242,8 @@
     "id": 0,
     "name": "Mimonjak Bay (nr. Jezera)",
     "country": "Croatia",
-    "lat": 43.78,
-    "lon": 15.7,
+    "lat": 43.7781334,
+    "lon": 15.6819244,
     "type": "anchorage",
     "arrival": "2026-07-25",
     "departure": "2026-07-26",
@@ -246,7 +252,7 @@
     "season": "summer",
     "phase": "Croatia",
     "visited": true,
-    "notes": "Coordinates are a best-effort estimate — verify/adjust on the map"
+    "notes": "Verified via OpenStreetMap (real place)"
   },
   {
     "id": 0,
@@ -267,8 +273,8 @@
     "id": 0,
     "name": "Šibenik (Čapljena Bay)",
     "country": "Croatia",
-    "lat": 43.7,
-    "lon": 15.85,
+    "lat": 43.7285993,
+    "lon": 15.8561089,
     "type": "anchorage",
     "arrival": "2026-07-27",
     "departure": "2026-07-30",
@@ -277,14 +283,14 @@
     "season": "summer",
     "phase": "Croatia",
     "visited": true,
-    "notes": "Coordinates are a best-effort estimate — verify/adjust on the map"
+    "notes": "Verified via OpenStreetMap (real place)"
   },
   {
     "id": 0,
     "name": "Borovica",
     "country": "Croatia",
-    "lat": 43.5,
-    "lon": 16.15,
+    "lat": 43.5018892,
+    "lon": 15.9850077,
     "type": "anchorage",
     "arrival": "2026-07-30",
     "departure": "2026-07-31",
@@ -293,7 +299,7 @@
     "season": "summer",
     "phase": "Croatia",
     "visited": true,
-    "notes": "Coordinates are a best-effort estimate — verify/adjust on the map"
+    "notes": "Verified via OpenStreetMap (real place)"
   },
   {
     "id": 0,
