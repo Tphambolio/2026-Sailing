@@ -3,11 +3,11 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, useMapEvents 
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { getData, saveUserStops, clearUserStops, exportStopsJson } from './services/dataService';
-import { healRoute, computePhases, computeStats, insertStop, removeStop, updateStop } from './services/routeEngine';
+import { healRoute, computePhases, computeStats, insertStop, removeStop, updateStop, computeSchengenStatus, effectiveArrival, effectiveDeparture } from './services/routeEngine';
 import type { Stop, Phase, TripStats, FilterState } from './types';
 import { DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM } from './types';
 import { NON_SCHENGEN, COUNTRY_COLORS, COUNTRY_FLAGS } from './data/constants';
-import { haversine, kmToNm, formatDate, daysBetween } from './utils/geo';
+import { haversine, kmToNm, formatDate, daysBetween, todayISO } from './utils/geo';
 import { CalendarView } from './components/Calendar';
 import RouteEditor from './components/RouteEditor';
 import StopEditor from './components/StopEditor';
@@ -24,11 +24,13 @@ function calculateSchengenDays(stops: Stop[]): Map<number, { days: number; rolli
   const schengenRanges: { start: Date; end: Date }[] = [];
 
   stops.forEach((stop) => {
-    if (!stop.arrival || !stop.departure) return;
+    const arrival = effectiveArrival(stop);
+    const departure = effectiveDeparture(stop);
+    if (!arrival || !departure) return;
     const isSchengen = !NON_SCHENGEN.includes(stop.country);
     if (isSchengen) {
-      const [y1, m1, d1] = stop.arrival.split('-').map(Number);
-      const [y2, m2, d2] = stop.departure.split('-').map(Number);
+      const [y1, m1, d1] = arrival.split('-').map(Number);
+      const [y2, m2, d2] = departure.split('-').map(Number);
       schengenRanges.push({
         start: new Date(y1, m1 - 1, d1),
         end: new Date(y2, m2 - 1, d2),
@@ -38,16 +40,18 @@ function calculateSchengenDays(stops: Stop[]): Map<number, { days: number; rolli
 
   // For each stop, calculate rolling 90/180
   stops.forEach((stop) => {
-    if (!stop.arrival) {
+    const arrival = effectiveArrival(stop);
+    const departure = effectiveDeparture(stop);
+    if (!arrival) {
       schengenMap.set(stop.id, { days: 0, rolling: 0, isPaused: true });
       return;
     }
 
     const isSchengen = !NON_SCHENGEN.includes(stop.country);
-    const stayDays = stop.arrival && stop.departure ? daysBetween(stop.arrival, stop.departure) : 0;
+    const stayDays = arrival && departure ? daysBetween(arrival, departure) : 0;
 
     // Calculate the reference date (end of stay at this stop)
-    const [y, m, d] = stop.departure ? stop.departure.split('-').map(Number) : stop.arrival.split('-').map(Number);
+    const [y, m, d] = departure ? departure.split('-').map(Number) : arrival.split('-').map(Number);
     const referenceDate = new Date(y, m - 1, d);
 
     // Look back 180 days from reference date
@@ -89,7 +93,7 @@ const DefaultIcon = L.icon({
 L.Marker.prototype.options.icon = DefaultIcon;
 
 // Custom marker icon creator with zoom-based scaling
-function createMarkerIcon(stop: Stop, zoom: number): L.DivIcon {
+function createMarkerIcon(stop: Stop, zoom: number, isCurrent: boolean = false): L.DivIcon {
   const isAnchorage = stop.type === 'anchorage';
   const bgColor = isAnchorage ? '#f97316' : '#3b82f6';
   const iconEmoji = isAnchorage ? '⚓' : '⛵';
@@ -98,10 +102,15 @@ function createMarkerIcon(stop: Stop, zoom: number): L.DivIcon {
   const baseSize = zoom < 7 ? 20 : zoom < 9 ? 26 : 32;
   const fontSize = zoom < 7 ? 10 : zoom < 9 ? 12 : 14;
   const borderWidth = zoom < 7 ? 1 : 2;
+  const opacity = stop.visited ? 1 : 0.55;
+  const ring = isCurrent ? 'box-shadow:0 0 0 4px rgba(250,204,21,0.6),0 2px 8px rgba(0,0,0,0.3);' : 'box-shadow:0 2px 8px rgba(0,0,0,0.3);';
+  const checkBadge = stop.visited
+    ? `<div style="position:absolute;bottom:-2px;right:-2px;width:${Math.round(baseSize * 0.5)}px;height:${Math.round(baseSize * 0.5)}px;border-radius:50%;background:#22c55e;border:1px solid white;display:flex;align-items:center;justify-content:center;font-size:${Math.max(7, fontSize - 4)}px;color:white;">✓</div>`
+    : '';
 
   return L.divIcon({
-    className: 'custom-marker-container',
-    html: `<div style="display:flex;align-items:center;justify-content:center;width:${baseSize}px;height:${baseSize}px;border-radius:50%;background:${bgColor};border:${borderWidth}px solid white;color:white;font-size:${fontSize}px;box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:pointer">${iconEmoji}</div>`,
+    className: `custom-marker-container${isCurrent ? ' current-stop-marker' : ''}`,
+    html: `<div style="position:relative;opacity:${opacity};"><div style="display:flex;align-items:center;justify-content:center;width:${baseSize}px;height:${baseSize}px;border-radius:50%;background:${bgColor};border:${borderWidth}px solid white;color:white;font-size:${fontSize}px;${ring}cursor:pointer">${iconEmoji}</div>${checkBadge}</div>`,
     iconSize: [baseSize, baseSize],
     iconAnchor: [baseSize / 2, baseSize / 2],
   });
@@ -349,7 +358,28 @@ function App() {
     setStats(computeStats(healed));
     saveUserStops(healed);
     setIsUserEdited(true);
+    // Keep the open detail panel in sync with the freshly healed stop data
+    setSelectedStop(prev => prev ? healed.find(s => s.id === prev.id) || null : prev);
   }, []);
+
+  // Reality tracking handlers
+  const handleToggleVisited = useCallback((stop: Stop) => {
+    const index = stops.findIndex(s => s.id === stop.id);
+    if (index < 0) return;
+    applyRouteChange(updateStop(stops, index, { visited: !stop.visited }));
+  }, [stops, applyRouteChange]);
+
+  const handleLogArrival = useCallback((stop: Stop) => {
+    const index = stops.findIndex(s => s.id === stop.id);
+    if (index < 0) return;
+    applyRouteChange(updateStop(stops, index, { actualArrival: todayISO(), visited: true }));
+  }, [stops, applyRouteChange]);
+
+  const handleLogDeparture = useCallback((stop: Stop) => {
+    const index = stops.findIndex(s => s.id === stop.id);
+    if (index < 0) return;
+    applyRouteChange(updateStop(stops, index, { actualDeparture: todayISO(), visited: true }));
+  }, [stops, applyRouteChange]);
 
   // Stop editor handlers
   const handleAddStop = useCallback((afterIndex: number) => {
@@ -427,6 +457,25 @@ function App() {
 
   // Calculate Schengen days for each stop
   const schengenDays = useMemo(() => calculateSchengenDays(stops), [stops]);
+
+  // Live 90/180 Schengen status as of today
+  const schengenStatus = useMemo(() => computeSchengenStatus(stops), [stops]);
+
+  // The stop we're currently at: today falls within its (effective) stay window,
+  // falling back to the most recently visited stop.
+  const currentStop = useMemo(() => {
+    const today = todayISO();
+    const inProgress = stops.find(s => {
+      const arrival = effectiveArrival(s);
+      const departure = effectiveDeparture(s);
+      return arrival && departure && arrival <= today && today <= departure;
+    });
+    if (inProgress) return inProgress;
+    const visitedStops = stops.filter(s => s.visited);
+    return visitedStops.length > 0 ? visitedStops[visitedStops.length - 1] : null;
+  }, [stops]);
+
+  const visitedCount = useMemo(() => stops.filter(s => s.visited).length, [stops]);
 
   // Draw route lines sequentially, colored by each segment's starting stop's country
   // Uses routeWaypoints when available to avoid crossing land
@@ -523,9 +572,18 @@ function App() {
               <div className="hidden lg:flex items-center gap-4 text-sm text-slate-300">
                 <span>{stats.totalDays} days</span>
                 <span className="text-slate-500">|</span>
-                <span>{stops.length} stops</span>
+                <span title={`${visitedCount} of ${stops.length} stops visited`}>{visitedCount}/{stops.length} visited</span>
                 <span className="text-slate-500">|</span>
-                <span className="text-cyan-400">{stats.totalSchengenDays} Schengen</span>
+                <span
+                  className={schengenStatus.remaining <= 10 ? 'text-red-400 font-semibold' : schengenStatus.remaining <= 25 ? 'text-amber-400' : 'text-cyan-400'}
+                  title={[
+                    `${schengenStatus.usedInWindow} Schengen days used in the trailing 180 days (as of today)`,
+                    schengenStatus.nextFreeDate ? `Next day frees up ${formatDate(schengenStatus.nextFreeDate)}` : null,
+                    schengenStatus.overstayDate ? `⚠ Plan exceeds 90 days around ${formatDate(schengenStatus.overstayDate)}` : 'Plan stays within the 90-day limit',
+                  ].filter(Boolean).join(' • ')}
+                >
+                  🇪🇺 {schengenStatus.usedInWindow}/90 ({schengenStatus.remaining} left)
+                </span>
               </div>
             )}
             {/* View Toggle - icons only on mobile */}
@@ -620,17 +678,33 @@ function App() {
                 const originalIndex = stops.findIndex(s => s.id === stop.id);
                 return (
                 <div key={stop.id} className="group">
-                  <button onClick={() => {
-                    setSelectedStop(stop);
-                    if (window.innerWidth < 768) setSidebarOpen(false);
-                  }}
-                    className={`w-full text-left p-3 rounded-lg mb-0.5 ${selectedStop?.id === stop.id ? 'bg-cyan-600/20 border border-cyan-500' : 'hover:bg-slate-700 border border-transparent'}`}>
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => {
+                      setSelectedStop(stop);
+                      if (window.innerWidth < 768) setSidebarOpen(false);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setSelectedStop(stop);
+                        if (window.innerWidth < 768) setSidebarOpen(false);
+                      }
+                    }}
+                    className={`w-full text-left p-3 rounded-lg mb-0.5 cursor-pointer ${selectedStop?.id === stop.id ? 'bg-cyan-600/20 border border-cyan-500' : 'hover:bg-slate-700 border border-transparent'}`}>
                     <div className="flex items-start gap-2">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleToggleVisited(stop); }}
+                        className={`shrink-0 mt-1 w-4 h-4 rounded-full border flex items-center justify-center text-[9px] transition-colors ${stop.visited ? 'bg-green-600 border-green-500 text-white' : 'border-slate-500 text-transparent hover:border-slate-300'}`}
+                        title={stop.visited ? 'Mark as not visited' : 'Mark as visited'}
+                      >{'✓'}</button>
                       <span className="text-lg">{stop.type === 'marina' ? '⛵' : '⚓'}</span>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="font-medium text-white truncate">{stop.id}. {stop.name}</p>
+                          <p className={`font-medium truncate ${stop.visited ? 'text-slate-300' : 'text-white'}`}>{stop.id}. {stop.name}</p>
                           {stop.duration && <span className="text-[10px] text-slate-500">({stop.duration})</span>}
+                          {currentStop?.id === stop.id && <span className="text-[10px] px-1 py-0.5 rounded bg-amber-500 text-slate-900 font-semibold">{'📍'} Here</span>}
                           {/* Edit button - appears on hover */}
                           <button
                             onClick={(e) => { e.stopPropagation(); handleEditStop(stop); }}
@@ -666,7 +740,7 @@ function App() {
                         {stop.cultureHighlight && <p className="text-xs text-cyan-400 mt-1 truncate">{stop.cultureHighlight}</p>}
                       </div>
                     </div>
-                  </button>
+                  </div>
                   {/* Insert after button - appears on hover between stops */}
                   <div className="flex justify-center -my-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
@@ -738,11 +812,12 @@ function App() {
               />
             ))}
             {filteredStops.map(stop => (
-              <Marker key={stop.id} position={[stop.lat, stop.lon]} icon={createMarkerIcon(stop, zoomLevel)} eventHandlers={{ click: () => !measureMode && setSelectedStop(stop) }}>
+              <Marker key={stop.id} position={[stop.lat, stop.lon]} icon={createMarkerIcon(stop, zoomLevel, currentStop?.id === stop.id)} eventHandlers={{ click: () => !measureMode && setSelectedStop(stop) }}>
                 <Popup className="compact-popup">
                   <div className="text-sm">
                     <span className="font-bold">{stop.name}</span>
                     <span className="text-gray-500 ml-1">{COUNTRY_FLAGS[stop.country] || ''}</span>
+                    {currentStop?.id === stop.id && <span className="ml-1">{'📍'}</span>}
                     {stop.cultureHighlight && <div className="text-gray-600 mt-0.5">🏛️ {stop.cultureHighlight}</div>}
                   </div>
                 </Popup>
@@ -773,12 +848,25 @@ function App() {
                     <h2 className="text-base md:text-lg font-bold text-white truncate">{selectedStop.name}</h2>
                     <span className="text-slate-400 text-sm">{COUNTRY_FLAGS[selectedStop.country] || ''}</span>
                     {selectedStop.phase && <span className="px-2 py-0.5 rounded text-xs" style={{ backgroundColor: COUNTRY_COLORS[selectedStop.phase] || '#6b7280' }}>{selectedStop.phase}</span>}
+                    {currentStop?.id === selectedStop.id && <span className="px-2 py-0.5 rounded text-xs bg-amber-500 text-slate-900 font-semibold">{'📍'} Here now</span>}
+                    <button
+                      onClick={() => handleToggleVisited(selectedStop)}
+                      className={`px-2 py-0.5 rounded text-xs font-medium border ${selectedStop.visited ? 'bg-green-600/80 border-green-500 text-white' : 'border-slate-500 text-slate-400 hover:text-white hover:border-slate-300'}`}
+                    >
+                      {selectedStop.visited ? '✓ Visited' : 'Mark Visited'}
+                    </button>
                   </div>
 
                   {/* Schedule info - inline */}
                   <div className="flex items-center gap-3 text-sm text-slate-300">
                     {selectedStop.arrival && (
                       <span>📅 {formatDate(selectedStop.arrival)}{selectedStop.departure && selectedStop.arrival !== selectedStop.departure && ` → ${formatDate(selectedStop.departure)}`}</span>
+                    )}
+                    {(selectedStop.actualArrival || selectedStop.actualDeparture) && (
+                      <span className="text-amber-300" title="Actual logged dates, may differ from the plan above">
+                        {'✍️'} actual: {formatDate(selectedStop.actualArrival || selectedStop.arrival)}
+                        {' → '}{formatDate(selectedStop.actualDeparture || selectedStop.departure)}
+                      </span>
                     )}
                     {selectedStop.duration && <span>⏱️ {selectedStop.duration}</span>}
                     {selectedStop.distanceToNext > 0 && <span>📍 {selectedStop.distanceToNext}km</span>}
@@ -796,6 +884,8 @@ function App() {
                     {selectedStop.foodUrl && <a href={selectedStop.foodUrl} target="_blank" rel="noopener noreferrer" className="text-amber-400 hover:text-amber-300">🍽️ Food</a>}
                     {selectedStop.adventureUrl && <a href={selectedStop.adventureUrl} target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300">🏔️ Do</a>}
                     {selectedStop.provisionsUrl && <a href={selectedStop.provisionsUrl} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300">🛒 Shop</a>}
+                    <button onClick={() => handleLogArrival(selectedStop)} className="text-sky-400 hover:text-sky-300" title="Log today as the actual arrival date">{'📌'} Arrived today</button>
+                    <button onClick={() => handleLogDeparture(selectedStop)} className="text-sky-400 hover:text-sky-300" title="Log today as the actual departure date">{'🏁'} Departed today</button>
                     <button onClick={() => setSelectedStop(null)} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white">✕</button>
                   </div>
                 </div>

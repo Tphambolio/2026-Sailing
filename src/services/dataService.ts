@@ -2,9 +2,19 @@
 
 import type { Stop, Phase, TripStats } from '../types';
 import { healRoute, computePhases, computeStats } from './routeEngine';
+import { todayISO } from '../utils/geo';
 import fallbackStops from '../data/stops.json';
 
 const STORAGE_KEY = 'med_odyssey_user_stops';
+
+/**
+ * On first load (no saved user edits yet), default `visited` from the planned schedule
+ * so past stops aren't all unchecked. Fully overridable per-stop afterward.
+ */
+function seedVisitedFromSchedule(stops: Stop[]): Stop[] {
+  const today = todayISO();
+  return stops.map(s => ({ ...s, visited: s.visited ?? (!!s.departure && s.departure <= today) }));
+}
 
 /**
  * Load stops: user edits from localStorage, or fallback JSON
@@ -17,7 +27,7 @@ export function getData(): {
 } {
   // Check for user-edited stops in localStorage
   const saved = getUserStops();
-  const rawStops = saved || (fallbackStops as Stop[]);
+  const rawStops = saved ? saved : seedVisitedFromSchedule(fallbackStops as Stop[]);
   const stops = healRoute(rawStops);
   const phases = computePhases(stops);
   const stats = computeStats(stops);
