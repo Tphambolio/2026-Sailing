@@ -19,8 +19,8 @@
     "id": 0,
     "name": "Arta Mala",
     "country": "Croatia",
-    "lat": 43.6644,
-    "lon": 15.7355,
+    "lat": 43.634785,
+    "lon": 15.689274,
     "type": "anchorage",
     "arrival": "2026-07-07",
     "departure": "2026-07-08",
@@ -29,7 +29,7 @@
     "season": "summer",
     "phase": "Croatia",
     "visited": true,
-    "notes": "Coordinates are a best-effort estimate — verify/adjust on the map"
+    "notes": "Confirmed via the actual chartplotter route file (SD card) — exact anchorage turnaround point"
   },
   {
     "id": 0,
