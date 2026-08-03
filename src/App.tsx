@@ -791,6 +791,7 @@ function App() {
           <JournalView
             stops={stops}
             currentStop={currentStop}
+            focusStop={selectedStop}
             onToggleVisited={handleToggleVisited}
             onLogArrival={handleLogArrival}
             onLogDeparture={handleLogDeparture}

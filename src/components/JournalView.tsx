@@ -1,46 +1,65 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { Stop } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { useJournalEntryKeys } from '../hooks/useJournalEntries';
+import { COUNTRY_FLAGS } from '../data/constants';
+import { formatDate } from '../utils/geo';
 import JournalEntryCard from './JournalEntryCard';
 
 interface JournalViewProps {
   stops: Stop[];
   currentStop?: Stop | null;
+  focusStop?: Stop | null;
   onToggleVisited?: (stop: Stop) => void;
   onLogArrival?: (stop: Stop) => void;
   onLogDeparture?: (stop: Stop) => void;
 }
 
-export default function JournalView({ stops, currentStop, onToggleVisited, onLogArrival, onLogDeparture }: JournalViewProps) {
+function JournalPlaceholder({ stop, onClick }: { stop: Stop; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full flex items-center gap-3 px-4 py-3 bg-slate-800/40 hover:bg-slate-800 border border-slate-700/50 hover:border-cyan-600 rounded-lg text-left transition-colors"
+    >
+      <span className="text-lg shrink-0">{COUNTRY_FLAGS[stop.country] || ''}</span>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-slate-300 truncate">{stop.name}</p>
+        <p className="text-xs text-slate-500">{formatDate(stop.arrival)} · {stop.country}</p>
+      </div>
+      {stop.visited && <span className="text-xs text-green-500 shrink-0" title="Visited">✓</span>}
+      <span className="text-xs text-cyan-400 shrink-0">+ Write a post</span>
+    </button>
+  );
+}
+
+export default function JournalView({ stops, currentStop, focusStop, onToggleVisited, onLogArrival, onLogDeparture }: JournalViewProps) {
   const { user, signInWithProvider } = useAuth();
   const { keys, loading, refetch } = useJournalEntryKeys();
-  const [pickerValue, setPickerValue] = useState('');
-  const [extraKeys, setExtraKeys] = useState<Set<string>>(new Set());
+  const [openKeys, setOpenKeys] = useState<Set<string>>(new Set());
 
-  // Today's stop always gets a card, even before it has any content — that's the
-  // whole point of hopping into the Journal while traveling.
-  const visibleKeys = useMemo(() => {
-    const s = new Set([...keys, ...extraKeys]);
-    if (currentStop) s.add(currentStop.key);
-    return s;
-  }, [keys, extraKeys, currentStop]);
-
+  // Every stop already has a slot — no separate "create an entry" step. Signed-out
+  // visitors only see stops with real content; signed-in (the trip owner) sees every
+  // stop as a ready-to-write placeholder.
   const entryStops = useMemo(() => {
-    const rest = stops.filter(s => visibleKeys.has(s.key) && s.key !== currentStop?.key);
-    return currentStop && visibleKeys.has(currentStop.key) ? [currentStop, ...rest] : rest;
-  }, [stops, visibleKeys, currentStop]);
+    const rest = stops.filter(s => s.key !== currentStop?.key);
+    const ordered = currentStop ? [currentStop, ...rest] : rest;
+    if (user) return ordered;
+    return ordered.filter(s => keys.has(s.key) || s.key === currentStop?.key);
+  }, [stops, currentStop, user, keys]);
 
-  const stopsWithoutEntry = useMemo(
-    () => stops.filter(s => !visibleKeys.has(s.key)),
-    [stops, visibleKeys]
-  );
-
-  const handleAddEntry = () => {
-    if (!pickerValue) return;
-    setExtraKeys(prev => new Set(prev).add(pickerValue));
-    setPickerValue('');
-  };
+  // Clicking a stop anywhere else in the app (sidebar list, search, map pin) jumps
+  // straight to its journal slot and opens it for writing — same synced stop list,
+  // no separate picker needed.
+  useEffect(() => {
+    if (!focusStop) return;
+    setOpenKeys(prev => (prev.has(focusStop.key) ? prev : new Set(prev).add(focusStop.key)));
+    const id = `journal-${focusStop.key}`;
+    const scrollToIt = () => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Cards above the target can still be loading photos, which shifts layout after
+    // the first scroll fires — re-correct once things have had time to settle.
+    const timers = [100, 500, 1200].map(ms => setTimeout(scrollToIt, ms));
+    return () => timers.forEach(clearTimeout);
+  }, [focusStop]);
 
   return (
     <div className="flex-1 overflow-y-auto bg-slate-900">
@@ -49,28 +68,6 @@ export default function JournalView({ stops, currentStop, onToggleVisited, onLog
           <h1 className="text-2xl font-bold text-white mb-1">📖 Trip Journal</h1>
           <p className="text-sm text-slate-400">Notes and photos from along the way</p>
         </div>
-
-        {user && (
-          <div className="mb-8 flex gap-2">
-            <select
-              value={pickerValue}
-              onChange={(e) => setPickerValue(e.target.value)}
-              className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500"
-            >
-              <option value="">+ Add an entry for a stop…</option>
-              {stopsWithoutEntry.map(s => (
-                <option key={s.key} value={s.key}>{s.name} — {s.country}</option>
-              ))}
-            </select>
-            <button
-              onClick={handleAddEntry}
-              disabled={!pickerValue}
-              className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-700 disabled:text-slate-500 rounded-lg text-sm text-white font-medium"
-            >
-              Add
-            </button>
-          </div>
-        )}
 
         {loading ? (
           <p className="text-center text-slate-500">Loading journal…</p>
@@ -84,25 +81,34 @@ export default function JournalView({ stops, currentStop, onToggleVisited, onLog
             )}
           </div>
         ) : (
-          <div className="space-y-6">
-            {entryStops.map(stop => (
-              <JournalEntryCard
-                key={stop.key}
-                stop={stop}
-                isCurrent={currentStop?.key === stop.key}
-                onToggleVisited={onToggleVisited}
-                onLogArrival={onLogArrival}
-                onLogDeparture={onLogDeparture}
-                onEmptyAndCancelled={() => {
-                  setExtraKeys(prev => {
-                    const next = new Set(prev);
-                    next.delete(stop.key);
-                    return next;
-                  });
-                  refetch();
-                }}
-              />
-            ))}
+          <div className="space-y-3">
+            {entryStops.map(stop => {
+              const isCurrent = currentStop?.key === stop.key;
+              const isOpen = isCurrent || keys.has(stop.key) || openKeys.has(stop.key);
+              return (
+                <div key={stop.key} id={`journal-${stop.key}`}>
+                  {isOpen ? (
+                    <JournalEntryCard
+                      stop={stop}
+                      isCurrent={isCurrent}
+                      onToggleVisited={onToggleVisited}
+                      onLogArrival={onLogArrival}
+                      onLogDeparture={onLogDeparture}
+                      onEmptyAndCancelled={() => {
+                        setOpenKeys(prev => {
+                          const next = new Set(prev);
+                          next.delete(stop.key);
+                          return next;
+                        });
+                        refetch();
+                      }}
+                    />
+                  ) : (
+                    <JournalPlaceholder stop={stop} onClick={() => setOpenKeys(prev => new Set(prev).add(stop.key))} />
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
