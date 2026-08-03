@@ -13,6 +13,7 @@ import RouteEditor from './components/RouteEditor';
 import StopEditor from './components/StopEditor';
 import TableView from './components/TableView';
 import NotesModal from './components/NotesModal';
+import JournalView from './components/JournalView';
 import { useAuth } from './context/AuthContext';
 
 // Alias for existing calculateDistance usage
@@ -247,7 +248,7 @@ function App() {
   const [measurePoints, setMeasurePoints] = useState<MeasurePoint[]>([]);
   const [zoomLevel, setZoomLevel] = useState(DEFAULT_MAP_ZOOM);
   const [mapStyle, setMapStyle] = useState<'dark' | 'satellite' | 'streets'>('satellite');
-  const [activeView, setActiveView] = useState<'map' | 'calendar' | 'table'>('map');
+  const [activeView, setActiveView] = useState<'map' | 'calendar' | 'table' | 'journal'>('map');
   const [routeEditMode, setRouteEditMode] = useState(false);
   const [pendingWaypoints, setPendingWaypoints] = useState<Map<number, [number, number][]>>(new Map());
   // Stop editing state
@@ -612,6 +613,12 @@ function App() {
               >
                 📊<span className="hidden md:inline"> Table</span>
               </button>
+              <button
+                onClick={() => setActiveView('journal')}
+                className={`px-1.5 py-1 md:px-2 rounded text-xs font-medium ${activeView === 'journal' ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-600'}`}
+              >
+                📖<span className="hidden md:inline"> Journal</span>
+              </button>
             </div>
             {/* Route edit actions */}
             {isUserEdited && (
@@ -779,8 +786,10 @@ function App() {
             </div>
           </aside>
 
-        {/* Main Content Area - Map, Calendar, or Table */}
-        {activeView === 'table' ? (
+        {/* Main Content Area - Map, Calendar, Table, or Journal */}
+        {activeView === 'journal' ? (
+          <JournalView stops={stops} />
+        ) : activeView === 'table' ? (
           <TableView
             stops={stops}
             selectedStop={selectedStop}

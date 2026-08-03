@@ -27,7 +27,6 @@ export default function StopEditor({ stop, countries, onSave, onDelete, onCancel
     }
     return 3;
   });
-  const [notes, setNotes] = useState(stop?.notes || '');
   const [marinaName, setMarinaName] = useState(stop?.marinaName || '');
   const [marinaUrl, setMarinaUrl] = useState(stop?.marinaUrl || '');
   const [showDelete, setShowDelete] = useState(false);
@@ -134,7 +133,6 @@ export default function StopEditor({ stop, countries, onSave, onDelete, onCancel
       lon: parsedLon,
       type,
       duration: `${durationDays} day${durationDays !== 1 ? 's' : ''}`,
-      notes: notes.trim() || undefined,
       marinaName: marinaName.trim() || undefined,
       marinaUrl: marinaUrl.trim() || undefined,
       // Spread enrichment data if available
@@ -329,17 +327,6 @@ export default function StopEditor({ stop, countries, onSave, onDelete, onCancel
           </>
         )}
 
-        {/* Notes */}
-        <div>
-          <label className="block text-xs font-medium text-slate-400 mb-1">Notes</label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Optional notes about this stop..."
-            rows={2}
-            className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 resize-none"
-          />
-        </div>
 
         {/* Auto-enrichment */}
         <div className="pt-2">
