@@ -6,22 +6,34 @@ import JournalEntryCard from './JournalEntryCard';
 
 interface JournalViewProps {
   stops: Stop[];
+  currentStop?: Stop | null;
+  onToggleVisited?: (stop: Stop) => void;
+  onLogArrival?: (stop: Stop) => void;
+  onLogDeparture?: (stop: Stop) => void;
 }
 
-export default function JournalView({ stops }: JournalViewProps) {
+export default function JournalView({ stops, currentStop, onToggleVisited, onLogArrival, onLogDeparture }: JournalViewProps) {
   const { user, signInWithProvider } = useAuth();
   const { keys, loading, refetch } = useJournalEntryKeys();
   const [pickerValue, setPickerValue] = useState('');
   const [extraKeys, setExtraKeys] = useState<Set<string>>(new Set());
 
-  const entryStops = useMemo(
-    () => stops.filter(s => keys.has(s.key) || extraKeys.has(s.key)),
-    [stops, keys, extraKeys]
-  );
+  // Today's stop always gets a card, even before it has any content — that's the
+  // whole point of hopping into the Journal while traveling.
+  const visibleKeys = useMemo(() => {
+    const s = new Set([...keys, ...extraKeys]);
+    if (currentStop) s.add(currentStop.key);
+    return s;
+  }, [keys, extraKeys, currentStop]);
+
+  const entryStops = useMemo(() => {
+    const rest = stops.filter(s => visibleKeys.has(s.key) && s.key !== currentStop?.key);
+    return currentStop && visibleKeys.has(currentStop.key) ? [currentStop, ...rest] : rest;
+  }, [stops, visibleKeys, currentStop]);
 
   const stopsWithoutEntry = useMemo(
-    () => stops.filter(s => !keys.has(s.key) && !extraKeys.has(s.key)),
-    [stops, keys, extraKeys]
+    () => stops.filter(s => !visibleKeys.has(s.key)),
+    [stops, visibleKeys]
   );
 
   const handleAddEntry = () => {
@@ -77,6 +89,10 @@ export default function JournalView({ stops }: JournalViewProps) {
               <JournalEntryCard
                 key={stop.key}
                 stop={stop}
+                isCurrent={currentStop?.key === stop.key}
+                onToggleVisited={onToggleVisited}
+                onLogArrival={onLogArrival}
+                onLogDeparture={onLogDeparture}
                 onEmptyAndCancelled={() => {
                   setExtraKeys(prev => {
                     const next = new Set(prev);

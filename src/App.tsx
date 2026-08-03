@@ -788,7 +788,13 @@ function App() {
 
         {/* Main Content Area - Map, Calendar, Table, or Journal */}
         {activeView === 'journal' ? (
-          <JournalView stops={stops} />
+          <JournalView
+            stops={stops}
+            currentStop={currentStop}
+            onToggleVisited={handleToggleVisited}
+            onLogArrival={handleLogArrival}
+            onLogDeparture={handleLogDeparture}
+          />
         ) : activeView === 'table' ? (
           <TableView
             stops={stops}

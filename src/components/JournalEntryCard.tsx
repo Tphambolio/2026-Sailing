@@ -7,10 +7,14 @@ import { formatDate } from '../utils/geo';
 
 interface JournalEntryCardProps {
   stop: Stop;
+  isCurrent?: boolean;
+  onToggleVisited?: (stop: Stop) => void;
+  onLogArrival?: (stop: Stop) => void;
+  onLogDeparture?: (stop: Stop) => void;
   onEmptyAndCancelled?: () => void; // called when a freshly-added blank entry is cancelled with nothing written
 }
 
-export default function JournalEntryCard({ stop, onEmptyAndCancelled }: JournalEntryCardProps) {
+export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onLogArrival, onLogDeparture, onEmptyAndCancelled }: JournalEntryCardProps) {
   const { user } = useAuth();
   const { content, loading: notesLoading, saving, save } = useStopNotes(stop.key);
   const { photos, loading: photosLoading, uploading, upload, remove, getUrl } = useStopPhotos(stop.key);
@@ -42,7 +46,7 @@ export default function JournalEntryCard({ stop, onEmptyAndCancelled }: JournalE
   };
 
   return (
-    <article className="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
+    <article className={`bg-slate-800 border rounded-xl overflow-hidden ${isCurrent ? 'border-amber-500' : 'border-slate-700'}`}>
       {/* Photos as a hero strip */}
       {photosLoading ? null : photos.length > 0 && (
         <div className={`grid gap-0.5 ${photos.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
@@ -83,6 +87,37 @@ export default function JournalEntryCard({ stop, onEmptyAndCancelled }: JournalE
           )}
         </div>
 
+        {/* Status row — mirrors the map's per-stop controls */}
+        <div className="flex flex-wrap items-center gap-2 mb-3">
+          {isCurrent && (
+            <span className="px-2 py-0.5 rounded text-xs bg-amber-500 text-slate-900 font-semibold">📍 Here now</span>
+          )}
+          {onToggleVisited && (
+            <button
+              onClick={() => onToggleVisited(stop)}
+              className={`px-2 py-0.5 rounded text-xs font-medium border ${stop.visited ? 'bg-green-600/80 border-green-500 text-white' : 'border-slate-500 text-slate-400 hover:text-white hover:border-slate-300'}`}
+            >
+              {stop.visited ? '✓ Visited' : 'Mark Visited'}
+            </button>
+          )}
+          {user && onLogArrival && (
+            <button onClick={() => onLogArrival(stop)} className="text-xs text-sky-400 hover:text-sky-300" title="Log today as the actual arrival date">📌 Arrived today</button>
+          )}
+          {user && onLogDeparture && (
+            <button onClick={() => onLogDeparture(stop)} className="text-xs text-sky-400 hover:text-sky-300" title="Log today as the actual departure date">🏁 Departed today</button>
+          )}
+          {user && (
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="text-xs text-cyan-400 hover:text-cyan-300 disabled:text-slate-500"
+            >
+              {uploading ? 'Uploading…' : '📷 Add photo'}
+            </button>
+          )}
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+        </div>
+
         {stop.cultureHighlight && (
           <p className="text-sm text-cyan-400 mb-3">🏛️ {stop.cultureHighlight}</p>
         )}
@@ -110,14 +145,6 @@ export default function JournalEntryCard({ stop, onEmptyAndCancelled }: JournalE
               <button onClick={handleCancel} className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded text-sm text-slate-300">
                 Cancel
               </button>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-                className="ml-auto text-xs text-cyan-400 hover:text-cyan-300 disabled:text-slate-500"
-              >
-                {uploading ? 'Uploading…' : '📷 Add photo'}
-              </button>
-              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
             </div>
           </div>
         ) : content ? (
