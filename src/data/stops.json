@@ -448,19 +448,20 @@
   },
   {
     "id": 0,
-    "name": "Tiha Uvala",
-    "country": "Montenegro",
-    "lat": 42.45,
-    "lon": 18.52,
-    "type": "anchorage",
+    "name": "Cavtat Marina",
+    "country": "Croatia",
+    "lat": 42.5814,
+    "lon": 18.2177,
+    "type": "marina",
     "arrival": "2026-08-11",
     "departure": "2026-08-12",
     "duration": "1 day",
     "distanceToNext": 0,
     "season": "summer",
-    "phase": "Montenegro",
-    "notes": "Coordinates are a best-effort estimate near the Montenegro border/Herceg Novi entrance — could not verify exact bay, please adjust on the map. Likely customs clearance stop entering Montenegro.",
-    "key": "tiha-uvala"
+    "phase": "Croatia",
+    "cultureHighlight": "Last Croatian port before the Montenegro border",
+    "notes": "Croatian exit customs clearance before crossing into Montenegro",
+    "key": "cavtat-marina"
   },
   {
     "id": 10,
