@@ -34,17 +34,35 @@ export function buildSchengenRanges(stops: Stop[]): DateRange[] {
 }
 
 /**
- * Count Schengen days across a set of ranges that fall within [windowStart, windowEnd].
+ * Every calendar date from `start` to `end`, inclusive, as ISO strings.
+ */
+function datesInRange(start: string, end: string): string[] {
+  const dates: string[] = [];
+  let cur = start;
+  while (cur <= end) {
+    dates.push(cur);
+    cur = addDays(cur, 1);
+  }
+  return dates;
+}
+
+/**
+ * Count Schengen days across a set of ranges that fall within [windowStart, windowEnd],
+ * all inclusive. Per the EU rule, the entry day and the exit day both count as a full
+ * day spent in the territory. Ranges are deduplicated by calendar date so that two
+ * directly-adjacent stops (one's departure day is the next one's arrival day) don't
+ * double-count that shared day.
  * ISO date strings compare correctly with plain string comparison.
  */
 export function schengenDaysInRange(ranges: DateRange[], windowStart: string, windowEnd: string): number {
-  let total = 0;
+  const days = new Set<string>();
   ranges.forEach(r => {
     const start = r.start < windowStart ? windowStart : r.start;
     const end = r.end > windowEnd ? windowEnd : r.end;
-    if (start < end) total += daysBetween(start, end);
+    if (start > end) return;
+    datesInRange(start, end).forEach(d => days.add(d));
   });
-  return total;
+  return days.size;
 }
 
 /**
@@ -55,7 +73,9 @@ export function schengenDaysInRange(ranges: DateRange[], windowStart: string, wi
  */
 export function computeSchengenStatus(stops: Stop[], asOf: string = todayISO()): SchengenStatus {
   const ranges = buildSchengenRanges(stops);
-  const windowStart = addDays(asOf, -180);
+  // A "180-day period" is 180 calendar days including the reference day itself,
+  // i.e. [asOf - 179, asOf] — not asOf - 180, which would span 181 days.
+  const windowStart = addDays(asOf, -179);
   const usedInWindow = schengenDaysInRange(ranges, windowStart, asOf);
   const remaining = Math.max(0, 90 - usedInWindow);
 
@@ -64,7 +84,7 @@ export function computeSchengenStatus(stops: Stop[], asOf: string = todayISO()):
   ranges.forEach(r => {
     const start = r.start < windowStart ? windowStart : r.start;
     const end = r.end > asOf ? asOf : r.end;
-    if (start < end && (!earliestCounted || start < earliestCounted)) earliestCounted = start;
+    if (start <= end && (!earliestCounted || start < earliestCounted)) earliestCounted = start;
   });
   const nextFreeDate = earliestCounted ? addDays(earliestCounted, 180) : null;
 
@@ -74,7 +94,7 @@ export function computeSchengenStatus(stops: Stop[], asOf: string = todayISO()):
     if (NON_SCHENGEN.includes(stop.country)) continue;
     const departure = effectiveDeparture(stop);
     if (!departure || departure <= asOf) continue;
-    const wStart = addDays(departure, -180);
+    const wStart = addDays(departure, -179);
     const rolling = schengenDaysInRange(ranges, wStart, departure);
     if (rolling > 90) {
       overstayDate = departure;
