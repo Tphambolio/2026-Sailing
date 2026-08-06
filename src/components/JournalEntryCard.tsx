@@ -55,6 +55,12 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
     [displayBlocks]
   );
   const galleryPhotos = useMemo(() => photos.filter(p => !inlinePhotoIds.has(p.id)), [photos, inlinePhotoIds]);
+  // Separate from inlinePhotoIds (which tracks saved `content`) so the picker reflects
+  // photos just inserted into `draft` during the current edit, before Save is clicked.
+  const draftInlinePhotoIds = useMemo(
+    () => new Set(parseContent(draft).filter((b): b is { type: 'photo'; id: string } => b.type === 'photo').map(b => b.id)),
+    [draft]
+  );
 
   const handleSave = async () => {
     await save(draft);
@@ -181,11 +187,11 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
                       key={photo.id}
                       type="button"
                       onClick={() => insertPhotoToken(photo.id)}
-                      className={`relative shrink-0 w-16 h-16 rounded overflow-hidden border-2 ${inlinePhotoIds.has(photo.id) ? 'border-cyan-500' : 'border-transparent hover:border-slate-500'}`}
+                      className={`relative shrink-0 w-16 h-16 rounded overflow-hidden border-2 ${draftInlinePhotoIds.has(photo.id) ? 'border-cyan-500' : 'border-transparent hover:border-slate-500'}`}
                       title="Insert into text"
                     >
                       <img src={getUrl(photo.storage_path)} alt="" className="w-full h-full object-cover" />
-                      {inlinePhotoIds.has(photo.id) && (
+                      {draftInlinePhotoIds.has(photo.id) && (
                         <span className="absolute bottom-0 right-0 bg-cyan-600 text-white text-[9px] px-1">in text</span>
                       )}
                     </button>
