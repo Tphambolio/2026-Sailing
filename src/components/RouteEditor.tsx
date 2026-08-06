@@ -218,12 +218,8 @@ export default function RouteEditor({ stops, isEditing, onSaveWaypoints }: Route
 
               <button
                 onClick={handleSave}
-                disabled={waypoints.length === 0}
-                className={`px-3 py-1.5 rounded text-sm font-medium ${
-                  waypoints.length > 0
-                    ? 'bg-green-600 hover:bg-green-700 text-white'
-                    : 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                }`}
+                className="px-3 py-1.5 rounded text-sm font-medium bg-green-600 hover:bg-green-700 text-white"
+                title={waypoints.length === 0 ? 'Save with no waypoints to revert this segment to a straight line' : undefined}
               >
                 Save Route
               </button>
