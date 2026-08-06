@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import type { Stop } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { useStopNotes, useStopPhotos } from '../hooks/useStopContent';
 import { formatDate } from '../utils/geo';
+import { parseContent } from '../utils/journalContent';
 
 interface NotesModalProps {
   stop: Stop;
@@ -18,6 +19,10 @@ export default function NotesModal({ stop, onClose }: NotesModalProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { setDraft(content); }, [content]);
+
+  // `content` may contain {{photo:ID}} tokens placed by the Journal tab's inline
+  // photo picker. Render them as images here too, instead of leaking the raw token.
+  const displayBlocks = useMemo(() => parseContent(content), [content]);
 
   const handleSave = async () => {
     await save(draft);
@@ -55,7 +60,7 @@ export default function NotesModal({ stop, onClose }: NotesModalProps) {
               )}
             </div>
 
-            {notesLoading ? (
+            {notesLoading || photosLoading ? (
               <p className="text-sm text-slate-500">Loading…</p>
             ) : editing ? (
               <div className="space-y-2">
@@ -83,8 +88,27 @@ export default function NotesModal({ stop, onClose }: NotesModalProps) {
                   </button>
                 </div>
               </div>
-            ) : content ? (
-              <p className="text-sm text-slate-200 whitespace-pre-wrap">{content}</p>
+            ) : displayBlocks.length > 0 ? (
+              <div className="space-y-2">
+                {displayBlocks.map((block, i) =>
+                  block.type === 'text' ? (
+                    <p key={i} className="text-sm text-slate-200 whitespace-pre-wrap">{block.text}</p>
+                  ) : (
+                    (() => {
+                      const photo = photos.find(p => p.id === block.id);
+                      if (!photo) return null;
+                      return (
+                        <img
+                          key={i}
+                          src={getUrl(photo.storage_path)}
+                          alt={photo.caption || stop.name}
+                          className="w-full max-h-72 object-cover rounded-lg"
+                        />
+                      );
+                    })()
+                  )
+                )}
+              </div>
             ) : (
               <p className="text-sm text-slate-500 italic">
                 {user ? 'No notes yet — click Edit to add some.' : 'No notes yet.'}

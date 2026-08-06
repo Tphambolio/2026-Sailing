@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useStopNotes, useStopPhotos } from '../hooks/useStopContent';
 import { COUNTRY_FLAGS } from '../data/constants';
 import { formatDate } from '../utils/geo';
+import { parseContent } from '../utils/journalContent';
 
 interface JournalEntryCardProps {
   stop: Stop;
@@ -12,24 +13,6 @@ interface JournalEntryCardProps {
   onLogArrival?: (stop: Stop) => void;
   onLogDeparture?: (stop: Stop) => void;
   onEmptyAndCancelled?: () => void; // called when a freshly-added blank entry is cancelled with nothing written
-}
-
-const PHOTO_TOKEN = /\{\{photo:([a-zA-Z0-9-]+)\}\}/g;
-
-type ContentBlock = { type: 'text'; text: string } | { type: 'photo'; id: string };
-
-function parseContent(content: string): ContentBlock[] {
-  const blocks: ContentBlock[] = [];
-  let lastIndex = 0;
-  for (const match of content.matchAll(PHOTO_TOKEN)) {
-    const text = content.slice(lastIndex, match.index);
-    if (text.trim()) blocks.push({ type: 'text', text });
-    blocks.push({ type: 'photo', id: match[1] });
-    lastIndex = (match.index ?? 0) + match[0].length;
-  }
-  const rest = content.slice(lastIndex);
-  if (rest.trim()) blocks.push({ type: 'text', text: rest });
-  return blocks;
 }
 
 export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onLogArrival, onLogDeparture, onEmptyAndCancelled }: JournalEntryCardProps) {
