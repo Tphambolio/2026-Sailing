@@ -196,3 +196,12 @@ describe('JournalEntryCard share to Instagram', () => {
     expect(openSpy).toHaveBeenCalledWith('https://example.test/dubrovnik/1.jpg', '_blank');
   });
 });
+
+describe('JournalEntryCard Google Photos picker visibility', () => {
+  it('stays hidden until VITE_GOOGLE_CLIENT_ID is configured', () => {
+    setup('');
+    render(<JournalEntryCard stop={stop} />);
+
+    expect(screen.queryByRole('button', { name: /google photos/i })).not.toBeInTheDocument();
+  });
+});

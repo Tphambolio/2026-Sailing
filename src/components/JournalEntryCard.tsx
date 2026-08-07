@@ -5,6 +5,7 @@ import { useStopNotes, useStopPhotos } from '../hooks/useStopContent';
 import { COUNTRY_FLAGS } from '../data/constants';
 import { formatDate } from '../utils/geo';
 import { parseContent, isVideoPath } from '../utils/journalContent';
+import { pickFromGooglePhotos, isGooglePhotosConfigured, type GooglePickerStatus } from '../services/googlePhotosPicker';
 
 interface JournalEntryCardProps {
   stop: Stop;
@@ -24,6 +25,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
   const [uploadProgress, setUploadProgress] = useState<{ done: number; total: number } | null>(null);
   const [lightboxId, setLightboxId] = useState<string | null>(null);
   const [sharing, setSharing] = useState(false);
+  const [googlePickerStatus, setGooglePickerStatus] = useState<GooglePickerStatus | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -87,9 +89,9 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
     requestAnimationFrame(() => ta?.focus());
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    pickerOpenRef.current = false;
-    const files = Array.from(e.target.files ?? []);
+  // Shared by both the local file picker and the Google Photos picker — uploads
+  // each file to Supabase, appends an inline token for it, and tracks progress.
+  const uploadFiles = async (files: File[]) => {
     if (files.length === 0) return;
     setUploadProgress({ done: 0, total: files.length });
     for (const file of files) {
@@ -99,7 +101,31 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
     }
     setUploadProgress(null);
     setEditing(true);
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    pickerOpenRef.current = false;
+    const files = Array.from(e.target.files ?? []);
+    await uploadFiles(files);
     e.target.value = '';
+  };
+
+  // Google's own hosted picker UI opens in a new tab; this waits for the user
+  // to finish there, downloads what they picked, then feeds it into the same
+  // upload pipeline as a local file selection.
+  const handleGooglePhotosPick = async () => {
+    if (googlePickerStatus || uploadProgress) return;
+    try {
+      const files = await pickFromGooglePhotos(setGooglePickerStatus);
+      setGooglePickerStatus('downloading'); // keep the label steady while these upload to Supabase
+      await uploadFiles(files);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.warn('Google Photos picker failed:', err);
+      alert(message.startsWith('Pop-up blocked') ? message : `Couldn't get photos from Google Photos: ${message}`);
+    } finally {
+      setGooglePickerStatus(null);
+    }
   };
 
   // Plain-text version of the entry for sharing — strips {{photo:ID}} tokens
@@ -230,6 +256,21 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
               Photos picker that accept="image/*" alone triggers. */}
           <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange} />
           <input ref={videoInputRef} type="file" accept="video/*" multiple className="hidden" onChange={handleFileChange} />
+          {/* Hidden until VITE_GOOGLE_CLIENT_ID is configured — mainly useful on
+              desktop, where the OS file picker can't browse a cloud library the
+              way Android's native Photos picker can. */}
+          {user && isGooglePhotosConfigured && (
+            <button
+              onClick={handleGooglePhotosPick}
+              disabled={!!googlePickerStatus || !!uploadProgress}
+              className="text-xs text-cyan-400 hover:text-cyan-300 disabled:text-slate-500"
+            >
+              {googlePickerStatus === 'opening' ? 'Opening Google Photos…'
+                : googlePickerStatus === 'waiting' ? 'Waiting for your picks…'
+                : googlePickerStatus === 'downloading' ? 'Importing…'
+                : '🖼️ Google Photos'}
+            </button>
+          )}
           <button
             onClick={handleShare}
             disabled={photos.length === 0 || sharing}
