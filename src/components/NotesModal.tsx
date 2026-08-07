@@ -3,7 +3,7 @@ import type { Stop } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { useStopNotes, useStopPhotos } from '../hooks/useStopContent';
 import { formatDate } from '../utils/geo';
-import { parseContent } from '../utils/journalContent';
+import { parseContent, isVideoPath } from '../utils/journalContent';
 
 interface NotesModalProps {
   stop: Stop;
@@ -97,7 +97,15 @@ export default function NotesModal({ stop, onClose }: NotesModalProps) {
                     (() => {
                       const photo = photos.find(p => p.id === block.id);
                       if (!photo) return null;
-                      return (
+                      return isVideoPath(photo.storage_path) ? (
+                        <video
+                          key={i}
+                          src={getUrl(photo.storage_path)}
+                          controls
+                          playsInline
+                          className="w-full max-h-72 object-contain bg-black rounded-lg"
+                        />
+                      ) : (
                         <img
                           key={i}
                           src={getUrl(photo.storage_path)}
@@ -126,10 +134,10 @@ export default function NotesModal({ stop, onClose }: NotesModalProps) {
                   disabled={uploading}
                   className="text-xs text-cyan-400 hover:text-cyan-300 disabled:text-slate-500"
                 >
-                  {uploading ? 'Uploading…' : '📷 Add photo'}
+                  {uploading ? 'Uploading…' : '📷 Add photo/video'}
                 </button>
               )}
-              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+              <input ref={fileInputRef} type="file" accept="image/*,video/*" className="hidden" onChange={handleFileChange} />
             </div>
 
             {photosLoading ? (
@@ -140,11 +148,20 @@ export default function NotesModal({ stop, onClose }: NotesModalProps) {
               <div className="grid grid-cols-3 gap-2">
                 {photos.map((photo) => (
                   <div key={photo.id} className="relative group aspect-square">
-                    <img
-                      src={getUrl(photo.storage_path)}
-                      alt={photo.caption || stop.name}
-                      className="w-full h-full object-cover rounded-lg"
-                    />
+                    {isVideoPath(photo.storage_path) ? (
+                      <video
+                        src={getUrl(photo.storage_path)}
+                        controls
+                        playsInline
+                        className="w-full h-full object-cover rounded-lg"
+                      />
+                    ) : (
+                      <img
+                        src={getUrl(photo.storage_path)}
+                        alt={photo.caption || stop.name}
+                        className="w-full h-full object-cover rounded-lg"
+                      />
+                    )}
                     {user && (
                       <button
                         onClick={() => remove(photo)}

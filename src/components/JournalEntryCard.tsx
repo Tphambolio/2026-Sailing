@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useStopNotes, useStopPhotos } from '../hooks/useStopContent';
 import { COUNTRY_FLAGS } from '../data/constants';
 import { formatDate } from '../utils/geo';
-import { parseContent } from '../utils/journalContent';
+import { parseContent, isVideoPath } from '../utils/journalContent';
 
 interface JournalEntryCardProps {
   stop: Stop;
@@ -138,10 +138,10 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
               disabled={!!uploadProgress}
               className="text-xs text-cyan-400 hover:text-cyan-300 disabled:text-slate-500"
             >
-              {uploadProgress ? `Uploading ${uploadProgress.done + 1}/${uploadProgress.total}…` : '📷 Add photos'}
+              {uploadProgress ? `Uploading ${uploadProgress.done + 1}/${uploadProgress.total}…` : '📷 Add photos/videos'}
             </button>
           )}
-          <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange} />
+          <input ref={fileInputRef} type="file" accept="image/*,video/*" multiple className="hidden" onChange={handleFileChange} />
         </div>
 
         {stop.cultureHighlight && (
@@ -173,7 +173,14 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
                       className={`relative shrink-0 w-16 h-16 rounded overflow-hidden border-2 ${draftInlinePhotoIds.has(photo.id) ? 'border-cyan-500' : 'border-transparent hover:border-slate-500'}`}
                       title="Insert into text"
                     >
-                      <img src={getUrl(photo.storage_path)} alt="" className="w-full h-full object-cover" />
+                      {isVideoPath(photo.storage_path) ? (
+                        <video src={getUrl(photo.storage_path)} muted playsInline className="w-full h-full object-cover" />
+                      ) : (
+                        <img src={getUrl(photo.storage_path)} alt="" className="w-full h-full object-cover" />
+                      )}
+                      {isVideoPath(photo.storage_path) && (
+                        <span className="absolute top-0 left-0 bg-black/70 text-white text-[9px] px-1">🎥</span>
+                      )}
                       {draftInlinePhotoIds.has(photo.id) && (
                         <span className="absolute bottom-0 right-0 bg-cyan-600 text-white text-[9px] px-1">in text</span>
                       )}
@@ -208,12 +215,22 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
                   if (!photo) return null;
                   return (
                     <div key={i} className="relative group my-4 -mx-5">
-                      <img
-                        src={getUrl(photo.storage_path)}
-                        alt={photo.caption || stop.name}
-                        onClick={() => setLightboxId(photo.id)}
-                        className="w-full max-h-[520px] object-cover cursor-zoom-in"
-                      />
+                      {isVideoPath(photo.storage_path) ? (
+                        <video
+                          src={getUrl(photo.storage_path)}
+                          muted
+                          playsInline
+                          onClick={() => setLightboxId(photo.id)}
+                          className="w-full max-h-[520px] object-cover cursor-zoom-in"
+                        />
+                      ) : (
+                        <img
+                          src={getUrl(photo.storage_path)}
+                          alt={photo.caption || stop.name}
+                          onClick={() => setLightboxId(photo.id)}
+                          className="w-full max-h-[520px] object-cover cursor-zoom-in"
+                        />
+                      )}
                       {user && (
                         <button
                           onClick={() => remove(photo)}
@@ -238,12 +255,22 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
           <div className="mt-4 grid grid-cols-3 sm:grid-cols-4 gap-1">
             {galleryPhotos.map(photo => (
               <div key={photo.id} className="relative group aspect-square">
-                <img
-                  src={getUrl(photo.storage_path)}
-                  alt={photo.caption || stop.name}
-                  onClick={() => setLightboxId(photo.id)}
-                  className="w-full h-full object-cover rounded cursor-zoom-in"
-                />
+                {isVideoPath(photo.storage_path) ? (
+                  <video
+                    src={getUrl(photo.storage_path)}
+                    muted
+                    playsInline
+                    onClick={() => setLightboxId(photo.id)}
+                    className="w-full h-full object-cover rounded cursor-zoom-in"
+                  />
+                ) : (
+                  <img
+                    src={getUrl(photo.storage_path)}
+                    alt={photo.caption || stop.name}
+                    onClick={() => setLightboxId(photo.id)}
+                    className="w-full h-full object-cover rounded cursor-zoom-in"
+                  />
+                )}
                 {user && (
                   <button
                     onClick={() => remove(photo)}
@@ -274,12 +301,23 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
               className="absolute left-4 w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full text-white text-xl"
             >‹</button>
           )}
-          <img
-            src={getUrl(lightboxPhoto.storage_path)}
-            alt={lightboxPhoto.caption || stop.name}
-            onClick={(e) => e.stopPropagation()}
-            className="max-h-[90vh] max-w-[90vw] object-contain rounded"
-          />
+          {isVideoPath(lightboxPhoto.storage_path) ? (
+            <video
+              src={getUrl(lightboxPhoto.storage_path)}
+              controls
+              autoPlay
+              playsInline
+              onClick={(e) => e.stopPropagation()}
+              className="max-h-[90vh] max-w-[90vw] object-contain rounded"
+            />
+          ) : (
+            <img
+              src={getUrl(lightboxPhoto.storage_path)}
+              alt={lightboxPhoto.caption || stop.name}
+              onClick={(e) => e.stopPropagation()}
+              className="max-h-[90vh] max-w-[90vw] object-contain rounded"
+            />
+          )}
           {photos.length > 1 && (
             <button
               onClick={(e) => { e.stopPropagation(); showLightbox(1); }}

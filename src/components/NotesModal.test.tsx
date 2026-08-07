@@ -70,4 +70,31 @@ describe('NotesModal', () => {
     expect(images.length).toBeGreaterThanOrEqual(1);
     expect(images[0]).toHaveAttribute('src', 'https://example.test/dubrovnik/1.jpg');
   });
+
+  it('renders a video file as a <video> element in both the inline block and the photo grid', () => {
+    const videoMedia = { ...photo, id: 'video-1', storage_path: 'dubrovnik/clip.mov' };
+    mockUseAuth.mockReturnValue({ user: { id: 'user-1' }, signInWithProvider: vi.fn() });
+    mockUseStopNotes.mockReturnValue({
+      content: '{{photo:video-1}}',
+      loading: false,
+      saving: false,
+      save: vi.fn(),
+    });
+    mockUseStopPhotos.mockReturnValue({
+      photos: [videoMedia],
+      loading: false,
+      uploading: false,
+      upload: vi.fn(),
+      remove: vi.fn(),
+      getUrl: (path: string) => `https://example.test/${path}`,
+    });
+
+    const { container } = render(<NotesModal stop={stop} onClose={vi.fn()} />);
+
+    // One <video> inline in the Notes section, one in the flat Photos grid below.
+    const videos = container.querySelectorAll('video');
+    expect(videos.length).toBe(2);
+    videos.forEach(v => expect(v).toHaveAttribute('src', 'https://example.test/dubrovnik/clip.mov'));
+    expect(container.querySelector('img')).toBeNull();
+  });
 });

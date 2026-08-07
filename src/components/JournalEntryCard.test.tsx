@@ -76,3 +76,30 @@ describe('JournalEntryCard photo picker', () => {
     expect(screen.getByTitle('Insert into text')).toHaveTextContent('in text');
   });
 });
+
+describe('JournalEntryCard video support', () => {
+  it('renders a video file as a <video> element, not <img>, in the inline content block', () => {
+    const videoMedia = { ...photo, id: 'video-1', storage_path: 'dubrovnik/clip.mp4' };
+    mockUseAuth.mockReturnValue({ user: { id: 'user-1' } });
+    mockUseStopNotes.mockReturnValue({
+      content: '{{photo:video-1}}',
+      loading: false,
+      saving: false,
+      save: vi.fn(),
+    });
+    mockUseStopPhotos.mockReturnValue({
+      photos: [videoMedia],
+      loading: false,
+      upload: vi.fn(),
+      remove: vi.fn(),
+      getUrl: (path: string) => `https://example.test/${path}`,
+    });
+
+    const { container } = render(<JournalEntryCard stop={stop} />);
+
+    const video = container.querySelector('video');
+    expect(video).not.toBeNull();
+    expect(video).toHaveAttribute('src', 'https://example.test/dubrovnik/clip.mp4');
+    expect(container.querySelector('img')).toBeNull();
+  });
+});
