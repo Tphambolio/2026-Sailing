@@ -17,6 +17,7 @@ export default function NotesModal({ stop, onClose }: NotesModalProps) {
   const [draft, setDraft] = useState('');
   const [editing, setEditing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { setDraft(content); }, [content]);
 
@@ -32,7 +33,7 @@ export default function NotesModal({ stop, onClose }: NotesModalProps) {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) await upload(file);
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    e.target.value = '';
   };
 
   return (
@@ -134,10 +135,23 @@ export default function NotesModal({ stop, onClose }: NotesModalProps) {
                   disabled={uploading}
                   className="text-xs text-cyan-400 hover:text-cyan-300 disabled:text-slate-500"
                 >
-                  {uploading ? 'Uploading…' : '📷 Add photo/video'}
+                  {uploading ? 'Uploading…' : '📷 Add photo'}
                 </button>
               )}
-              <input ref={fileInputRef} type="file" accept="image/*,video/*" className="hidden" onChange={handleFileChange} />
+              {user && (
+                <button
+                  onClick={() => videoInputRef.current?.click()}
+                  disabled={uploading}
+                  className="text-xs text-cyan-400 hover:text-cyan-300 disabled:text-slate-500 ml-2"
+                >
+                  {uploading ? 'Uploading…' : '🎥 Add video'}
+                </button>
+              )}
+              {/* Separate inputs — accept="image/*,video/*" on one input can make some
+                  Android browsers fall back to the slow legacy file picker instead of
+                  the fast native Photos picker that accept="image/*" alone triggers. */}
+              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+              <input ref={videoInputRef} type="file" accept="video/*" className="hidden" onChange={handleFileChange} />
             </div>
 
             {photosLoading ? (

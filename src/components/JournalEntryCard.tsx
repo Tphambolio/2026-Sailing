@@ -24,6 +24,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
   const [uploadProgress, setUploadProgress] = useState<{ done: number; total: number } | null>(null);
   const [lightboxId, setLightboxId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => { setDraft(content); }, [content]);
@@ -76,7 +77,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
     }
     setUploadProgress(null);
     setEditing(true);
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    e.target.value = '';
   };
 
   // Escape closes the lightbox
@@ -138,10 +139,24 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
               disabled={!!uploadProgress}
               className="text-xs text-cyan-400 hover:text-cyan-300 disabled:text-slate-500"
             >
-              {uploadProgress ? `Uploading ${uploadProgress.done + 1}/${uploadProgress.total}…` : '📷 Add photos/videos'}
+              {uploadProgress ? `Uploading ${uploadProgress.done + 1}/${uploadProgress.total}…` : '📷 Add photos'}
             </button>
           )}
-          <input ref={fileInputRef} type="file" accept="image/*,video/*" multiple className="hidden" onChange={handleFileChange} />
+          {user && (
+            <button
+              onClick={() => videoInputRef.current?.click()}
+              disabled={!!uploadProgress}
+              className="text-xs text-cyan-400 hover:text-cyan-300 disabled:text-slate-500"
+            >
+              {uploadProgress ? `Uploading ${uploadProgress.done + 1}/${uploadProgress.total}…` : '🎥 Add video'}
+            </button>
+          )}
+          {/* Separate inputs — accept="image/*,video/*" on one input can make some
+              Android browsers fall back to the slow legacy file picker (enumerating
+              and thumbnailing the whole camera roll) instead of the fast native
+              Photos picker that accept="image/*" alone triggers. */}
+          <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange} />
+          <input ref={videoInputRef} type="file" accept="video/*" multiple className="hidden" onChange={handleFileChange} />
         </div>
 
         {stop.cultureHighlight && (
