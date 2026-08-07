@@ -739,10 +739,12 @@ function App() {
                           <p className={`font-medium truncate ${stop.visited ? 'text-slate-300' : 'text-white'}`}>{stop.id}. {stop.name}</p>
                           {stop.duration && <span className="text-[10px] text-slate-500">({stop.duration})</span>}
                           {currentStop?.id === stop.id && <span className="text-[10px] px-1 py-0.5 rounded bg-amber-500 text-slate-900 font-semibold">{'📍'} Here</span>}
-                          {/* Edit button - appears on hover */}
+                          {/* Edit button — always visible; hover-only (opacity-0 until
+                              group-hover) meant it never rendered on touch devices,
+                              the only way to rename/reposition a stop. */}
                           <button
                             onClick={(e) => { e.stopPropagation(); handleEditStop(stop); }}
-                            className="ml-auto opacity-0 group-hover:opacity-100 p-0.5 hover:bg-slate-600 rounded text-slate-500 hover:text-cyan-400 text-xs transition-opacity"
+                            className="ml-auto p-0.5 hover:bg-slate-600 rounded text-slate-500 hover:text-cyan-400 text-xs transition-opacity"
                             title="Edit stop"
                           >✏️</button>
                         </div>
@@ -775,8 +777,9 @@ function App() {
                       </div>
                     </div>
                   </div>
-                  {/* Insert after button - appears on hover between stops */}
-                  <div className="flex justify-center -my-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {/* Insert after button — always visible (hover-only meant it never
+                      rendered on touch devices, the only way to insert a stop). */}
+                  <div className="flex justify-center -my-1 transition-opacity">
                     <button
                       onClick={() => handleAddStop(originalIndex)}
                       className="px-2 py-0 text-[10px] text-slate-500 hover:text-green-400 hover:bg-slate-700/50 rounded"

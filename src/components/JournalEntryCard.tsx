@@ -217,7 +217,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
                       {user && (
                         <button
                           onClick={() => remove(photo)}
-                          className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center bg-black/70 rounded-full text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center bg-black/70 rounded-full text-white text-xs transition-opacity"
                           title="Delete photo"
                         >
                           ✕
@@ -247,7 +247,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
                 {user && (
                   <button
                     onClick={() => remove(photo)}
-                    className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center bg-black/70 rounded-full text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center bg-black/70 rounded-full text-white text-xs transition-opacity"
                     title="Delete photo"
                   >
                     ✕

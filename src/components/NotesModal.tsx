@@ -148,7 +148,7 @@ export default function NotesModal({ stop, onClose }: NotesModalProps) {
                     {user && (
                       <button
                         onClick={() => remove(photo)}
-                        className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center bg-black/70 rounded-full text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center bg-black/70 rounded-full text-white text-xs transition-opacity"
                         title="Delete photo"
                       >
                         ✕
