@@ -23,6 +23,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
   const [editing, setEditing] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{ done: number; total: number } | null>(null);
   const [lightboxId, setLightboxId] = useState<string | null>(null);
+  const [sharing, setSharing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -99,6 +100,57 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
     setUploadProgress(null);
     setEditing(true);
     e.target.value = '';
+  };
+
+  // Plain-text version of the entry for sharing — strips {{photo:ID}} tokens
+  // (meaningless outside this app) and prefixes the stop/date for context.
+  const buildCaption = () => {
+    const textParts = displayBlocks
+      .filter((b): b is { type: 'text'; text: string } => b.type === 'text')
+      .map(b => b.text.trim())
+      .filter(Boolean);
+    const header = `${stop.name}, ${stop.country}${stop.arrival ? ` — ${formatDate(stop.arrival)}` : ''}`;
+    return [header, ...textParts, '#MediterraneanOdyssey #Sailing'].join('\n\n');
+  };
+
+  // Hands the entry's photos/videos + caption to the OS share sheet, where
+  // Instagram (among other apps) can pick it up — there's no way to publish
+  // to Instagram directly from a browser without a Business account + Meta
+  // Graph API setup, so this is the share-sheet handoff every consumer app
+  // uses instead. Falls back to copying the caption + opening the first
+  // photo in a new tab on browsers without file-sharing support (desktop).
+  const handleShare = async () => {
+    if (photos.length === 0 || sharing) return;
+    setSharing(true);
+    const caption = buildCaption();
+    try {
+      const files = await Promise.all(
+        photos.map(async (p) => {
+          const res = await fetch(getUrl(p.storage_path));
+          const blob = await res.blob();
+          const ext = p.storage_path.split('.').pop() || (isVideoPath(p.storage_path) ? 'mp4' : 'jpg');
+          return new File([blob], `${stop.key}-${p.id}.${ext}`, { type: blob.type });
+        })
+      );
+
+      if (typeof navigator.share !== 'function' || (navigator.canShare && !navigator.canShare({ files }))) {
+        throw new Error('File sharing not supported on this browser');
+      }
+      await navigator.share({ title: stop.name, text: caption, files });
+      return;
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') return; // user cancelled the share sheet
+      console.warn('Share failed, falling back to clipboard:', err);
+      try {
+        await navigator.clipboard.writeText(caption);
+      } catch {
+        // clipboard access can fail too (permissions) — nothing more to do silently
+      }
+      if (photos[0]) window.open(getUrl(photos[0].storage_path), '_blank');
+      alert("Your browser can't hand photos directly to Instagram. Caption copied to your clipboard, and the first photo opened in a new tab — save it, then paste the caption into Instagram.");
+    } finally {
+      setSharing(false);
+    }
   };
 
   // Escape closes the lightbox
@@ -178,6 +230,14 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
               Photos picker that accept="image/*" alone triggers. */}
           <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange} />
           <input ref={videoInputRef} type="file" accept="video/*" multiple className="hidden" onChange={handleFileChange} />
+          <button
+            onClick={handleShare}
+            disabled={photos.length === 0 || sharing}
+            className="text-xs text-pink-400 hover:text-pink-300 disabled:text-slate-500"
+            title={photos.length === 0 ? 'Add a photo or video first — Instagram needs media to post' : 'Share this entry to Instagram or another app'}
+          >
+            {sharing ? 'Preparing…' : '📲 Share'}
+          </button>
         </div>
 
         {stop.cultureHighlight && (

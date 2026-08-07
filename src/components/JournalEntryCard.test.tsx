@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import JournalEntryCard from './JournalEntryCard';
@@ -119,5 +119,80 @@ describe('JournalEntryCard file picker double-open guard', () => {
     await user.click(addPhotosBtn);
 
     expect(clickSpy).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('JournalEntryCard share to Instagram', () => {
+  // jsdom has no Web Share API at all, so share/canShare need a real property
+  // definition to exist. navigator.clipboard.writeText, on the other hand,
+  // IS implemented by jsdom — spying on the existing method (rather than
+  // trying to shadow the whole clipboard object) is what actually sticks.
+  const navProps = ['share', 'canShare'] as const;
+
+  afterEach(() => {
+    navProps.forEach(p => { delete (navigator as unknown as Record<string, unknown>)[p]; });
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  function defineNavProp(name: (typeof navProps)[number], value: unknown) {
+    Object.defineProperty(navigator, name, { value, configurable: true, writable: true });
+  }
+
+  function stubFetch() {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      blob: () => Promise.resolve(new Blob(['fake-image-bytes'], { type: 'image/jpeg' })),
+    }));
+  }
+
+  it('disables the Share button when the entry has no photos', () => {
+    setup('Some notes but nothing visual yet.');
+    mockUseStopPhotos.mockReturnValue({
+      photos: [],
+      loading: false,
+      upload: vi.fn(),
+      remove: vi.fn(),
+      getUrl: (path: string) => `https://example.test/${path}`,
+    });
+
+    render(<JournalEntryCard stop={stop} />);
+
+    expect(screen.getByRole('button', { name: /share/i })).toBeDisabled();
+  });
+
+  it('hands the caption and photo to the OS share sheet when supported', async () => {
+    setup('Great walk along the walls.');
+    stubFetch();
+    const shareSpy = vi.fn().mockResolvedValue(undefined);
+    defineNavProp('share', shareSpy);
+    defineNavProp('canShare', () => true);
+
+    const user = userEvent.setup();
+    render(<JournalEntryCard stop={stop} />);
+    await user.click(screen.getByRole('button', { name: /share/i }));
+
+    expect(shareSpy).toHaveBeenCalledTimes(1);
+    const call = shareSpy.mock.calls[0][0];
+    expect(call.title).toBe('Dubrovnik');
+    expect(call.text).toContain('Great walk along the walls.');
+    expect(call.files).toHaveLength(1);
+    expect(call.files[0].name).toBe('dubrovnik-photo-1.jpg');
+  });
+
+  it('falls back to copying the caption and opening the photo when file sharing is unsupported', async () => {
+    setup('Great walk along the walls.');
+    stubFetch();
+    defineNavProp('share', undefined);
+    const writeTextSpy = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue(undefined);
+    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+    vi.spyOn(window, 'alert').mockImplementation(() => {});
+
+    const user = userEvent.setup();
+    render(<JournalEntryCard stop={stop} />);
+    await user.click(screen.getByRole('button', { name: /share/i }));
+
+    expect(writeTextSpy).toHaveBeenCalledTimes(1);
+    expect(writeTextSpy.mock.calls[0][0]).toContain('Great walk along the walls.');
+    expect(openSpy).toHaveBeenCalledWith('https://example.test/dubrovnik/1.jpg', '_blank');
   });
 });
