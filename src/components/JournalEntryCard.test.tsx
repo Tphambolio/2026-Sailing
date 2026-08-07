@@ -179,6 +179,21 @@ describe('JournalEntryCard share to Instagram', () => {
     expect(call.files[0].name).toBe('dubrovnik-photo-1.jpg');
   });
 
+  it('also copies the caption to the clipboard on a successful share — Instagram silently drops shared text', async () => {
+    setup('Great walk along the walls.');
+    stubFetch();
+    defineNavProp('share', vi.fn().mockResolvedValue(undefined));
+    defineNavProp('canShare', () => true);
+    const writeTextSpy = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue(undefined);
+
+    const user = userEvent.setup();
+    render(<JournalEntryCard stop={stop} />);
+    await user.click(screen.getByRole('button', { name: /share/i }));
+
+    expect(writeTextSpy).toHaveBeenCalledTimes(1);
+    expect(writeTextSpy.mock.calls[0][0]).toContain('Great walk along the walls.');
+  });
+
   it('falls back to copying the caption and opening the photo when file sharing is unsupported', async () => {
     setup('Great walk along the walls.');
     stubFetch();

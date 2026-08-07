@@ -143,12 +143,19 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
   // Instagram (among other apps) can pick it up — there's no way to publish
   // to Instagram directly from a browser without a Business account + Meta
   // Graph API setup, so this is the share-sheet handoff every consumer app
-  // uses instead. Falls back to copying the caption + opening the first
-  // photo in a new tab on browsers without file-sharing support (desktop).
+  // uses instead. Instagram's own app silently drops any accompanying text
+  // when it receives a photo/video share intent — it only accepts the media,
+  // regardless of what's in `text`/`title` — so the caption is copied to the
+  // clipboard unconditionally, ready to paste into Instagram's caption box.
+  // Falls back to also opening the first photo in a new tab on browsers
+  // without file-sharing support (desktop).
   const handleShare = async () => {
     if (photos.length === 0 || sharing) return;
     setSharing(true);
     const caption = buildCaption();
+    await navigator.clipboard.writeText(caption).catch(() => {
+      // clipboard access can fail (permissions) — nothing more to do silently
+    });
     try {
       const files = await Promise.all(
         photos.map(async (p) => {
@@ -166,12 +173,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
       return;
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') return; // user cancelled the share sheet
-      console.warn('Share failed, falling back to clipboard:', err);
-      try {
-        await navigator.clipboard.writeText(caption);
-      } catch {
-        // clipboard access can fail too (permissions) — nothing more to do silently
-      }
+      console.warn('Share failed, falling back to opening the photo directly:', err);
       if (photos[0]) window.open(getUrl(photos[0].storage_path), '_blank');
       alert("Your browser can't hand photos directly to Instagram. Caption copied to your clipboard, and the first photo opened in a new tab — save it, then paste the caption into Instagram.");
     } finally {
@@ -275,7 +277,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
             onClick={handleShare}
             disabled={photos.length === 0 || sharing}
             className="text-xs text-pink-400 hover:text-pink-300 disabled:text-slate-500"
-            title={photos.length === 0 ? 'Add a photo or video first — Instagram needs media to post' : 'Share this entry to Instagram or another app'}
+            title={photos.length === 0 ? 'Add a photo or video first — Instagram needs media to post' : "Share the photo(s)/video to Instagram or another app. Instagram ignores captions from other apps, so this also copies the caption to your clipboard — paste it in."}
           >
             {sharing ? 'Preparing…' : '📲 Share'}
           </button>
