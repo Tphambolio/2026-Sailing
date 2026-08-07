@@ -3,6 +3,7 @@ import type { Stop } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { useJournalEntryKeys } from '../hooks/useJournalEntries';
 import { effectiveArrival } from '../services/routeEngine';
+import { preloadGoogleIdentityServices, isGooglePhotosConfigured } from '../services/googlePhotosPicker';
 import { COUNTRY_FLAGS } from '../data/constants';
 import { formatDate } from '../utils/geo';
 import JournalEntryCard from './JournalEntryCard';
@@ -37,6 +38,15 @@ export default function JournalView({ stops, currentStop, focusStop, onToggleVis
   const { user, signInWithProvider } = useAuth();
   const { keys, loading, refetch } = useJournalEntryKeys();
   const [openKeys, setOpenKeys] = useState<Set<string>>(new Set());
+
+  // Load the Google Identity Services script as soon as the Journal tab opens,
+  // well before any "Google Photos" button click — Chrome's popup blocker
+  // requires the OAuth popup to open within a user gesture's task, and
+  // awaiting the script's first-ever network fetch inside the click handler
+  // burns that window silently (no error, it just never opens).
+  useEffect(() => {
+    if (isGooglePhotosConfigured) preloadGoogleIdentityServices();
+  }, []);
 
   // Every stop already has a slot — no separate "create an entry" step. Signed-out
   // visitors only see stops with real content; signed-in (the trip owner) sees every

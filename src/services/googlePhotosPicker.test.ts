@@ -80,6 +80,7 @@ describe('googlePhotosPicker (configured)', () => {
     vi.unstubAllEnvs();
     vi.restoreAllMocks();
     vi.resetModules();
+    vi.useRealTimers();
   });
 
   it('runs the full session -> poll -> list -> download flow and returns Files', async () => {
@@ -106,5 +107,25 @@ describe('googlePhotosPicker (configured)', () => {
     vi.spyOn(window, 'open').mockReturnValue(null); // pop-up blocked
 
     await expect(pickFromGooglePhotos()).rejects.toThrow(/pop-up blocked/i);
+  });
+
+  it('rejects instead of hanging forever if the OAuth pop-up is silently blocked (no callback ever fires)', async () => {
+    const { pickFromGooglePhotos } = await importConfigured();
+    // GIS gives no error or callback at all when its own pop-up is blocked —
+    // simulate that by never invoking the client's callback.
+    window.google = {
+      accounts: {
+        oauth2: {
+          initTokenClient: () => ({ requestAccessToken: () => {} }),
+        },
+      },
+    };
+
+    vi.useFakeTimers();
+    // Attach the assertion (which internally handles the rejection) before
+    // advancing the clock, so the rejection is never briefly "unhandled".
+    const assertion = expect(pickFromGooglePhotos()).rejects.toThrow(/pop-up blocked/i);
+    await vi.advanceTimersByTimeAsync(60_000);
+    await assertion;
   });
 });

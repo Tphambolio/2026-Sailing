@@ -56,16 +56,38 @@ function loadGisScript(): Promise<void> {
   return gisScriptPromise;
 }
 
+// Call this well before any click handler needs it (e.g. on mount). Chrome's
+// popup blocker only allows a popup opened synchronously-ish within a user
+// gesture's task; awaiting the GIS <script> network fetch inside the click
+// handler burns that window, so requestAccessToken() below silently fails to
+// open anything and hangs forever (no error callback fires). Preloading means
+// the fast path (script already present) is what actually runs on click.
+export function preloadGoogleIdentityServices(): void {
+  loadGisScript().catch(() => {
+    // Ignore — requestAccessToken will surface this properly if it's still
+    // failing by the time the user actually clicks.
+  });
+}
+
 function requestAccessToken(): Promise<string> {
   return loadGisScript().then(
     () =>
       new Promise<string>((resolve, reject) => {
         const oauth2 = window.google?.accounts?.oauth2;
         if (!oauth2) { reject(new Error('Google Identity Services did not load')); return; }
+
+        // GIS gives no callback at all if the popup itself is blocked, so
+        // without this the whole flow hangs silently forever instead of
+        // surfacing a fixable error.
+        const timeout = setTimeout(() => {
+          reject(new Error('Pop-up blocked — allow pop-ups for this site, then try again.'));
+        }, 60_000);
+
         const client = oauth2.initTokenClient({
           client_id: GOOGLE_CLIENT_ID,
           scope: PICKER_SCOPE,
           callback: (resp) => {
+            clearTimeout(timeout);
             if (resp.error || !resp.access_token) reject(new Error(resp.error || 'No access token returned'));
             else resolve(resp.access_token);
           },
