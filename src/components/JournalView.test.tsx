@@ -53,3 +53,29 @@ describe('JournalView sign-in visibility', () => {
     expect(screen.queryByRole('button', { name: /sign in/i })).not.toBeInTheDocument();
   });
 });
+
+function orderingStop(overrides: Partial<Stop>): Stop {
+  return { ...stops[0], ...overrides };
+}
+
+const orderingStops: Stop[] = [
+  orderingStop({ id: 1, key: 'sibenik', name: 'Sibenik', arrival: '2026-07-01', departure: '2026-07-03' }),
+  orderingStop({ id: 2, key: 'split', name: 'Split', arrival: '2026-07-10', departure: '2026-07-12' }),
+  orderingStop({ id: 3, key: 'dubrovnik', name: 'Dubrovnik', arrival: '2026-08-10', departure: '2026-08-12' }),
+  orderingStop({ id: 4, key: 'kotor', name: 'Kotor', arrival: '2026-09-01', departure: '2026-09-03' }),
+];
+
+describe('JournalView feed ordering', () => {
+  it('pins the current stop to the top, orders written posts newest-first, and puts unwritten future stops last', () => {
+    mockUseAuth.mockReturnValue({ user: { id: 'user-1' }, signInWithProvider: vi.fn() });
+    // sibenik, split, and dubrovnik have real posts; kotor is a future stop with nothing written yet.
+    mockUseJournalEntryKeys.mockReturnValue({ keys: new Set(['sibenik', 'split', 'dubrovnik']), loading: false, refetch: vi.fn() });
+
+    const { container } = render(
+      <JournalView stops={orderingStops} currentStop={orderingStops.find(s => s.key === 'dubrovnik') ?? null} />
+    );
+
+    const ids = Array.from(container.querySelectorAll('[id^="journal-"]')).map(el => el.id);
+    expect(ids).toEqual(['journal-dubrovnik', 'journal-split', 'journal-sibenik', 'journal-kotor']);
+  });
+});

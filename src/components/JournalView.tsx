@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import type { Stop } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { useJournalEntryKeys } from '../hooks/useJournalEntries';
+import { effectiveArrival } from '../services/routeEngine';
 import { COUNTRY_FLAGS } from '../data/constants';
 import { formatDate } from '../utils/geo';
 import JournalEntryCard from './JournalEntryCard';
@@ -40,9 +41,20 @@ export default function JournalView({ stops, currentStop, focusStop, onToggleVis
   // Every stop already has a slot — no separate "create an entry" step. Signed-out
   // visitors only see stops with real content; signed-in (the trip owner) sees every
   // stop as a ready-to-write placeholder.
+  //
+  // Ordering mirrors a blog feed: the current stop always pinned at the very top
+  // (it's the active "write today" slot even before it has content), then actual
+  // posts newest-first below that (the trip's first stop naturally sinks to the
+  // bottom), then not-yet-written future placeholders trailing at the very end in
+  // normal trip order — so an empty slot for a stop months away doesn't outrank
+  // yesterday's real post.
   const entryStops = useMemo(() => {
     const rest = stops.filter(s => s.key !== currentStop?.key);
-    const ordered = currentStop ? [currentStop, ...rest] : rest;
+    const withContent = rest.filter(s => keys.has(s.key));
+    const withoutContent = rest.filter(s => !keys.has(s.key));
+    withContent.sort((a, b) => effectiveArrival(b).localeCompare(effectiveArrival(a)));
+
+    const ordered = currentStop ? [currentStop, ...withContent, ...withoutContent] : [...withContent, ...withoutContent];
     if (user) return ordered;
     return ordered.filter(s => keys.has(s.key) || s.key === currentStop?.key);
   }, [stops, currentStop, user, keys]);
