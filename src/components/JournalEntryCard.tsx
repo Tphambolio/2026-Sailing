@@ -115,8 +115,14 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
   // upload pipeline as a local file selection.
   const handleGooglePhotosPick = async () => {
     if (googlePickerStatus || uploadProgress) return;
+    // Must open synchronously, right here in the click handler, before any
+    // await — Chrome's pop-up blocker requires a window.open() to happen
+    // within a fresh user gesture. The URL isn't known yet (it comes back
+    // from an async API call inside pickFromGooglePhotos), so this opens
+    // blank and gets redirected once the real picker session URL exists.
+    const pickerWindow = window.open('', '_blank', 'noopener');
     try {
-      const files = await pickFromGooglePhotos(setGooglePickerStatus);
+      const files = await pickFromGooglePhotos(pickerWindow, setGooglePickerStatus);
       setGooglePickerStatus('downloading'); // keep the label steady while these upload to Supabase
       await uploadFiles(files);
     } catch (err) {

@@ -159,39 +159,59 @@ async function downloadPickedFile(token: string, item: PickedMediaItem): Promise
 /**
  * Full flow: authorize, open Google's hosted picker, wait for the user to
  * finish selecting, and return the picked items as File objects.
+ *
+ * `pickerWindow` must be opened synchronously by the caller, in the same
+ * click handler, before calling this — via window.open('', '_blank') — and
+ * passed in here. Chrome's pop-up blocker only allows window.open() within
+ * a fresh user-gesture task; everything below this point involves awaited
+ * network calls (the OAuth token exchange, creating the picker session), so
+ * opening the picker's real URL as a *new* window at that point gets
+ * silently blocked. Navigating an *already-open* window via
+ * `.location.href`, on the other hand, doesn't need fresh activation, which
+ * is why the caller opens a blank one upfront and we just redirect it here.
  */
-export async function pickFromGooglePhotos(onStatusChange?: (status: GooglePickerStatus) => void): Promise<File[]> {
+export async function pickFromGooglePhotos(
+  pickerWindow: Window | null,
+  onStatusChange?: (status: GooglePickerStatus) => void
+): Promise<File[]> {
+  if (!pickerWindow || pickerWindow.closed) {
+    throw new Error('Pop-up blocked — allow pop-ups for this site, then try again.');
+  }
   if (!isGooglePhotosConfigured) {
+    pickerWindow.close();
     throw new Error('Google Photos is not configured (missing VITE_GOOGLE_CLIENT_ID)');
   }
 
-  onStatusChange?.('opening');
-  const token = await requestAccessToken();
-  const session = await apiCall<PickerSession>('/sessions', token, { method: 'POST', body: '{}' });
+  try {
+    onStatusChange?.('opening');
+    const token = await requestAccessToken();
+    const session = await apiCall<PickerSession>('/sessions', token, { method: 'POST', body: '{}' });
 
-  const opened = window.open(session.pickerUri, '_blank', 'noopener');
-  if (!opened) {
-    throw new Error(`Pop-up blocked — allow pop-ups for this site, then try again. Or open this link directly: ${session.pickerUri}`);
+    pickerWindow.location.href = session.pickerUri;
+
+    onStatusChange?.('waiting');
+    const pollIntervalMs = parseDurationSeconds(session.pollingConfig?.pollInterval, 3) * 1000;
+    const timeoutMs = parseDurationSeconds(session.pollingConfig?.timeoutIn, 300) * 1000;
+    const deadline = Date.now() + timeoutMs;
+
+    let current = session;
+    while (!current.mediaItemsSet) {
+      if (Date.now() > deadline) throw new Error('Timed out waiting for a Google Photos selection.');
+      await new Promise((r) => setTimeout(r, pollIntervalMs));
+      current = await apiCall<PickerSession>(`/sessions/${session.id}`, token);
+    }
+
+    onStatusChange?.('downloading');
+    const items = await listPickedMediaItems(token, session.id);
+    const files = await Promise.all(items.map((item) => downloadPickedFile(token, item)));
+
+    // Best-effort cleanup — sessions auto-expire on their own, so a failure here isn't worth surfacing.
+    apiCall(`/sessions/${session.id}`, token, { method: 'DELETE' }).catch(() => {});
+
+    return files;
+  } catch (err) {
+    // Don't leave a blank/abandoned tab hanging around on any failure path.
+    if (!pickerWindow.closed) pickerWindow.close();
+    throw err;
   }
-
-  onStatusChange?.('waiting');
-  const pollIntervalMs = parseDurationSeconds(session.pollingConfig?.pollInterval, 3) * 1000;
-  const timeoutMs = parseDurationSeconds(session.pollingConfig?.timeoutIn, 300) * 1000;
-  const deadline = Date.now() + timeoutMs;
-
-  let current = session;
-  while (!current.mediaItemsSet) {
-    if (Date.now() > deadline) throw new Error('Timed out waiting for a Google Photos selection.');
-    await new Promise((r) => setTimeout(r, pollIntervalMs));
-    current = await apiCall<PickerSession>(`/sessions/${session.id}`, token);
-  }
-
-  onStatusChange?.('downloading');
-  const items = await listPickedMediaItems(token, session.id);
-  const files = await Promise.all(items.map((item) => downloadPickedFile(token, item)));
-
-  // Best-effort cleanup — sessions auto-expire on their own, so a failure here isn't worth surfacing.
-  apiCall(`/sessions/${session.id}`, token, { method: 'DELETE' }).catch(() => {});
-
-  return files;
 }

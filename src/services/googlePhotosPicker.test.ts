@@ -10,6 +10,13 @@ async function importConfigured() {
   return import('./googlePhotosPicker');
 }
 
+// A minimal stand-in for the blank window the caller opens synchronously
+// before calling pickFromGooglePhotos — just enough for the code under test
+// to check `.closed` and assign `.location.href`.
+function fakeWindow(): Window {
+  return { closed: false, location: { href: '' }, close: vi.fn() } as unknown as Window;
+}
+
 function stubGis(accessToken: string) {
   window.google = {
     accounts: {
@@ -70,7 +77,7 @@ describe('googlePhotosPicker (unconfigured)', () => {
   it('reports not configured and rejects immediately when VITE_GOOGLE_CLIENT_ID is unset', async () => {
     const { isGooglePhotosConfigured, pickFromGooglePhotos } = await import('./googlePhotosPicker');
     expect(isGooglePhotosConfigured).toBe(false);
-    await expect(pickFromGooglePhotos()).rejects.toThrow(/not configured/i);
+    await expect(pickFromGooglePhotos(fakeWindow())).rejects.toThrow(/not configured/i);
   });
 });
 
@@ -89,24 +96,24 @@ describe('googlePhotosPicker (configured)', () => {
 
     stubGis('fake-access-token');
     vi.stubGlobal('fetch', stubFetchFlow());
-    vi.spyOn(window, 'open').mockReturnValue({} as Window);
+    const pickerWindow = fakeWindow();
 
     const statuses: string[] = [];
-    const files = await pickFromGooglePhotos((s) => statuses.push(s));
+    const files = await pickFromGooglePhotos(pickerWindow, (s) => statuses.push(s));
 
     expect(statuses).toEqual(['opening', 'waiting', 'downloading']);
+    expect(pickerWindow.location.href).toBe('https://photos.google.com/picker/session-1');
     expect(files).toHaveLength(1);
     expect(files[0].name).toBe('sunset.jpg');
     expect(files[0].type).toBe('image/jpeg');
   });
 
-  it('throws a clear error when the picker tab is blocked by the browser', async () => {
+  it('throws a clear error when the caller could not open the picker tab (blocked by the browser)', async () => {
     const { pickFromGooglePhotos } = await importConfigured();
-    stubGis('fake-access-token');
-    vi.stubGlobal('fetch', stubFetchFlow());
-    vi.spyOn(window, 'open').mockReturnValue(null); // pop-up blocked
 
-    await expect(pickFromGooglePhotos()).rejects.toThrow(/pop-up blocked/i);
+    // The caller is responsible for the synchronous window.open() call — this
+    // is what it looks like when the browser blocked it, before we even get here.
+    await expect(pickFromGooglePhotos(null)).rejects.toThrow(/pop-up blocked/i);
   });
 
   it('rejects instead of hanging forever if the OAuth pop-up is silently blocked (no callback ever fires)', async () => {
@@ -124,7 +131,7 @@ describe('googlePhotosPicker (configured)', () => {
     vi.useFakeTimers();
     // Attach the assertion (which internally handles the rejection) before
     // advancing the clock, so the rejection is never briefly "unhandled".
-    const assertion = expect(pickFromGooglePhotos()).rejects.toThrow(/pop-up blocked/i);
+    const assertion = expect(pickFromGooglePhotos(fakeWindow())).rejects.toThrow(/pop-up blocked/i);
     await vi.advanceTimersByTimeAsync(60_000);
     await assertion;
   });
