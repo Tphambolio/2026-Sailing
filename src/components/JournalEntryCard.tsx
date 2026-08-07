@@ -26,12 +26,32 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  // Guards against a rapid double-tap firing the OS file chooser twice before
+  // React's disabled-button re-render catches up — a plausible cause of the
+  // native picker getting stuck reopening. A ref (not state) so the check is
+  // synchronous, not deferred to the next render.
+  const pickerOpenRef = useRef(false);
 
   useEffect(() => { setDraft(content); }, [content]);
   useEffect(() => {
     // A freshly-added entry with nothing yet starts straight into edit mode
     if (!notesLoading && !content && photos.length === 0) setEditing(true);
   }, [notesLoading]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    // The change event never fires if the user cancels the native picker
+    // without selecting anything, so the guard needs a second way to clear —
+    // returning focus to the tab covers both the "picked" and "canceled" paths.
+    const clearGuard = () => { pickerOpenRef.current = false; };
+    window.addEventListener('focus', clearGuard);
+    return () => window.removeEventListener('focus', clearGuard);
+  }, []);
+
+  const openPicker = (ref: React.RefObject<HTMLInputElement | null>) => {
+    if (pickerOpenRef.current) return;
+    pickerOpenRef.current = true;
+    ref.current?.click();
+  };
 
   const displayBlocks = useMemo(() => parseContent(content), [content]);
   const inlinePhotoIds = useMemo(
@@ -67,6 +87,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    pickerOpenRef.current = false;
     const files = Array.from(e.target.files ?? []);
     if (files.length === 0) return;
     setUploadProgress({ done: 0, total: files.length });
@@ -135,7 +156,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
           )}
           {user && (
             <button
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => openPicker(fileInputRef)}
               disabled={!!uploadProgress}
               className="text-xs text-cyan-400 hover:text-cyan-300 disabled:text-slate-500"
             >
@@ -144,7 +165,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
           )}
           {user && (
             <button
-              onClick={() => videoInputRef.current?.click()}
+              onClick={() => openPicker(videoInputRef)}
               disabled={!!uploadProgress}
               className="text-xs text-cyan-400 hover:text-cyan-300 disabled:text-slate-500"
             >

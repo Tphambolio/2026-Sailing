@@ -18,8 +18,25 @@ export default function NotesModal({ stop, onClose }: NotesModalProps) {
   const [editing, setEditing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
+  // Guards against a rapid double-tap firing the OS file chooser twice before
+  // the disabled-button re-render catches up. A ref so the check is synchronous.
+  const pickerOpenRef = useRef(false);
 
   useEffect(() => { setDraft(content); }, [content]);
+
+  useEffect(() => {
+    // change never fires if the user cancels the native picker without
+    // selecting anything, so clear the guard on focus-return too.
+    const clearGuard = () => { pickerOpenRef.current = false; };
+    window.addEventListener('focus', clearGuard);
+    return () => window.removeEventListener('focus', clearGuard);
+  }, []);
+
+  const openPicker = (ref: React.RefObject<HTMLInputElement | null>) => {
+    if (pickerOpenRef.current) return;
+    pickerOpenRef.current = true;
+    ref.current?.click();
+  };
 
   // `content` may contain {{photo:ID}} tokens placed by the Journal tab's inline
   // photo picker. Render them as images here too, instead of leaking the raw token.
@@ -31,6 +48,7 @@ export default function NotesModal({ stop, onClose }: NotesModalProps) {
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    pickerOpenRef.current = false;
     const file = e.target.files?.[0];
     if (file) await upload(file);
     e.target.value = '';
@@ -131,7 +149,7 @@ export default function NotesModal({ stop, onClose }: NotesModalProps) {
               <h3 className="text-xs font-semibold text-slate-400 uppercase">Photos</h3>
               {user && (
                 <button
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={() => openPicker(fileInputRef)}
                   disabled={uploading}
                   className="text-xs text-cyan-400 hover:text-cyan-300 disabled:text-slate-500"
                 >
@@ -140,7 +158,7 @@ export default function NotesModal({ stop, onClose }: NotesModalProps) {
               )}
               {user && (
                 <button
-                  onClick={() => videoInputRef.current?.click()}
+                  onClick={() => openPicker(videoInputRef)}
                   disabled={uploading}
                   className="text-xs text-cyan-400 hover:text-cyan-300 disabled:text-slate-500 ml-2"
                 >

@@ -103,3 +103,21 @@ describe('JournalEntryCard video support', () => {
     expect(container.querySelector('img')).toBeNull();
   });
 });
+
+describe('JournalEntryCard file picker double-open guard', () => {
+  it('does not fire the OS file chooser twice on a rapid double-tap', async () => {
+    setup('');
+    const { container } = render(<JournalEntryCard stop={stop} />);
+
+    const fileInput = container.querySelector('input[type="file"][accept="image/*"]') as HTMLInputElement;
+    const clickSpy = vi.spyOn(fileInput, 'click').mockImplementation(() => {});
+
+    const user = userEvent.setup();
+    const addPhotosBtn = screen.getByRole('button', { name: /add photos/i });
+    // Two taps in quick succession, before any change/focus event resets the guard.
+    await user.click(addPhotosBtn);
+    await user.click(addPhotosBtn);
+
+    expect(clickSpy).toHaveBeenCalledTimes(1);
+  });
+});
