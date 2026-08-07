@@ -654,22 +654,25 @@ function App() {
                 </button>
               </div>
             )}
-            {/* Sign in / out — unlocks editing notes & photos */}
+            {/* Sign in / out — unlocks editing notes & photos. Visible at every
+                width: this is the only reliable way to sign in on mobile, since
+                the per-view prompts (Journal/Notes) only show up when there's
+                no content yet, which won't be true once the trip is underway. */}
             {user ? (
               <button
                 onClick={() => signOut()}
-                className="hidden sm:block px-2 py-1 rounded text-xs text-slate-300 hover:bg-slate-700"
+                className="px-2 py-1 rounded text-xs text-slate-300 hover:bg-slate-700"
                 title={`Signed in as ${user.email || user.user_metadata?.name || 'you'} — click to sign out`}
               >
-                👤 Sign out
+                👤<span className="hidden md:inline"> Sign out</span>
               </button>
             ) : (
               <button
                 onClick={() => signInWithProvider('google')}
-                className="hidden sm:block px-2 py-1 rounded text-xs text-slate-300 hover:bg-slate-700"
+                className="px-2 py-1 rounded text-xs text-cyan-400 hover:bg-slate-700"
                 title="Sign in to add notes & photos"
               >
-                Sign in
+                👤<span className="hidden md:inline"> Sign in</span>
               </button>
             )}
             {/* Desktop sidebar toggle */}

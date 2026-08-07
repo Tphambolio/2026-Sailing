@@ -67,18 +67,18 @@ export default function JournalView({ stops, currentStop, focusStop, onToggleVis
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-bold text-white mb-1">📖 Trip Journal</h1>
           <p className="text-sm text-slate-400">Notes and photos from along the way</p>
+          {!user && (
+            <button onClick={() => signInWithProvider('google')} className="mt-2 text-cyan-400 hover:text-cyan-300 text-sm">
+              Sign in to write →
+            </button>
+          )}
         </div>
 
         {loading ? (
           <p className="text-center text-slate-500">Loading journal…</p>
         ) : entryStops.length === 0 ? (
           <div className="text-center text-slate-500 py-12">
-            <p className="mb-2">No journal entries yet.</p>
-            {!user && (
-              <button onClick={() => signInWithProvider('google')} className="text-cyan-400 hover:text-cyan-300 text-sm">
-                Sign in to start writing →
-              </button>
-            )}
+            <p>No journal entries yet.</p>
           </div>
         ) : (
           <div className="space-y-3">
