@@ -895,6 +895,7 @@ function App() {
               stops={filteredStops}
               isEditing={routeEditMode}
               onSaveWaypoints={handleSaveWaypoints}
+              stopBarVisible={!!selectedStop}
             />
           </MapContainer>
 

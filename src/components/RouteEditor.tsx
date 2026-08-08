@@ -7,6 +7,9 @@ interface RouteEditorProps {
   stops: Stop[];
   isEditing: boolean;
   onSaveWaypoints: (stopId: number, waypoints: [number, number][]) => void;
+  // The selected-stop detail bar (App.tsx) docks to the same bottom edge of the map —
+  // without this, both float at bottom-4 and overlap/collide when both are open at once.
+  stopBarVisible?: boolean;
 }
 
 // Number marker for waypoint order
@@ -37,7 +40,7 @@ function MapClickHandler({
   return null;
 }
 
-export default function RouteEditor({ stops, isEditing, onSaveWaypoints }: RouteEditorProps) {
+export default function RouteEditor({ stops, isEditing, onSaveWaypoints, stopBarVisible }: RouteEditorProps) {
   const [selectedStopId, setSelectedStopId] = useState<number | null>(null);
   const [waypoints, setWaypoints] = useState<[number, number][]>([]);
   const [drawMode, setDrawMode] = useState(false);
@@ -161,9 +164,13 @@ export default function RouteEditor({ stops, isEditing, onSaveWaypoints }: Route
         />
       ))}
 
-      {/* Control Panel */}
+      {/* Control Panel — shifted up clear of the selected-stop detail bar when it's
+          also showing, so the two floating bottom overlays don't stack on top of
+          each other (see stopBarVisible on RouteEditorProps). */}
       <div
-        className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-[1000] bg-gray-900 rounded-lg shadow-lg p-4 border border-gray-700 min-w-[350px]"
+        className={`absolute left-1/2 transform -translate-x-1/2 z-[1000] bg-gray-900 rounded-lg shadow-lg p-4 border border-gray-700 min-w-[350px] ${
+          stopBarVisible ? 'bottom-28' : 'bottom-4'
+        }`}
         style={{ pointerEvents: 'auto' }}
       >
         {/* Route selector */}
