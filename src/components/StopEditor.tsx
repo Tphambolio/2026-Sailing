@@ -167,8 +167,10 @@ export default function StopEditor({ stop, countries, onSave, onDelete, onCancel
         </button>
       </div>
 
-      {/* Form */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      {/* Form — min-h-0 is required here: a flex child's default min-height is its
+          content's height, which defeats overflow-y-auto and lets the form grow past
+          the viewport instead of scrolling internally, pushing the footer off-screen. */}
+      <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
 
         {/* Marina/Anchorage Search — only for new stops */}
         {isNew && (
