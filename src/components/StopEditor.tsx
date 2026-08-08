@@ -11,9 +11,11 @@ interface StopEditorProps {
   onSave: (stop: Partial<Stop>) => void;
   onDelete?: () => void;           // only when editing existing stop
   onCancel: () => void;
+  onPickLocation?: () => void;     // only when editing existing stop — arms map-click repositioning
+  pickingLocation?: boolean;       // true while waiting for that map click
 }
 
-export default function StopEditor({ stop, countries, onSave, onDelete, onCancel }: StopEditorProps) {
+export default function StopEditor({ stop, countries, onSave, onDelete, onCancel, onPickLocation, pickingLocation }: StopEditorProps) {
   const isNew = !stop?.id;
 
   const [name, setName] = useState(stop?.name || '');
@@ -268,6 +270,17 @@ export default function StopEditor({ stop, countries, onSave, onDelete, onCancel
           <p className="text-xs text-slate-500 -mt-2">
             Tip: Click on the map to set coordinates, or use search above
           </p>
+        )}
+
+        {/* Reposition an existing stop by clicking the map, instead of typing raw coordinates */}
+        {!isNew && onPickLocation && (
+          <button
+            onClick={onPickLocation}
+            disabled={pickingLocation}
+            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm text-cyan-400 hover:bg-slate-600 hover:border-cyan-500 disabled:text-cyan-300 disabled:border-cyan-500 transition-colors -mt-2"
+          >
+            {pickingLocation ? '📍 Click the correct spot on the map…' : '📍 Pick new location on map'}
+          </button>
         )}
 
         {/* Type toggle */}

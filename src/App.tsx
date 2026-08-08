@@ -256,6 +256,9 @@ function App() {
   const [insertAfterIndex, setInsertAfterIndex] = useState<number | null>(null);
   const [addStopMode, setAddStopMode] = useState(false);
   const [pendingLatLon, setPendingLatLon] = useState<{ lat: number; lon: number } | null>(null);
+  // Repositioning an already-saved stop (as opposed to placing a brand new one via
+  // addStopMode) — the next map click updates editingStop's coordinates in place.
+  const [pickLocationMode, setPickLocationMode] = useState(false);
 
   const tileLayerConfig = {
     dark: { url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', attribution: '&copy; CARTO' },
@@ -835,11 +838,23 @@ function App() {
             />
             <MapController selectedStop={selectedStop} />
             <ZoomTracker onZoomChange={handleZoomChange} />
-            <MeasureHandler measureMode={measureMode || addStopMode} onAddPoint={addStopMode ? (point) => {
-              setPendingLatLon(point);
-              if (insertAfterIndex === null) setInsertAfterIndex(stops.length - 1);
-              setAddStopMode(false);
-            } : handleAddMeasurePoint} />
+            <MeasureHandler
+              measureMode={measureMode || addStopMode || pickLocationMode}
+              onAddPoint={
+                pickLocationMode
+                  ? (point) => {
+                      setEditingStop(prev => prev ? { ...prev, lat: point.lat, lon: point.lon } : prev);
+                      setPickLocationMode(false);
+                    }
+                  : addStopMode
+                  ? (point) => {
+                      setPendingLatLon(point);
+                      if (insertAfterIndex === null) setInsertAfterIndex(stops.length - 1);
+                      setAddStopMode(false);
+                    }
+                  : handleAddMeasurePoint
+              }
+            />
             {/* Route segments - drawn sequentially, colored by country */}
             {routeSegments.map((segment, i) => (
               <Polyline
@@ -1079,6 +1094,11 @@ function App() {
             setEditingStop(null);
           } : undefined}
           onCancel={handleCancelEdit}
+          onPickLocation={editingStop ? () => {
+            setActiveView('map');
+            setPickLocationMode(true);
+          } : undefined}
+          pickingLocation={pickLocationMode}
         />
       )}
 
