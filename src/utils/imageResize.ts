@@ -4,11 +4,14 @@
 // Photos original pulled via the picker) can be 5-10MB, which is what was
 // making Google Photos imports take several minutes: multi-MB downloads from
 // Google followed by multi-MB uploads to Supabase, one file at a time.
-const MAX_DIMENSION = 2048;
-const JPEG_QUALITY = 0.85;
+// 1600px / q0.8 mirrors what Instagram/social feeds actually serve — this app
+// is a sailing trip journal, read over marina wifi as often as broadband, so
+// erring toward smaller than a "full quality" web image is the right trade.
+const MAX_DIMENSION = 1600;
+const JPEG_QUALITY = 0.8;
 // Below this, a photo is already screen-appropriate — skip the decode/encode
 // round-trip rather than possibly making a small file bigger via re-encoding.
-const SKIP_BELOW_BYTES = 1_500_000;
+const SKIP_BELOW_BYTES = 900_000;
 
 export async function downsampleImage(file: File): Promise<File> {
   // Canvas flattens animated GIFs to one frame and can't touch video at all.

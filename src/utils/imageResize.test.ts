@@ -40,10 +40,10 @@ describe('downsampleImage', () => {
 
     const result = await downsampleImage(original);
 
-    // 4000x3000 scaled to fit within 2048 -> 2048x1536, aspect ratio preserved.
-    expect(fakeCanvas.width).toBe(2048);
-    expect(fakeCanvas.height).toBe(1536);
-    expect(drawImage).toHaveBeenCalledWith(expect.anything(), 0, 0, 2048, 1536);
+    // 4000x3000 scaled to fit within 1600 -> 1600x1200, aspect ratio preserved.
+    expect(fakeCanvas.width).toBe(1600);
+    expect(fakeCanvas.height).toBe(1200);
+    expect(drawImage).toHaveBeenCalledWith(expect.anything(), 0, 0, 1600, 1200);
     expect(result.type).toBe('image/jpeg');
     expect(result.name).toBe('photo.jpg');
     expect(result).not.toBe(original);
@@ -90,7 +90,7 @@ describe('downsampleImage', () => {
 
     const result = await downsampleImage(original);
 
-    expect(fakeCanvas.width).toBe(2048);
+    expect(fakeCanvas.width).toBe(1600);
     expect(result).not.toBe(original);
   });
 });
