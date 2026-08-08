@@ -5,6 +5,7 @@ import { useStopNotes, useStopPhotos } from '../hooks/useStopContent';
 import { COUNTRY_FLAGS } from '../data/constants';
 import { formatDate } from '../utils/geo';
 import { parseContent, isVideoPath } from '../utils/journalContent';
+import { downsampleImage } from '../utils/imageResize';
 import {
   startGooglePhotosSession,
   waitForGooglePhotosSelection,
@@ -106,7 +107,8 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
     if (files.length === 0) return;
     setUploadProgress({ done: 0, total: files.length });
     for (const file of files) {
-      const { data } = await upload(file);
+      const toUpload = await downsampleImage(file);
+      const { data } = await upload(toUpload);
       if (data) setDraft(prev => `${prev}${prev.trim() ? '\n\n' : ''}{{photo:${data.id}}}`);
       setUploadProgress(p => (p ? { ...p, done: p.done + 1 } : null));
     }

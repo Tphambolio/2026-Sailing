@@ -158,8 +158,14 @@ async function listPickedMediaItems(token: string, sessionId: string): Promise<P
 }
 
 async function downloadPickedFile(token: string, item: PickedMediaItem): Promise<File> {
-  // Google's baseUrl download-size suffix convention: =d for photos, =dv for video.
-  const suffix = item.type === 'VIDEO' ? '=dv' : '=d';
+  // Google's baseUrl download-size suffix convention. =d pulls the full-resolution
+  // original — for a phone photo that's routinely 5-10MB, which is what made
+  // Google Photos imports take minutes (multi-MB download here, then another
+  // multi-MB upload to Supabase). =w2048-h2048 asks Google to scale it down to
+  // fit within a 2048x2048 box server-side instead (aspect ratio preserved, no
+  // crop) — plenty for on-screen display, a fraction of the transfer. Video has
+  // no equivalent scaled-download option, so it still uses =dv.
+  const suffix = item.type === 'VIDEO' ? '=dv' : '=w2048-h2048';
   const res = await fetch(`${item.mediaFile.baseUrl}${suffix}`, { headers: { Authorization: `Bearer ${token}` } });
   if (!res.ok) throw new Error(`Failed to download ${item.mediaFile.filename}: ${res.status}`);
   const blob = await res.blob();
