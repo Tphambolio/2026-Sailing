@@ -3,6 +3,7 @@ import type { Stop } from '../types';
 import { COUNTRY_FLAGS } from '../data/constants';
 import { geocodeTown, searchMarinasNear, type OsmSearchResult } from '../services/osmSearch';
 import { enrichStop, type EnrichmentData } from '../services/enrichment';
+import { addDays } from '../utils/geo';
 
 interface StopEditorProps {
   stop: Partial<Stop> | null;      // null = adding new stop, non-null = editing
@@ -29,6 +30,10 @@ export default function StopEditor({ stop, countries, onSave, onDelete, onCancel
   });
   const [marinaName, setMarinaName] = useState(stop?.marinaName || '');
   const [marinaUrl, setMarinaUrl] = useState(stop?.marinaUrl || '');
+  // Overrides the auto-cascaded planned arrival/departure (which just chains off the
+  // previous stop's dates) — needed when backfilling a stop for a specific day that
+  // already happened, like a second night at a different anchorage on the same island.
+  const [actualArrivalDate, setActualArrivalDate] = useState(stop?.actualArrival || '');
   const [showDelete, setShowDelete] = useState(false);
 
   // Search state
@@ -135,6 +140,14 @@ export default function StopEditor({ stop, countries, onSave, onDelete, onCancel
       duration: `${durationDays} day${durationDays !== 1 ? 's' : ''}`,
       marinaName: marinaName.trim() || undefined,
       marinaUrl: marinaUrl.trim() || undefined,
+      // A set date means "we were actually here on this day" — overrides the
+      // auto-cascaded planned schedule for Journal ordering and Schengen counting
+      // (see effectiveArrival/effectiveDeparture in routeEngine.ts), and implies visited.
+      ...(actualArrivalDate ? {
+        actualArrival: actualArrivalDate,
+        actualDeparture: addDays(actualArrivalDate, durationDays),
+        visited: true,
+      } : {}),
       // Spread enrichment data if available
       ...(enrichmentData || {}),
     });
@@ -299,6 +312,24 @@ export default function StopEditor({ stop, countries, onSave, onDelete, onCancel
             <span>1 month</span>
             <span>90 days</span>
           </div>
+        </div>
+
+        {/* Actual date — only needed when backfilling a stop for a day that already
+            happened; the planned schedule above auto-cascades from the previous stop
+            and can't be hand-set, so this is how you pin a specific real date instead. */}
+        <div>
+          <label className="block text-xs font-medium text-slate-400 mb-1">
+            Date (optional — set this if you're logging a day that already happened)
+          </label>
+          <input
+            type="date"
+            value={actualArrivalDate}
+            onChange={(e) => setActualArrivalDate(e.target.value)}
+            className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500"
+          />
+          <p className="text-[11px] text-slate-500 mt-1">
+            Leave blank to let it auto-schedule after the previous stop. Setting a date marks this stop as visited and is what the Journal uses to order and place it.
+          </p>
         </div>
 
         {/* Marina details (if type is marina) */}
