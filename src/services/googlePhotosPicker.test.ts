@@ -10,13 +10,6 @@ async function importConfigured() {
   return import('./googlePhotosPicker');
 }
 
-// A minimal stand-in for the blank window the caller opens synchronously
-// before calling pickFromGooglePhotos — just enough for the code under test
-// to check `.closed` and assign `.location.href`.
-function fakeWindow(): Window {
-  return { closed: false, location: { href: '' }, close: vi.fn() } as unknown as Window;
-}
-
 function stubGis(accessToken: string) {
   window.google = {
     accounts: {
@@ -73,11 +66,11 @@ function stubFetchFlow() {
   });
 }
 
-describe('googlePhotosPicker (unconfigured)', () => {
-  it('reports not configured and rejects immediately when VITE_GOOGLE_CLIENT_ID is unset', async () => {
-    const { isGooglePhotosConfigured, pickFromGooglePhotos } = await import('./googlePhotosPicker');
+describe('startGooglePhotosSession (unconfigured)', () => {
+  it('rejects immediately when VITE_GOOGLE_CLIENT_ID is unset', async () => {
+    const { isGooglePhotosConfigured, startGooglePhotosSession } = await import('./googlePhotosPicker');
     expect(isGooglePhotosConfigured).toBe(false);
-    await expect(pickFromGooglePhotos(fakeWindow())).rejects.toThrow(/not configured/i);
+    await expect(startGooglePhotosSession()).rejects.toThrow(/not configured/i);
   });
 });
 
@@ -90,34 +83,42 @@ describe('googlePhotosPicker (configured)', () => {
     vi.useRealTimers();
   });
 
-  it('runs the full session -> poll -> list -> download flow and returns Files', async () => {
-    const { pickFromGooglePhotos, isGooglePhotosConfigured } = await importConfigured();
+  it('startGooglePhotosSession returns a handle with the picker URI, without opening anything itself', async () => {
+    const { startGooglePhotosSession, isGooglePhotosConfigured } = await importConfigured();
     expect(isGooglePhotosConfigured).toBe(true);
 
     stubGis('fake-access-token');
     vi.stubGlobal('fetch', stubFetchFlow());
-    const pickerWindow = fakeWindow();
+    const openSpy = vi.spyOn(window, 'open');
 
     const statuses: string[] = [];
-    const files = await pickFromGooglePhotos(pickerWindow, (s) => statuses.push(s));
+    const handle = await startGooglePhotosSession((s) => statuses.push(s));
 
-    expect(statuses).toEqual(['opening', 'waiting', 'downloading']);
-    expect(pickerWindow.location.href).toBe('https://photos.google.com/picker/session-1');
+    expect(statuses).toEqual(['opening']);
+    expect(handle.pickerUri).toBe('https://photos.google.com/picker/session-1');
+    expect(handle.sessionId).toBe('session-1');
+    expect(handle.token).toBe('fake-access-token');
+    // The whole point of this design: no window.open() call anywhere in the flow.
+    expect(openSpy).not.toHaveBeenCalled();
+  });
+
+  it('waitForGooglePhotosSelection polls until selection, then downloads the picked files', async () => {
+    const { startGooglePhotosSession, waitForGooglePhotosSelection } = await importConfigured();
+    stubGis('fake-access-token');
+    vi.stubGlobal('fetch', stubFetchFlow());
+
+    const handle = await startGooglePhotosSession();
+    const statuses: string[] = [];
+    const files = await waitForGooglePhotosSelection(handle, (s) => statuses.push(s));
+
+    expect(statuses).toEqual(['waiting', 'downloading']);
     expect(files).toHaveLength(1);
     expect(files[0].name).toBe('sunset.jpg');
     expect(files[0].type).toBe('image/jpeg');
   });
 
-  it('throws a clear error when the caller could not open the picker tab (blocked by the browser)', async () => {
-    const { pickFromGooglePhotos } = await importConfigured();
-
-    // The caller is responsible for the synchronous window.open() call — this
-    // is what it looks like when the browser blocked it, before we even get here.
-    await expect(pickFromGooglePhotos(null)).rejects.toThrow(/pop-up blocked/i);
-  });
-
   it('rejects instead of hanging forever if the OAuth pop-up is silently blocked (no callback ever fires)', async () => {
-    const { pickFromGooglePhotos } = await importConfigured();
+    const { startGooglePhotosSession } = await importConfigured();
     // GIS gives no error or callback at all when its own pop-up is blocked —
     // simulate that by never invoking the client's callback.
     window.google = {
@@ -131,7 +132,7 @@ describe('googlePhotosPicker (configured)', () => {
     vi.useFakeTimers();
     // Attach the assertion (which internally handles the rejection) before
     // advancing the clock, so the rejection is never briefly "unhandled".
-    const assertion = expect(pickFromGooglePhotos(fakeWindow())).rejects.toThrow(/pop-up blocked/i);
+    const assertion = expect(startGooglePhotosSession()).rejects.toThrow(/pop-up blocked/i);
     await vi.advanceTimersByTimeAsync(60_000);
     await assertion;
   });

@@ -5,7 +5,13 @@ import { useStopNotes, useStopPhotos } from '../hooks/useStopContent';
 import { COUNTRY_FLAGS } from '../data/constants';
 import { formatDate } from '../utils/geo';
 import { parseContent, isVideoPath } from '../utils/journalContent';
-import { pickFromGooglePhotos, isGooglePhotosConfigured, type GooglePickerStatus } from '../services/googlePhotosPicker';
+import {
+  startGooglePhotosSession,
+  waitForGooglePhotosSelection,
+  isGooglePhotosConfigured,
+  type GooglePickerStatus,
+  type GooglePhotosSessionHandle,
+} from '../services/googlePhotosPicker';
 
 interface JournalEntryCardProps {
   stop: Stop;
@@ -26,6 +32,11 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
   const [lightboxId, setLightboxId] = useState<string | null>(null);
   const [sharing, setSharing] = useState(false);
   const [googlePickerStatus, setGooglePickerStatus] = useState<GooglePickerStatus | null>(null);
+  // Set once authorization + session creation succeed. While this is set, the
+  // status-row button is replaced by a real <a target="_blank"> link — the
+  // only reliable way to open the picker tab; see googlePhotosPicker.ts for
+  // why window.open() doesn't work here even called synchronously on click.
+  const [googleSession, setGoogleSession] = useState<GooglePhotosSessionHandle | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -110,25 +121,38 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
     e.target.value = '';
   };
 
-  // Google's own hosted picker UI opens in a new tab; this waits for the user
-  // to finish there, downloads what they picked, then feeds it into the same
-  // upload pipeline as a local file selection.
-  const handleGooglePhotosPick = async () => {
-    if (googlePickerStatus || uploadProgress) return;
-    // Must open synchronously, right here in the click handler, before any
-    // await — Chrome's pop-up blocker requires a window.open() to happen
-    // within a fresh user gesture. The URL isn't known yet (it comes back
-    // from an async API call inside pickFromGooglePhotos), so this opens
-    // blank and gets redirected once the real picker session URL exists.
-    const pickerWindow = window.open('', '_blank', 'noopener');
+  // Step 1: authorize + create the picker session. Deliberately doesn't try
+  // to open anything itself — see googlePhotosPicker.ts for why. Once this
+  // succeeds, the button is replaced by a real link to click (step 2).
+  const handleGoogleAuthorize = async () => {
+    if (googlePickerStatus || uploadProgress || googleSession) return;
     try {
-      const files = await pickFromGooglePhotos(pickerWindow, setGooglePickerStatus);
+      const session = await startGooglePhotosSession(setGooglePickerStatus);
+      setGoogleSession(session);
+      setGooglePickerStatus(null);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.warn('Google Photos authorization failed:', err);
+      alert(`Couldn't connect to Google Photos: ${message}`);
+      setGooglePickerStatus(null);
+    }
+  };
+
+  // Step 2: fired by the <a target="_blank"> onClick — the browser handles
+  // actually opening the tab natively; this just starts polling for when the
+  // user finishes selecting there, then downloads and uploads the results.
+  const handleOpenPickerAndWait = async () => {
+    const session = googleSession;
+    if (!session) return;
+    setGoogleSession(null);
+    try {
+      const files = await waitForGooglePhotosSelection(session, setGooglePickerStatus);
       setGooglePickerStatus('downloading'); // keep the label steady while these upload to Supabase
       await uploadFiles(files);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       console.warn('Google Photos picker failed:', err);
-      alert(message.startsWith('Pop-up blocked') ? message : `Couldn't get photos from Google Photos: ${message}`);
+      alert(`Couldn't get photos from Google Photos: ${message}`);
     } finally {
       setGooglePickerStatus(null);
     }
@@ -266,18 +290,34 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
           <input ref={videoInputRef} type="file" accept="video/*" multiple className="hidden" onChange={handleFileChange} />
           {/* Hidden until VITE_GOOGLE_CLIENT_ID is configured — mainly useful on
               desktop, where the OS file picker can't browse a cloud library the
-              way Android's native Photos picker can. */}
-          {user && isGooglePhotosConfigured && (
+              way Android's native Photos picker can.
+              Two-step: authorize first (button), then a real link to open the
+              picker tab — a native <a target="_blank"> click is the one thing
+              browsers don't treat as a blockable pop-up here. */}
+          {user && isGooglePhotosConfigured && !googleSession && (
             <button
-              onClick={handleGooglePhotosPick}
+              onClick={handleGoogleAuthorize}
               disabled={!!googlePickerStatus || !!uploadProgress}
               className="text-xs text-cyan-400 hover:text-cyan-300 disabled:text-slate-500"
             >
-              {googlePickerStatus === 'opening' ? 'Opening Google Photos…'
-                : googlePickerStatus === 'waiting' ? 'Waiting for your picks…'
-                : googlePickerStatus === 'downloading' ? 'Importing…'
-                : '🖼️ Google Photos'}
+              {googlePickerStatus === 'opening' ? 'Connecting…' : '🖼️ Google Photos'}
             </button>
+          )}
+          {user && googleSession && (
+            <a
+              href={googleSession.pickerUri}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={handleOpenPickerAndWait}
+              className="text-xs text-cyan-400 hover:text-cyan-300 underline"
+            >
+              ▶️ Click to open Google Photos
+            </a>
+          )}
+          {(googlePickerStatus === 'waiting' || googlePickerStatus === 'downloading') && (
+            <span className="text-xs text-slate-500">
+              {googlePickerStatus === 'waiting' ? 'Waiting for your picks…' : 'Importing…'}
+            </span>
           )}
           <button
             onClick={handleShare}

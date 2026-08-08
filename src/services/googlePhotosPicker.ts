@@ -104,6 +104,16 @@ interface PickerSession {
   pollingConfig?: { pollInterval?: string; timeoutIn?: string };
 }
 
+// Carries what waitForGooglePhotosSelection needs after the session is
+// created — the access token has to be threaded through since it's not
+// re-derivable from the session id alone.
+export interface GooglePhotosSessionHandle {
+  token: string;
+  sessionId: string;
+  pickerUri: string;
+  pollingConfig?: { pollInterval?: string; timeoutIn?: string };
+}
+
 interface PickedMediaFile {
   filename: string;
   mimeType: string;
@@ -157,61 +167,60 @@ async function downloadPickedFile(token: string, item: PickedMediaItem): Promise
 }
 
 /**
- * Full flow: authorize, open Google's hosted picker, wait for the user to
- * finish selecting, and return the picked items as File objects.
+ * Phase 1: authorize and create a picker session. Returns everything needed
+ * to both open the picker (the caller renders a real <a href target="_blank">
+ * with pickerUri — that's the point of returning it rather than opening a
+ * window here) and later poll for the result.
  *
- * `pickerWindow` must be opened synchronously by the caller, in the same
- * click handler, before calling this — via window.open('', '_blank') — and
- * passed in here. Chrome's pop-up blocker only allows window.open() within
- * a fresh user-gesture task; everything below this point involves awaited
- * network calls (the OAuth token exchange, creating the picker session), so
- * opening the picker's real URL as a *new* window at that point gets
- * silently blocked. Navigating an *already-open* window via
- * `.location.href`, on the other hand, doesn't need fresh activation, which
- * is why the caller opens a blank one upfront and we just redirect it here.
+ * Deliberately does NOT call window.open()/location.href anywhere. Every
+ * script-triggered way of opening a window — even one opened synchronously
+ * in the same click handler via window.open('', '_blank') — turned out to
+ * still get blocked by Chrome in practice for this flow. A native <a target=
+ * "_blank"> element that the user directly clicks is the one thing browsers
+ * reliably don't block, so the caller has to render an actual link instead
+ * of this function opening anything itself.
  */
-export async function pickFromGooglePhotos(
-  pickerWindow: Window | null,
+export async function startGooglePhotosSession(
   onStatusChange?: (status: GooglePickerStatus) => void
-): Promise<File[]> {
-  if (!pickerWindow || pickerWindow.closed) {
-    throw new Error('Pop-up blocked — allow pop-ups for this site, then try again.');
-  }
+): Promise<GooglePhotosSessionHandle> {
   if (!isGooglePhotosConfigured) {
-    pickerWindow.close();
     throw new Error('Google Photos is not configured (missing VITE_GOOGLE_CLIENT_ID)');
   }
+  onStatusChange?.('opening');
+  const token = await requestAccessToken();
+  const session = await apiCall<PickerSession>('/sessions', token, { method: 'POST', body: '{}' });
+  return { token, sessionId: session.id, pickerUri: session.pickerUri, pollingConfig: session.pollingConfig };
+}
 
-  try {
-    onStatusChange?.('opening');
-    const token = await requestAccessToken();
-    const session = await apiCall<PickerSession>('/sessions', token, { method: 'POST', body: '{}' });
+/**
+ * Phase 2: called from the onClick of the <a> that opens the picker (so it's
+ * still within that click's task, though nothing here needs a pop-up —
+ * that's the whole point). Polls until the user finishes selecting in the
+ * picker tab, then downloads what they picked as File objects.
+ */
+export async function waitForGooglePhotosSelection(
+  handle: GooglePhotosSessionHandle,
+  onStatusChange?: (status: GooglePickerStatus) => void
+): Promise<File[]> {
+  onStatusChange?.('waiting');
+  const pollIntervalMs = parseDurationSeconds(handle.pollingConfig?.pollInterval, 3) * 1000;
+  const timeoutMs = parseDurationSeconds(handle.pollingConfig?.timeoutIn, 300) * 1000;
+  const deadline = Date.now() + timeoutMs;
 
-    pickerWindow.location.href = session.pickerUri;
-
-    onStatusChange?.('waiting');
-    const pollIntervalMs = parseDurationSeconds(session.pollingConfig?.pollInterval, 3) * 1000;
-    const timeoutMs = parseDurationSeconds(session.pollingConfig?.timeoutIn, 300) * 1000;
-    const deadline = Date.now() + timeoutMs;
-
-    let current = session;
-    while (!current.mediaItemsSet) {
-      if (Date.now() > deadline) throw new Error('Timed out waiting for a Google Photos selection.');
-      await new Promise((r) => setTimeout(r, pollIntervalMs));
-      current = await apiCall<PickerSession>(`/sessions/${session.id}`, token);
-    }
-
-    onStatusChange?.('downloading');
-    const items = await listPickedMediaItems(token, session.id);
-    const files = await Promise.all(items.map((item) => downloadPickedFile(token, item)));
-
-    // Best-effort cleanup — sessions auto-expire on their own, so a failure here isn't worth surfacing.
-    apiCall(`/sessions/${session.id}`, token, { method: 'DELETE' }).catch(() => {});
-
-    return files;
-  } catch (err) {
-    // Don't leave a blank/abandoned tab hanging around on any failure path.
-    if (!pickerWindow.closed) pickerWindow.close();
-    throw err;
+  let mediaItemsSet = false;
+  while (!mediaItemsSet) {
+    if (Date.now() > deadline) throw new Error('Timed out waiting for a Google Photos selection.');
+    await new Promise((r) => setTimeout(r, pollIntervalMs));
+    const current = await apiCall<PickerSession>(`/sessions/${handle.sessionId}`, handle.token);
+    mediaItemsSet = current.mediaItemsSet;
   }
+
+  onStatusChange?.('downloading');
+  const items = await listPickedMediaItems(handle.token, handle.sessionId);
+  const files = await Promise.all(items.map((item) => downloadPickedFile(handle.token, item)));
+
+  // Best-effort cleanup — sessions auto-expire on their own, so a failure here isn't worth surfacing.
+  apiCall(`/sessions/${handle.sessionId}`, handle.token, { method: 'DELETE' }).catch(() => {});
+
+  return files;
 }
