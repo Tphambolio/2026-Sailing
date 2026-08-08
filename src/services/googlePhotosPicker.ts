@@ -192,6 +192,32 @@ export async function startGooglePhotosSession(
   return { token, sessionId: session.id, pickerUri: session.pickerUri, pollingConfig: session.pollingConfig };
 }
 
+// Resolves on whichever comes first: the poll interval elapsing, or the tab
+// becoming visible again. Plain setTimeout alone is a bad fit here — the
+// user's natural flow is to switch to the Google Photos tab to pick, which
+// backgrounds this one, and Chrome throttles timers in background tabs
+// heavily (observed: a session that finished in seconds on Google's side
+// wasn't picked up here for minutes, because the tab was backgrounded the
+// whole time). Reacting to visibilitychange means the next poll fires
+// immediately on switching back, instead of waiting on a throttled timer.
+function waitForNextPollOrVisible(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      document.removeEventListener('visibilitychange', onVisible);
+      resolve();
+    };
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') finish();
+    };
+    const timer = setTimeout(finish, ms);
+    document.addEventListener('visibilitychange', onVisible);
+  });
+}
+
 /**
  * Phase 2: called from the onClick of the <a> that opens the picker (so it's
  * still within that click's task, though nothing here needs a pop-up —
@@ -210,7 +236,7 @@ export async function waitForGooglePhotosSelection(
   let mediaItemsSet = false;
   while (!mediaItemsSet) {
     if (Date.now() > deadline) throw new Error('Timed out waiting for a Google Photos selection.');
-    await new Promise((r) => setTimeout(r, pollIntervalMs));
+    await waitForNextPollOrVisible(pollIntervalMs);
     const current = await apiCall<PickerSession>(`/sessions/${handle.sessionId}`, handle.token);
     mediaItemsSet = current.mediaItemsSet;
   }
