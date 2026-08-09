@@ -148,9 +148,17 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
     if (!session) return;
     setGoogleSession(null);
     try {
-      const files = await waitForGooglePhotosSelection(session, setGooglePickerStatus);
+      const { files, failures } = await waitForGooglePhotosSelection(session, setGooglePickerStatus);
       setGooglePickerStatus('downloading'); // keep the label steady while these upload to Supabase
-      await uploadFiles(files);
+      if (files.length > 0) await uploadFiles(files);
+      // Surface partial failures (e.g. a video still processing) without losing
+      // whatever else was successfully imported alongside it.
+      if (failures.length > 0) {
+        alert(
+          (files.length > 0 ? `Imported ${files.length} of ${files.length + failures.length}.\n\n` : '') +
+          `Couldn't import:\n${failures.map(f => `• ${f}`).join('\n')}`
+        );
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       console.warn('Google Photos picker failed:', err);

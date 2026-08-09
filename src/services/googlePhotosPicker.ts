@@ -118,6 +118,15 @@ interface PickedMediaFile {
   filename: string;
   mimeType: string;
   baseUrl: string;
+  // Only present for videos. Google's docs are explicit: don't use the =dv
+  // download suffix until this is READY — Google Photos processes uploaded
+  // video before it's downloadable, and downloading too early fails with an
+  // opaque "Failed to fetch" (observed live: a 1-second clip picked seconds
+  // after being selected failed every time; the API never surfaces a clearer
+  // error for this case, so downloadPickedFile checks it up front instead).
+  mediaFileMetadata?: {
+    videoMetadata?: { processingStatus?: 'UNSPECIFIED' | 'PROCESSING' | 'READY' | 'FAILED' };
+  };
 }
 
 interface PickedMediaItem {
@@ -158,6 +167,16 @@ async function listPickedMediaItems(token: string, sessionId: string): Promise<P
 }
 
 async function downloadPickedFile(token: string, item: PickedMediaItem): Promise<File> {
+  if (item.type === 'VIDEO') {
+    const status = item.mediaFile.mediaFileMetadata?.videoMetadata?.processingStatus;
+    if (status !== 'READY') {
+      throw new Error(
+        `"${item.mediaFile.filename}" is still processing in Google Photos (status: ${status || 'unknown'}) — ` +
+        `wait a minute and try again, or use "Add video" to upload it directly instead.`
+      );
+    }
+  }
+
   // Google's baseUrl download-size suffix convention. =d pulls the full-resolution
   // original — for a phone photo that's routinely 5-10MB, which is what made
   // Google Photos imports take minutes (multi-MB download here, then another
@@ -169,8 +188,15 @@ async function downloadPickedFile(token: string, item: PickedMediaItem): Promise
   // fraction of the data. Video has no equivalent scaled-download option, so it
   // still uses =dv.
   const suffix = item.type === 'VIDEO' ? '=dv' : '=w1600-h1600';
-  const res = await fetch(`${item.mediaFile.baseUrl}${suffix}`, { headers: { Authorization: `Bearer ${token}` } });
-  if (!res.ok) throw new Error(`Failed to download ${item.mediaFile.filename}: ${res.status}`);
+  let res: Response;
+  try {
+    res = await fetch(`${item.mediaFile.baseUrl}${suffix}`, { headers: { Authorization: `Bearer ${token}` } });
+  } catch {
+    // fetch() rejects with an opaque "Failed to fetch" for network/CORS failures,
+    // giving no detail — at least name which file it was.
+    throw new Error(`Couldn't download "${item.mediaFile.filename}" from Google Photos (network error).`);
+  }
+  if (!res.ok) throw new Error(`Failed to download "${item.mediaFile.filename}": ${res.status}`);
   const blob = await res.blob();
   return new File([blob], item.mediaFile.filename, { type: item.mediaFile.mimeType || blob.type });
 }
@@ -227,6 +253,17 @@ function waitForNextPollOrVisible(ms: number): Promise<void> {
   });
 }
 
+export interface GooglePhotosSelectionResult {
+  files: File[];
+  // One item failing (e.g. a video still processing) used to fail the whole
+  // Promise.all and silently discard every other item the user picked,
+  // including ones that downloaded fine — live-tested, this was the actual
+  // cause behind "I picked a photo and a video and the import failed" with
+  // no trace of the photo. Reporting failures per-item alongside the files
+  // that DID succeed keeps a good item from being held hostage by a bad one.
+  failures: string[];
+}
+
 /**
  * Phase 2: called from the onClick of the <a> that opens the picker (so it's
  * still within that click's task, though nothing here needs a pop-up —
@@ -236,7 +273,7 @@ function waitForNextPollOrVisible(ms: number): Promise<void> {
 export async function waitForGooglePhotosSelection(
   handle: GooglePhotosSessionHandle,
   onStatusChange?: (status: GooglePickerStatus) => void
-): Promise<File[]> {
+): Promise<GooglePhotosSelectionResult> {
   onStatusChange?.('waiting');
   const pollIntervalMs = parseDurationSeconds(handle.pollingConfig?.pollInterval, 3) * 1000;
   const timeoutMs = parseDurationSeconds(handle.pollingConfig?.timeoutIn, 300) * 1000;
@@ -252,10 +289,17 @@ export async function waitForGooglePhotosSelection(
 
   onStatusChange?.('downloading');
   const items = await listPickedMediaItems(handle.token, handle.sessionId);
-  const files = await Promise.all(items.map((item) => downloadPickedFile(handle.token, item)));
+  const settled = await Promise.allSettled(items.map((item) => downloadPickedFile(handle.token, item)));
+
+  const files: File[] = [];
+  const failures: string[] = [];
+  for (const result of settled) {
+    if (result.status === 'fulfilled') files.push(result.value);
+    else failures.push(result.reason instanceof Error ? result.reason.message : String(result.reason));
+  }
 
   // Best-effort cleanup — sessions auto-expire on their own, so a failure here isn't worth surfacing.
   apiCall(`/sessions/${handle.sessionId}`, handle.token, { method: 'DELETE' }).catch(() => {});
 
-  return files;
+  return { files, failures };
 }

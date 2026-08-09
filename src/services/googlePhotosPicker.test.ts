@@ -110,12 +110,81 @@ describe('googlePhotosPicker (configured)', () => {
 
     const handle = await startGooglePhotosSession();
     const statuses: string[] = [];
-    const files = await waitForGooglePhotosSelection(handle, (s) => statuses.push(s));
+    const { files, failures } = await waitForGooglePhotosSelection(handle, (s) => statuses.push(s));
 
     expect(statuses).toEqual(['waiting', 'downloading']);
+    expect(failures).toEqual([]);
     expect(files).toHaveLength(1);
     expect(files[0].name).toBe('sunset.jpg');
     expect(files[0].type).toBe('image/jpeg');
+  });
+
+  it('downloads a READY video normally, alongside a photo picked in the same batch', async () => {
+    const { startGooglePhotosSession, waitForGooglePhotosSelection } = await importConfigured();
+    stubGis('fake-access-token');
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      const method = init?.method || 'GET';
+      if (url.endsWith('/v1/sessions') && method === 'POST') {
+        return { ok: true, json: async () => ({ id: 's1', pickerUri: 'https://photos.google.com/picker/s1', mediaItemsSet: false, pollingConfig: { pollInterval: '0.01s', timeoutIn: '10s' } }) } as Response;
+      }
+      if (url.includes('/v1/sessions/s1') && method === 'GET') {
+        return { ok: true, json: async () => ({ id: 's1', mediaItemsSet: true }) } as Response;
+      }
+      if (url.includes('/v1/mediaItems?') && method === 'GET') {
+        return { ok: true, json: async () => ({ mediaItems: [
+          { id: 'photo-1', type: 'PHOTO', mediaFile: { filename: 'sunset.jpg', mimeType: 'image/jpeg', baseUrl: 'https://photo-base/photo-1' } },
+          { id: 'video-1', type: 'VIDEO', mediaFile: { filename: 'clip.mp4', mimeType: 'video/mp4', baseUrl: 'https://photo-base/video-1', mediaFileMetadata: { videoMetadata: { processingStatus: 'READY' } } } },
+        ] }) } as Response;
+      }
+      if (url.startsWith('https://photo-base/photo-1')) return { ok: true, blob: async () => new Blob(['photo-bytes'], { type: 'image/jpeg' }) } as Response;
+      if (url.startsWith('https://photo-base/video-1')) return { ok: true, blob: async () => new Blob(['video-bytes'], { type: 'video/mp4' }) } as Response;
+      if (url.includes('/v1/sessions/s1') && method === 'DELETE') return { ok: true, json: async () => ({}) } as Response;
+      throw new Error(`Unexpected fetch call: ${method} ${url}`);
+    }));
+
+    const handle = await startGooglePhotosSession();
+    const { files, failures } = await waitForGooglePhotosSelection(handle);
+
+    expect(failures).toEqual([]);
+    expect(files.map(f => f.name).sort()).toEqual(['clip.mp4', 'sunset.jpg']);
+  });
+
+  it('reports a still-processing video as a failure without losing a photo picked in the same batch', async () => {
+    // This is the exact bug reported live: picking a photo + a video that Google
+    // hasn't finished processing yet used to fail the whole Promise.all and
+    // silently drop the photo too, with a generic "Failed to fetch".
+    const { startGooglePhotosSession, waitForGooglePhotosSelection } = await importConfigured();
+    stubGis('fake-access-token');
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      const method = init?.method || 'GET';
+      if (url.endsWith('/v1/sessions') && method === 'POST') {
+        return { ok: true, json: async () => ({ id: 's1', pickerUri: 'https://photos.google.com/picker/s1', mediaItemsSet: false, pollingConfig: { pollInterval: '0.01s', timeoutIn: '10s' } }) } as Response;
+      }
+      if (url.includes('/v1/sessions/s1') && method === 'GET') {
+        return { ok: true, json: async () => ({ id: 's1', mediaItemsSet: true }) } as Response;
+      }
+      if (url.includes('/v1/mediaItems?') && method === 'GET') {
+        return { ok: true, json: async () => ({ mediaItems: [
+          { id: 'photo-1', type: 'PHOTO', mediaFile: { filename: 'sunset.jpg', mimeType: 'image/jpeg', baseUrl: 'https://photo-base/photo-1' } },
+          { id: 'video-1', type: 'VIDEO', mediaFile: { filename: 'clip.mp4', mimeType: 'video/mp4', baseUrl: 'https://photo-base/video-1', mediaFileMetadata: { videoMetadata: { processingStatus: 'PROCESSING' } } } },
+        ] }) } as Response;
+      }
+      if (url.startsWith('https://photo-base/photo-1')) return { ok: true, blob: async () => new Blob(['photo-bytes'], { type: 'image/jpeg' }) } as Response;
+      // The video fetch should never even be attempted while still PROCESSING —
+      // if it is, that's the bug this test exists to catch.
+      if (url.startsWith('https://photo-base/video-1')) throw new Error('video fetch should not have been attempted');
+      if (url.includes('/v1/sessions/s1') && method === 'DELETE') return { ok: true, json: async () => ({}) } as Response;
+      throw new Error(`Unexpected fetch call: ${method} ${url}`);
+    }));
+
+    const handle = await startGooglePhotosSession();
+    const { files, failures } = await waitForGooglePhotosSelection(handle);
+
+    expect(files.map(f => f.name)).toEqual(['sunset.jpg']);
+    expect(failures).toHaveLength(1);
+    expect(failures[0]).toMatch(/clip\.mp4.*still processing/i);
   });
 
   it('polls immediately when the tab becomes visible again, instead of waiting out a long throttled interval', async () => {
