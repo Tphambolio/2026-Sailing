@@ -26,7 +26,7 @@ function JournalPlaceholder({ stop, onClick }: { stop: Stop; onClick: () => void
       <span className="text-lg shrink-0">{COUNTRY_FLAGS[stop.country] || ''}</span>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-slate-300 truncate">{stop.name}</p>
-        <p className="text-xs text-slate-500">{formatDate(stop.arrival)} · {stop.country}</p>
+        <p className="text-xs text-slate-500">{formatDate(effectiveArrival(stop))} · {stop.country}</p>
       </div>
       {stop.visited && <span className="text-xs text-green-500 shrink-0" title="Visited">✓</span>}
       <span className="text-xs text-cyan-400 shrink-0">+ Write a post</span>

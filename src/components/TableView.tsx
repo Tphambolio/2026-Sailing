@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import type { Stop } from '../types';
 import { COUNTRY_FLAGS, COUNTRY_COLORS } from '../data/constants';
 import { formatDate } from '../utils/geo';
+import { effectiveArrival, effectiveDeparture } from '../services/routeEngine';
 
 interface TableViewProps {
   stops: Stop[];
@@ -196,8 +197,8 @@ export default function TableView({
                     <td className="px-3 py-2 text-center">
                       {stop.type === 'marina' ? '\u26F5' : '\u2693'}
                     </td>
-                    <td className="px-3 py-2 text-slate-300 text-xs">{stop.arrival ? formatDate(stop.arrival) : '-'}</td>
-                    <td className="px-3 py-2 text-slate-300 text-xs">{stop.departure ? formatDate(stop.departure) : '-'}</td>
+                    <td className="px-3 py-2 text-slate-300 text-xs">{effectiveArrival(stop) ? formatDate(effectiveArrival(stop)) : '-'}</td>
+                    <td className="px-3 py-2 text-slate-300 text-xs">{effectiveDeparture(stop) ? formatDate(effectiveDeparture(stop)) : '-'}</td>
                     <td className="px-3 py-2 text-white text-center">{parseDurationNum(stop.duration)}</td>
                     <td className="px-3 py-2">
                       {stop.distanceToNext > 0 ? (

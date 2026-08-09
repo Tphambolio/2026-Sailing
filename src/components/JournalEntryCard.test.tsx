@@ -77,6 +77,28 @@ describe('JournalEntryCard photo picker', () => {
   });
 });
 
+describe('JournalEntryCard displayed date', () => {
+  it('shows the actual date, not the auto-cascaded planned one, when actualArrival is set', () => {
+    // Mirrors a stop appended out of chronological sequence (e.g. via the
+    // map's "Add Stop", which always appends at the end): its planned
+    // arrival/departure are stale, cascaded from wherever it landed in the
+    // array, while actualArrival/actualDeparture hold the real day.
+    const outOfSequenceStop: Stop = {
+      ...stop,
+      arrival: '2027-05-17',
+      departure: '2027-05-18',
+      actualArrival: '2026-08-04',
+      actualDeparture: '2026-08-05',
+    };
+    setup('Some notes about this day.');
+
+    render(<JournalEntryCard stop={outOfSequenceStop} />);
+
+    expect(screen.getByText(/4 Aug/)).toBeInTheDocument();
+    expect(screen.queryByText(/17 May/)).not.toBeInTheDocument();
+  });
+});
+
 describe('JournalEntryCard video support', () => {
   it('renders a video file as a <video> element, not <img>, in the inline content block', () => {
     const videoMedia = { ...photo, id: 'video-1', storage_path: 'dubrovnik/clip.mp4' };

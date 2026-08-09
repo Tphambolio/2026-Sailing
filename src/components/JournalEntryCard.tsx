@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useStopNotes, useStopPhotos } from '../hooks/useStopContent';
 import { COUNTRY_FLAGS } from '../data/constants';
 import { formatDate } from '../utils/geo';
+import { effectiveArrival, effectiveDeparture } from '../services/routeEngine';
 import { parseContent, isVideoPath } from '../utils/journalContent';
 import { downsampleImage } from '../utils/imageResize';
 import {
@@ -175,7 +176,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
       .filter((b): b is { type: 'text'; text: string } => b.type === 'text')
       .map(b => b.text.trim())
       .filter(Boolean);
-    const header = `${stop.name}, ${stop.country}${stop.arrival ? ` — ${formatDate(stop.arrival)}` : ''}`;
+    const header = `${stop.name}, ${stop.country}${effectiveArrival(stop) ? ` — ${formatDate(effectiveArrival(stop))}` : ''}`;
     return [header, ...textParts, '#MediterraneanOdyssey #Sailing'].join('\n\n');
   };
 
@@ -246,7 +247,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
               {COUNTRY_FLAGS[stop.country] || ''} {stop.name}
             </h2>
             <p className="text-sm text-slate-400">
-              {formatDate(stop.arrival)}{stop.departure && stop.arrival !== stop.departure && ` → ${formatDate(stop.departure)}`}
+              {formatDate(effectiveArrival(stop))}{effectiveDeparture(stop) && effectiveArrival(stop) !== effectiveDeparture(stop) && ` → ${formatDate(effectiveDeparture(stop))}`}
               {' · '}{stop.country}
             </p>
           </div>

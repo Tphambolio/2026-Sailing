@@ -758,8 +758,8 @@ function App() {
                         </div>
                         <div className="flex items-center gap-2 text-xs text-slate-400">
                           <span>{COUNTRY_FLAGS[stop.country] || ''} {stop.country}</span>
-                          {stop.arrival && <span className="text-slate-500">•</span>}
-                          {stop.arrival && <span className="text-amber-400">{formatDate(stop.arrival)}</span>}
+                          {effectiveArrival(stop) && <span className="text-slate-500">•</span>}
+                          {effectiveArrival(stop) && <span className="text-amber-400">{formatDate(effectiveArrival(stop))}</span>}
                           {schengenDays.get(stop.id) && (
                             <span className={`ml-auto px-1.5 py-0.5 rounded text-[10px] font-medium ${
                               schengenDays.get(stop.id)?.isPaused

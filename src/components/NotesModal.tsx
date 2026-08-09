@@ -3,6 +3,7 @@ import type { Stop } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { useStopNotes, useStopPhotos } from '../hooks/useStopContent';
 import { formatDate } from '../utils/geo';
+import { effectiveArrival, effectiveDeparture } from '../services/routeEngine';
 import { parseContent, isVideoPath } from '../utils/journalContent';
 
 interface NotesModalProps {
@@ -64,7 +65,7 @@ export default function NotesModal({ stop, onClose }: NotesModalProps) {
         <div className="flex items-start justify-between p-4 border-b border-slate-700">
           <div>
             <h2 className="text-lg font-bold text-white">{stop.name}</h2>
-            <p className="text-xs text-slate-400">{formatDate(stop.arrival)}{stop.departure && stop.arrival !== stop.departure && ` → ${formatDate(stop.departure)}`}</p>
+            <p className="text-xs text-slate-400">{formatDate(effectiveArrival(stop))}{effectiveDeparture(stop) && effectiveArrival(stop) !== effectiveDeparture(stop) && ` → ${formatDate(effectiveDeparture(stop))}`}</p>
           </div>
           <button onClick={onClose} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white">✕</button>
         </div>

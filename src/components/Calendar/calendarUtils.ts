@@ -1,4 +1,5 @@
 import type { Stop, Phase } from '../../types';
+import { effectiveArrival, effectiveDeparture } from '../../services/routeEngine';
 
 // Get the first day of a month
 export function getFirstDayOfMonth(year: number, month: number): Date {
@@ -46,8 +47,8 @@ export function getCalendarDays(year: number, month: number): Date[] {
 
 // Check if a date falls within a stop's stay
 export function isDateInStay(date: Date, stop: Stop): boolean {
-  const arrival = new Date(stop.arrival);
-  const departure = new Date(stop.departure);
+  const arrival = new Date(effectiveArrival(stop));
+  const departure = new Date(effectiveDeparture(stop));
 
   // Reset time parts for comparison
   const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -63,8 +64,8 @@ export function getStopsInMonth(stops: Stop[], year: number, month: number): Sto
   const monthEnd = getLastDayOfMonth(year, month);
 
   return stops.filter((stop) => {
-    const arrival = new Date(stop.arrival);
-    const departure = new Date(stop.departure);
+    const arrival = new Date(effectiveArrival(stop));
+    const departure = new Date(effectiveDeparture(stop));
 
     // Stop overlaps if it starts before month ends AND ends after month starts
     return arrival <= monthEnd && departure >= monthStart;
@@ -89,8 +90,8 @@ export function getStaySegments(
   calendarDays: Date[]
 ): StaySegment[] {
   const segments: StaySegment[] = [];
-  const arrival = new Date(stop.arrival);
-  const departure = new Date(stop.departure);
+  const arrival = new Date(effectiveArrival(stop));
+  const departure = new Date(effectiveDeparture(stop));
 
   // Find which calendar days fall within this stay
   const stayDayIndices: number[] = [];
