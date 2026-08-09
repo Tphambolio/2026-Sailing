@@ -32,6 +32,9 @@ export default function StopEditor({ stop, countries, onSave, onDelete, onCancel
   });
   const [marinaName, setMarinaName] = useState(stop?.marinaName || '');
   const [marinaUrl, setMarinaUrl] = useState(stop?.marinaUrl || '');
+  // Previously only settable via "Auto-fill Links & Culture", with no way to see,
+  // edit, or clear whatever it produced once saved — this exposes it directly.
+  const [cultureHighlight, setCultureHighlight] = useState(stop?.cultureHighlight || '');
   // Overrides the auto-cascaded planned arrival/departure (which just chains off the
   // previous stop's dates) — needed when backfilling a stop for a specific day that
   // already happened, like a second night at a different anchorage on the same island.
@@ -119,6 +122,9 @@ export default function StopEditor({ stop, countries, onSave, onDelete, onCancel
     try {
       const data = await enrichStop(parsedLat, parsedLon, name.trim());
       setEnrichmentData(data);
+      // Route the culture blurb into the editable field instead of a hidden
+      // buffer, so what auto-fill produced is immediately visible and editable.
+      if (data.cultureHighlight) setCultureHighlight(data.cultureHighlight);
     } catch (err) {
       console.warn('Enrichment failed:', err);
     } finally {
@@ -150,8 +156,12 @@ export default function StopEditor({ stop, countries, onSave, onDelete, onCancel
         actualDeparture: addDays(actualArrivalDate, durationDays),
         visited: true,
       } : {}),
-      // Spread enrichment data if available
+      // Spread enrichment data if available (wiki/food/adventure/provisions links)
       ...(enrichmentData || {}),
+      // Explicitly after the spread above so the editable field always wins,
+      // even if it was hand-edited after an auto-fill populated enrichmentData.
+      // Empty clears it — no separate "remove" control needed.
+      cultureHighlight: cultureHighlight.trim() || undefined,
     });
   };
 
@@ -373,6 +383,20 @@ export default function StopEditor({ stop, countries, onSave, onDelete, onCancel
           </>
         )}
 
+        {/* Culture highlight \u2014 the one-line blurb shown on the map popup and
+            journal card (e.g. "Ro\u017eat is a small village near Dubrovnik").
+            Always editable here, whether it was hand-written or came from
+            auto-fill below; clear it to remove it entirely. */}
+        <div>
+          <label className="block text-xs font-medium text-slate-400 mb-1">Culture highlight</label>
+          <textarea
+            value={cultureHighlight}
+            onChange={(e) => setCultureHighlight(e.target.value)}
+            placeholder="e.g., Ro\u017eat is a small village near Dubrovnik, Croatia."
+            rows={2}
+            className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 resize-y"
+          />
+        </div>
 
         {/* Auto-enrichment */}
         <div className="pt-2">
@@ -385,9 +409,6 @@ export default function StopEditor({ stop, countries, onSave, onDelete, onCancel
           </button>
           {enrichmentData && (
             <div className="mt-2 text-xs text-slate-400 space-y-0.5 bg-slate-700/50 rounded-lg p-2">
-              {enrichmentData.cultureHighlight && (
-                <p className="text-cyan-400">\ud83c\udfdb\ufe0f {enrichmentData.cultureHighlight}</p>
-              )}
               {enrichmentData.wikiUrl && <p>\ud83d\udcd6 Wikipedia found</p>}
               {enrichmentData.foodUrl && <p>\ud83c\udf7d\ufe0f Food guide set</p>}
               {enrichmentData.adventureUrl && <p>\ud83c\udfd4\ufe0f Activities set</p>}

@@ -103,3 +103,41 @@ describe('StopEditor reposition on map', () => {
     expect(latInput.value).toBe('42.9611');
   });
 });
+
+describe('StopEditor culture highlight', () => {
+  it('pre-fills the existing culture highlight, editable directly', () => {
+    const stopWithCulture = { ...existingStop, cultureHighlight: 'Rožat is a small village near Dubrovnik, Croatia.' };
+    render(<StopEditor stop={stopWithCulture} countries={['Croatia']} onSave={vi.fn()} onCancel={vi.fn()} />);
+
+    const field = screen.getByDisplayValue('Rožat is a small village near Dubrovnik, Croatia.');
+    expect(field.tagName).toBe('TEXTAREA');
+  });
+
+  it('clearing the field and saving removes the culture highlight entirely', async () => {
+    const stopWithCulture = { ...existingStop, cultureHighlight: 'Rožat is a small village near Dubrovnik, Croatia.' };
+    const onSave = vi.fn();
+    const user = userEvent.setup();
+    render(<StopEditor stop={stopWithCulture} countries={['Croatia']} onSave={onSave} onCancel={vi.fn()} />);
+
+    const field = screen.getByDisplayValue('Rožat is a small village near Dubrovnik, Croatia.');
+    await user.clear(field);
+    await user.click(screen.getByRole('button', { name: /save changes/i }));
+
+    expect(onSave).toHaveBeenCalledTimes(1);
+    expect(onSave.mock.calls[0][0].cultureHighlight).toBeUndefined();
+  });
+
+  it('edits to the culture highlight are saved as typed', async () => {
+    const stopWithCulture = { ...existingStop, cultureHighlight: 'Old blurb.' };
+    const onSave = vi.fn();
+    const user = userEvent.setup();
+    render(<StopEditor stop={stopWithCulture} countries={['Croatia']} onSave={onSave} onCancel={vi.fn()} />);
+
+    const field = screen.getByDisplayValue('Old blurb.');
+    await user.clear(field);
+    await user.type(field, 'New blurb.');
+    await user.click(screen.getByRole('button', { name: /save changes/i }));
+
+    expect(onSave.mock.calls[0][0].cultureHighlight).toBe('New blurb.');
+  });
+});
