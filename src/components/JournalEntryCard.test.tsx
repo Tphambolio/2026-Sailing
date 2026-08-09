@@ -75,6 +75,47 @@ describe('JournalEntryCard photo picker', () => {
     // once it contains "in text" text content, which would shadow the title.
     expect(screen.getByTitle('Insert into text')).toHaveTextContent('in text');
   });
+
+  it('shows a short {{photo N}} token in the editor, not the raw UUID', async () => {
+    setup('');
+    const user = userEvent.setup();
+    const { container } = render(<JournalEntryCard stop={stop} />);
+
+    await user.click(screen.getByRole('button', { name: /edit/i }));
+    await user.click(screen.getByTitle('Insert into text'));
+
+    const textarea = container.querySelector('textarea') as HTMLTextAreaElement;
+    expect(textarea.value).toContain('{{photo 1}}');
+    expect(textarea.value).not.toContain(photo.id);
+  });
+
+  it('shows existing saved content in short form, and saves it back out as real UUIDs', async () => {
+    const save = vi.fn().mockResolvedValue({ error: null });
+    mockUseAuth.mockReturnValue({ user: { id: 'user-1' } });
+    mockUseStopNotes.mockReturnValue({
+      content: `Before.\n\n{{photo:${photo.id}}}\n\nAfter.`,
+      loading: false,
+      saving: false,
+      save,
+    });
+    mockUseStopPhotos.mockReturnValue({
+      photos: [photo],
+      loading: false,
+      upload: vi.fn(),
+      remove: vi.fn(),
+      getUrl: (path: string) => `https://example.test/${path}`,
+    });
+    const user = userEvent.setup();
+    const { container } = render(<JournalEntryCard stop={stop} />);
+
+    await user.click(screen.getByRole('button', { name: /edit/i }));
+    const textarea = container.querySelector('textarea') as HTMLTextAreaElement;
+    expect(textarea.value).toBe('Before.\n\n{{photo 1}}\n\nAfter.');
+
+    await user.click(screen.getByRole('button', { name: /^save$/i }));
+
+    expect(save).toHaveBeenCalledWith(`Before.\n\n{{photo:${photo.id}}}\n\nAfter.`);
+  });
 });
 
 describe('JournalEntryCard displayed date', () => {

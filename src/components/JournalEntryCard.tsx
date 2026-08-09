@@ -5,7 +5,7 @@ import { useStopNotes, useStopPhotos } from '../hooks/useStopContent';
 import { COUNTRY_FLAGS } from '../data/constants';
 import { formatDate } from '../utils/geo';
 import { effectiveArrival, effectiveDeparture } from '../services/routeEngine';
-import { parseContent, isVideoPath } from '../utils/journalContent';
+import { parseContent, isVideoPath, buildPhotoNumberMap, toShortForm, toFullForm, shortFormPhotoIds } from '../utils/journalContent';
 import { downsampleImage } from '../utils/imageResize';
 import {
   startGooglePhotosSession,
@@ -47,8 +47,25 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
   // native picker getting stuck reopening. A ref (not state) so the check is
   // synchronous, not deferred to the next render.
   const pickerOpenRef = useRef(false);
+  // photoId -> small number, so the editor shows {{photo 3}} instead of the raw
+  // UUID — a ref (not state) since it's read-modify-write within the same
+  // synchronous handler/loop iteration (e.g. uploading several files in a row),
+  // where a state update wouldn't be visible until the next render.
+  const photoNumberMapRef = useRef<Map<string, number>>(new Map());
+  const nextNumberFor = (photoId: string): number => {
+    const map = photoNumberMapRef.current;
+    let num = map.get(photoId);
+    if (num === undefined) {
+      num = map.size + 1;
+      map.set(photoId, num);
+    }
+    return num;
+  };
 
-  useEffect(() => { setDraft(content); }, [content]);
+  useEffect(() => {
+    photoNumberMapRef.current = buildPhotoNumberMap(content);
+    setDraft(toShortForm(content, photoNumberMapRef.current));
+  }, [content]);
   useEffect(() => {
     // A freshly-added entry with nothing yet starts straight into edit mode
     if (!notesLoading && !content && photos.length === 0) setEditing(true);
@@ -77,25 +94,28 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
   const galleryPhotos = useMemo(() => photos.filter(p => !inlinePhotoIds.has(p.id)), [photos, inlinePhotoIds]);
   // Separate from inlinePhotoIds (which tracks saved `content`) so the picker reflects
   // photos just inserted into `draft` during the current edit, before Save is clicked.
+  // draft is in the short {{photo N}} form (see photoNumberMapRef above), so this
+  // reverses through the same map rather than parseContent (which expects UUIDs).
   const draftInlinePhotoIds = useMemo(
-    () => new Set(parseContent(draft).filter((b): b is { type: 'photo'; id: string } => b.type === 'photo').map(b => b.id)),
+    () => shortFormPhotoIds(draft, photoNumberMapRef.current),
     [draft]
   );
 
   const handleSave = async () => {
-    await save(draft);
+    await save(toFullForm(draft, photoNumberMapRef.current));
     setEditing(false);
   };
 
   const handleCancel = () => {
-    setDraft(content);
+    photoNumberMapRef.current = buildPhotoNumberMap(content);
+    setDraft(toShortForm(content, photoNumberMapRef.current));
     setEditing(false);
     if (!content && photos.length === 0) onEmptyAndCancelled?.();
   };
 
   const insertPhotoToken = (photoId: string) => {
     const ta = textareaRef.current;
-    const token = `{{photo:${photoId}}}`;
+    const token = `{{photo ${nextNumberFor(photoId)}}}`;
     const start = ta ? ta.selectionStart : draft.length;
     const end = ta ? ta.selectionEnd : draft.length;
     setDraft(prev => `${prev.slice(0, start)}\n\n${token}\n\n${prev.slice(end)}`);
@@ -110,7 +130,10 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
     for (const file of files) {
       const toUpload = await downsampleImage(file);
       const { data } = await upload(toUpload);
-      if (data) setDraft(prev => `${prev}${prev.trim() ? '\n\n' : ''}{{photo:${data.id}}}`);
+      if (data) {
+        const num = nextNumberFor(data.id);
+        setDraft(prev => `${prev}${prev.trim() ? '\n\n' : ''}{{photo ${num}}}`);
+      }
       setUploadProgress(p => (p ? { ...p, done: p.done + 1 } : null));
     }
     setUploadProgress(null);
