@@ -343,19 +343,24 @@ function App() {
     : 0;
 
   useEffect(() => {
-    try {
-      setLoading(true);
-      const result = getData();
-      setStops(result.stops);
-      setPhases(result.phases);
-      setStats(result.stats);
-      setIsUserEdited(result.isUserEdited);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load data');
-    } finally {
-      setLoading(false);
-    }
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoading(true);
+        const result = await getData();
+        if (cancelled) return;
+        setStops(result.stops);
+        setPhases(result.phases);
+        setStats(result.stats);
+        setIsUserEdited(result.isUserEdited);
+        setError(null);
+      } catch (err) {
+        if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load data');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
   }, []);
 
   // Apply route changes: heal, recompute, persist
@@ -435,9 +440,9 @@ function App() {
     setAddStopMode(false);
   }, []);
 
-  const handleResetRoute = useCallback(() => {
-    clearUserStops();
-    const result = getData();
+  const handleResetRoute = useCallback(async () => {
+    await clearUserStops();
+    const result = await getData();
     setStops(result.stops);
     setPhases(result.phases);
     setStats(result.stats);
