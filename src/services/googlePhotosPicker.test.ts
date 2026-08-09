@@ -1,5 +1,16 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 
+// googlePhotosPicker imports the real ../lib/supabase module (for the video
+// proxy's auth + URL), which throws in this test env with no VITE_SUPABASE_*
+// configured — mock it instead of wiring up real credentials just for tests.
+const { mockGetSession } = vi.hoisted(() => ({ mockGetSession: vi.fn() }));
+vi.mock('../lib/supabase', () => ({
+  supabase: { auth: { getSession: mockGetSession } },
+  supabaseUrl: 'https://test-project.supabase.co',
+}));
+
+const VIDEO_PROXY_URL = 'https://test-project.supabase.co/functions/v1/google-photos-video';
+
 // isGooglePhotosConfigured / the client ID are read from import.meta.env at
 // module load time, so tests that need it "configured" have to stub the env
 // var and re-import a fresh module instance — a plain re-import would reuse
@@ -78,6 +89,7 @@ describe('googlePhotosPicker (configured)', () => {
   afterEach(() => {
     delete (window as { google?: unknown }).google;
     delete (document as unknown as { visibilityState?: unknown }).visibilityState;
+    mockGetSession.mockReset();
     vi.unstubAllEnvs();
     vi.restoreAllMocks();
     vi.resetModules();
@@ -119,9 +131,10 @@ describe('googlePhotosPicker (configured)', () => {
     expect(files[0].type).toBe('image/jpeg');
   });
 
-  it('downloads a READY video normally, alongside a photo picked in the same batch', async () => {
+  it('downloads a READY video via the proxy relay, alongside a photo fetched directly', async () => {
     const { startGooglePhotosSession, waitForGooglePhotosSelection } = await importConfigured();
     stubGis('fake-access-token');
+    mockGetSession.mockResolvedValue({ data: { session: { access_token: 'session-tok' } } });
     vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
       const method = init?.method || 'GET';
@@ -134,11 +147,18 @@ describe('googlePhotosPicker (configured)', () => {
       if (url.includes('/v1/mediaItems?') && method === 'GET') {
         return { ok: true, json: async () => ({ mediaItems: [
           { id: 'photo-1', type: 'PHOTO', mediaFile: { filename: 'sunset.jpg', mimeType: 'image/jpeg', baseUrl: 'https://photo-base/photo-1' } },
-          { id: 'video-1', type: 'VIDEO', mediaFile: { filename: 'clip.mp4', mimeType: 'video/mp4', baseUrl: 'https://photo-base/video-1', mediaFileMetadata: { videoMetadata: { processingStatus: 'READY' } } } },
+          { id: 'video-1', type: 'VIDEO', mediaFile: { filename: 'clip.mp4', mimeType: 'video/mp4', baseUrl: 'https://video-base/video-1', mediaFileMetadata: { videoMetadata: { processingStatus: 'READY' } } } },
         ] }) } as Response;
       }
+      // Photos still go straight to Google — only video routes through the proxy.
       if (url.startsWith('https://photo-base/photo-1')) return { ok: true, blob: async () => new Blob(['photo-bytes'], { type: 'image/jpeg' }) } as Response;
-      if (url.startsWith('https://photo-base/video-1')) return { ok: true, blob: async () => new Blob(['video-bytes'], { type: 'video/mp4' }) } as Response;
+      if (url === VIDEO_PROXY_URL && method === 'POST') {
+        const sentBody = JSON.parse(String(init?.body));
+        expect(sentBody).toEqual({ baseUrl: 'https://video-base/video-1', googleToken: 'fake-access-token' });
+        expect((init?.headers as Record<string, string>).Authorization).toBe('Bearer session-tok');
+        return { ok: true, blob: async () => new Blob(['video-bytes'], { type: 'video/mp4' }) } as Response;
+      }
+      if (url.startsWith('https://video-base/video-1')) throw new Error('video should never be fetched directly, only via the proxy');
       if (url.includes('/v1/sessions/s1') && method === 'DELETE') return { ok: true, json: async () => ({}) } as Response;
       throw new Error(`Unexpected fetch call: ${method} ${url}`);
     }));
@@ -168,13 +188,13 @@ describe('googlePhotosPicker (configured)', () => {
       if (url.includes('/v1/mediaItems?') && method === 'GET') {
         return { ok: true, json: async () => ({ mediaItems: [
           { id: 'photo-1', type: 'PHOTO', mediaFile: { filename: 'sunset.jpg', mimeType: 'image/jpeg', baseUrl: 'https://photo-base/photo-1' } },
-          { id: 'video-1', type: 'VIDEO', mediaFile: { filename: 'clip.mp4', mimeType: 'video/mp4', baseUrl: 'https://photo-base/video-1', mediaFileMetadata: { videoMetadata: { processingStatus: 'PROCESSING' } } } },
+          { id: 'video-1', type: 'VIDEO', mediaFile: { filename: 'clip.mp4', mimeType: 'video/mp4', baseUrl: 'https://video-base/video-1', mediaFileMetadata: { videoMetadata: { processingStatus: 'PROCESSING' } } } },
         ] }) } as Response;
       }
       if (url.startsWith('https://photo-base/photo-1')) return { ok: true, blob: async () => new Blob(['photo-bytes'], { type: 'image/jpeg' }) } as Response;
-      // The video fetch should never even be attempted while still PROCESSING —
-      // if it is, that's the bug this test exists to catch.
-      if (url.startsWith('https://photo-base/video-1')) throw new Error('video fetch should not have been attempted');
+      // The proxy should never even be called while still PROCESSING — if it
+      // is, that's the bug this test exists to catch.
+      if (url === VIDEO_PROXY_URL) throw new Error('video proxy should not have been called');
       if (url.includes('/v1/sessions/s1') && method === 'DELETE') return { ok: true, json: async () => ({}) } as Response;
       throw new Error(`Unexpected fetch call: ${method} ${url}`);
     }));

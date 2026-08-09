@@ -12,10 +12,16 @@
 // exported isGooglePhotosConfigured flag lets callers hide the feature
 // entirely until that's set up — see README for the Cloud Console steps.
 
+import { supabase, supabaseUrl } from '../lib/supabase';
+
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 const PICKER_SCOPE = 'https://www.googleapis.com/auth/photospicker.mediaitems.readonly';
 const PICKER_API_BASE = 'https://photospicker.googleapis.com/v1';
 const GIS_SCRIPT_SRC = 'https://accounts.google.com/gsi/client';
+// Google's video download suffix (=dv) doesn't allow cross-origin browser
+// fetches (see downloadPickedFile) — this relay does the fetch server-side,
+// where there's no CORS to enforce, and streams the bytes back.
+const VIDEO_PROXY_URL = `${supabaseUrl}/functions/v1/google-photos-video`;
 
 export const isGooglePhotosConfigured = !!GOOGLE_CLIENT_ID;
 
@@ -166,17 +172,46 @@ async function listPickedMediaItems(token: string, sessionId: string): Promise<P
   return items;
 }
 
-async function downloadPickedFile(token: string, item: PickedMediaItem): Promise<File> {
-  if (item.type === 'VIDEO') {
-    const status = item.mediaFile.mediaFileMetadata?.videoMetadata?.processingStatus;
-    if (status !== 'READY') {
-      throw new Error(
-        `"${item.mediaFile.filename}" is still processing in Google Photos (status: ${status || 'unknown'}) — ` +
-        `wait a minute and try again, or use "Add video" to upload it directly instead.`
-      );
-    }
+// Google's own video CDN doesn't send CORS headers permitting a browser fetch()
+// to the =dv download URL — live-confirmed against several videos, including
+// fully-processed ones, all failing with an opaque "Failed to fetch". Routed
+// through our own Edge Function instead, which does the fetch server-to-server
+// (no CORS to enforce there) and streams the bytes back. See
+// supabase/functions/google-photos-video for the relay itself.
+async function downloadVideoViaProxy(token: string, item: PickedMediaItem): Promise<File> {
+  const status = item.mediaFile.mediaFileMetadata?.videoMetadata?.processingStatus;
+  if (status !== 'READY') {
+    throw new Error(
+      `"${item.mediaFile.filename}" is still processing in Google Photos (status: ${status || 'unknown'}) — ` +
+      `wait a minute and try again.`
+    );
   }
 
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('Not signed in.');
+
+  let res: Response;
+  try {
+    res = await fetch(VIDEO_PROXY_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ baseUrl: item.mediaFile.baseUrl, googleToken: token }),
+    });
+  } catch {
+    throw new Error(`Couldn't download "${item.mediaFile.filename}" (network error reaching the video relay).`);
+  }
+  if (!res.ok) {
+    const body = await res.json().catch(() => null) as { error?: string } | null;
+    throw new Error(`Couldn't download "${item.mediaFile.filename}": ${body?.error || res.statusText}`);
+  }
+  const blob = await res.blob();
+  return new File([blob], item.mediaFile.filename, { type: item.mediaFile.mimeType || blob.type });
+}
+
+async function downloadPhoto(token: string, item: PickedMediaItem): Promise<File> {
   // Google's baseUrl download-size suffix convention. =d pulls the full-resolution
   // original — for a phone photo that's routinely 5-10MB, which is what made
   // Google Photos imports take minutes (multi-MB download here, then another
@@ -185,12 +220,12 @@ async function downloadPickedFile(token: string, item: PickedMediaItem): Promise
   // asks Google to scale it down to fit within a 1600x1600 box server-side
   // instead (aspect ratio preserved, no crop) — matches what downsampleImage()
   // targets for the follow-up Supabase upload, so both legs of the trip move a
-  // fraction of the data. Video has no equivalent scaled-download option, so it
-  // still uses =dv.
-  const suffix = item.type === 'VIDEO' ? '=dv' : '=w1600-h1600';
+  // fraction of the data. Unlike video, photo bytes ARE reachable via a direct
+  // browser fetch (Google's photo CDN sends permissive CORS headers), so this
+  // one doesn't need the proxy.
   let res: Response;
   try {
-    res = await fetch(`${item.mediaFile.baseUrl}${suffix}`, { headers: { Authorization: `Bearer ${token}` } });
+    res = await fetch(`${item.mediaFile.baseUrl}=w1600-h1600`, { headers: { Authorization: `Bearer ${token}` } });
   } catch {
     // fetch() rejects with an opaque "Failed to fetch" for network/CORS failures,
     // giving no detail — at least name which file it was.
@@ -199,6 +234,10 @@ async function downloadPickedFile(token: string, item: PickedMediaItem): Promise
   if (!res.ok) throw new Error(`Failed to download "${item.mediaFile.filename}": ${res.status}`);
   const blob = await res.blob();
   return new File([blob], item.mediaFile.filename, { type: item.mediaFile.mimeType || blob.type });
+}
+
+function downloadPickedFile(token: string, item: PickedMediaItem): Promise<File> {
+  return item.type === 'VIDEO' ? downloadVideoViaProxy(token, item) : downloadPhoto(token, item);
 }
 
 /**
