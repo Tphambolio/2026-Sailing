@@ -1,226 +1,32 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
 import type { Stop } from '../types';
-import { useAuth } from '../context/AuthContext';
-import { useStopNotes, useStopPhotos } from '../hooks/useStopContent';
-import { formatDate } from '../utils/geo';
-import { effectiveArrival, effectiveDeparture } from '../services/routeEngine';
-import { parseContent, isVideoPath } from '../utils/journalContent';
+import JournalEntryCard from './JournalEntryCard';
 
 interface NotesModalProps {
   stop: Stop;
+  isCurrent?: boolean;
   onClose: () => void;
 }
 
-export default function NotesModal({ stop, onClose }: NotesModalProps) {
-  const { user, signInWithProvider } = useAuth();
-  const { content, loading: notesLoading, saving, save } = useStopNotes(stop.key);
-  const { photos, loading: photosLoading, uploading, upload, remove, getUrl } = useStopPhotos(stop.key);
-  const [draft, setDraft] = useState('');
-  const [editing, setEditing] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const videoInputRef = useRef<HTMLInputElement>(null);
-  // Guards against a rapid double-tap firing the OS file chooser twice before
-  // the disabled-button re-render catches up. A ref so the check is synchronous.
-  const pickerOpenRef = useRef(false);
-
-  useEffect(() => { setDraft(content); }, [content]);
-
-  useEffect(() => {
-    // change never fires if the user cancels the native picker without
-    // selecting anything, so clear the guard on focus-return too.
-    const clearGuard = () => { pickerOpenRef.current = false; };
-    window.addEventListener('focus', clearGuard);
-    return () => window.removeEventListener('focus', clearGuard);
-  }, []);
-
-  const openPicker = (ref: React.RefObject<HTMLInputElement | null>) => {
-    if (pickerOpenRef.current) return;
-    pickerOpenRef.current = true;
-    ref.current?.click();
-  };
-
-  // `content` may contain {{photo:ID}} tokens placed by the Journal tab's inline
-  // photo picker. Render them as images here too, instead of leaking the raw token.
-  const displayBlocks = useMemo(() => parseContent(content), [content]);
-
-  const handleSave = async () => {
-    await save(draft);
-    setEditing(false);
-  };
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    pickerOpenRef.current = false;
-    const file = e.target.files?.[0];
-    if (file) await upload(file);
-    e.target.value = '';
-  };
-
+// A modal shell around JournalEntryCard — the notes/photos/Google Photos editor
+// used to be duplicated here with its own copy of every handler, which is how
+// features like Google Photos import (and the image-downsample fix) landed in
+// the Journal tab but silently never made it here. One implementation now;
+// this is just the popup chrome (backdrop, close button, scroll container)
+// around it. Visited/arrival/departure controls are deliberately left off —
+// the map's info bar behind this modal already has those, right next to it.
+export default function NotesModal({ stop, isCurrent, onClose }: NotesModalProps) {
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[10000] p-4" onClick={onClose}>
-      <div
-        className="bg-slate-800 rounded-xl shadow-2xl max-w-lg w-full border border-slate-700 max-h-[85vh] flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-start justify-between p-4 border-b border-slate-700">
-          <div>
-            <h2 className="text-lg font-bold text-white">{stop.name}</h2>
-            <p className="text-xs text-slate-400">{formatDate(effectiveArrival(stop))}{effectiveDeparture(stop) && effectiveArrival(stop) !== effectiveDeparture(stop) && ` → ${formatDate(effectiveDeparture(stop))}`}</p>
-          </div>
-          <button onClick={onClose} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white">✕</button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-4 space-y-5">
-          {/* Notes */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xs font-semibold text-slate-400 uppercase">Notes</h3>
-              {user && !editing && (
-                <button onClick={() => setEditing(true)} className="text-xs text-cyan-400 hover:text-cyan-300">✏️ Edit</button>
-              )}
-            </div>
-
-            {notesLoading || photosLoading ? (
-              <p className="text-sm text-slate-500">Loading…</p>
-            ) : editing ? (
-              <div className="space-y-2">
-                <textarea
-                  value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
-                  rows={5}
-                  autoFocus
-                  placeholder="Write something about this stop…"
-                  className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 resize-none"
-                />
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-600 rounded text-sm text-white font-medium"
-                  >
-                    {saving ? 'Saving…' : 'Save'}
-                  </button>
-                  <button
-                    onClick={() => { setDraft(content); setEditing(false); }}
-                    className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded text-sm text-slate-300"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            ) : displayBlocks.length > 0 ? (
-              <div className="space-y-2">
-                {displayBlocks.map((block, i) =>
-                  block.type === 'text' ? (
-                    <p key={i} className="text-sm text-slate-200 whitespace-pre-wrap">{block.text}</p>
-                  ) : (
-                    (() => {
-                      const photo = photos.find(p => p.id === block.id);
-                      if (!photo) return null;
-                      return isVideoPath(photo.storage_path) ? (
-                        <video
-                          key={i}
-                          src={getUrl(photo.storage_path)}
-                          controls
-                          playsInline
-                          className="w-full max-h-72 object-contain bg-black rounded-lg"
-                        />
-                      ) : (
-                        <img
-                          key={i}
-                          src={getUrl(photo.storage_path)}
-                          alt={photo.caption || stop.name}
-                          className="w-full max-h-72 object-cover rounded-lg"
-                        />
-                      );
-                    })()
-                  )
-                )}
-              </div>
-            ) : (
-              <p className="text-sm text-slate-500 italic">
-                {user ? 'No notes yet — click Edit to add some.' : 'No notes yet.'}
-              </p>
-            )}
-          </div>
-
-          {/* Photos */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xs font-semibold text-slate-400 uppercase">Photos</h3>
-              {user && (
-                <button
-                  onClick={() => openPicker(fileInputRef)}
-                  disabled={uploading}
-                  className="text-xs text-cyan-400 hover:text-cyan-300 disabled:text-slate-500"
-                >
-                  {uploading ? 'Uploading…' : '📷 Add photo'}
-                </button>
-              )}
-              {user && (
-                <button
-                  onClick={() => openPicker(videoInputRef)}
-                  disabled={uploading}
-                  className="text-xs text-cyan-400 hover:text-cyan-300 disabled:text-slate-500 ml-2"
-                >
-                  {uploading ? 'Uploading…' : '🎥 Add video'}
-                </button>
-              )}
-              {/* Separate inputs — accept="image/*,video/*" on one input can make some
-                  Android browsers fall back to the slow legacy file picker instead of
-                  the fast native Photos picker that accept="image/*" alone triggers. */}
-              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
-              <input ref={videoInputRef} type="file" accept="video/*" className="hidden" onChange={handleFileChange} />
-            </div>
-
-            {photosLoading ? (
-              <p className="text-sm text-slate-500">Loading…</p>
-            ) : photos.length === 0 ? (
-              <p className="text-sm text-slate-500 italic">No photos yet.</p>
-            ) : (
-              <div className="grid grid-cols-3 gap-2">
-                {photos.map((photo) => (
-                  <div key={photo.id} className="relative group aspect-square">
-                    {isVideoPath(photo.storage_path) ? (
-                      <video
-                        src={getUrl(photo.storage_path)}
-                        controls
-                        playsInline
-                        className="w-full h-full object-cover rounded-lg"
-                      />
-                    ) : (
-                      <img
-                        src={getUrl(photo.storage_path)}
-                        alt={photo.caption || stop.name}
-                        className="w-full h-full object-cover rounded-lg"
-                      />
-                    )}
-                    {user && (
-                      <button
-                        onClick={() => remove(photo)}
-                        className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center bg-black/70 rounded-full text-white text-xs transition-opacity"
-                        title="Delete photo"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Sign-in prompt for read-only visitors */}
-          {!user && (
-            <div className="pt-2 border-t border-slate-700">
-              <button
-                onClick={() => signInWithProvider('google')}
-                className="text-xs text-slate-500 hover:text-slate-300"
-              >
-                Sign in to add notes or photos →
-              </button>
-            </div>
-          )}
+      <div className="max-w-lg w-full relative" onClick={(e) => e.stopPropagation()}>
+        <button
+          onClick={onClose}
+          className="absolute -top-3 -right-3 z-10 w-8 h-8 flex items-center justify-center bg-slate-700 hover:bg-slate-600 rounded-full text-white shadow-lg"
+          title="Close"
+        >
+          ✕
+        </button>
+        <div className="max-h-[85vh] overflow-y-auto rounded-xl">
+          <JournalEntryCard stop={stop} isCurrent={isCurrent} onEmptyAndCancelled={onClose} />
         </div>
       </div>
     </div>

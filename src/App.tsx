@@ -1109,7 +1109,11 @@ function App() {
       )}
 
       {notesModalStop && (
-        <NotesModal stop={notesModalStop} onClose={() => setNotesModalStop(null)} />
+        <NotesModal
+          stop={notesModalStop}
+          isCurrent={currentStop?.id === notesModalStop.id}
+          onClose={() => setNotesModalStop(null)}
+        />
       )}
     </div>
   );

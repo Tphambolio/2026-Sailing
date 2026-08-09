@@ -1,8 +1,12 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import NotesModal from './NotesModal';
 import type { Stop } from '../types';
 
+// NotesModal is a thin modal shell around JournalEntryCard — content rendering
+// (photo/video tokens, editing, Google Photos, etc.) is JournalEntryCard's own
+// responsibility and already covered by JournalEntryCard.test.tsx. These tests
+// only cover what NotesModal itself is responsible for: the modal chrome.
 const { mockUseAuth, mockUseStopNotes, mockUseStopPhotos } = vi.hoisted(() => ({
   mockUseAuth: vi.fn(),
   mockUseStopNotes: vi.fn(),
@@ -40,61 +44,65 @@ const photo = {
   created_at: '2026-08-05T00:00:00Z',
 };
 
+function setup(content = '') {
+  mockUseAuth.mockReturnValue({ user: { id: 'user-1' }, signInWithProvider: vi.fn() });
+  mockUseStopNotes.mockReturnValue({
+    content,
+    loading: false,
+    saving: false,
+    save: vi.fn().mockResolvedValue({ error: null }),
+  });
+  mockUseStopPhotos.mockReturnValue({
+    photos: [photo],
+    loading: false,
+    upload: vi.fn(),
+    remove: vi.fn(),
+    getUrl: (path: string) => `https://example.test/${path}`,
+  });
+}
+
 describe('NotesModal', () => {
-  it('renders a {{photo:ID}} token (written by the Journal tab) as an image, not raw text', () => {
-    mockUseAuth.mockReturnValue({ user: { id: 'user-1' }, signInWithProvider: vi.fn() });
-    mockUseStopNotes.mockReturnValue({
-      content: 'Great walk along the walls.\n\n{{photo:photo-1}}\n\nSunset after.',
-      loading: false,
-      saving: false,
-      save: vi.fn(),
-    });
-    mockUseStopPhotos.mockReturnValue({
-      photos: [photo],
-      loading: false,
-      uploading: false,
-      upload: vi.fn(),
-      remove: vi.fn(),
-      getUrl: (path: string) => `https://example.test/${path}`,
-    });
+  it('renders the stop via JournalEntryCard, with a photo token shown only once (not duplicated in a separate grid)', () => {
+    setup('Great walk along the walls.\n\n{{photo:photo-1}}\n\nSunset after.');
 
     render(<NotesModal stop={stop} onClose={vi.fn()} />);
 
+    expect(screen.getByRole('heading', { name: /Dubrovnik/ })).toBeInTheDocument();
     expect(screen.getByText('Great walk along the walls.')).toBeInTheDocument();
     expect(screen.getByText('Sunset after.')).toBeInTheDocument();
     expect(screen.queryByText(/\{\{photo:/)).not.toBeInTheDocument();
-
-    // The same photo also appears in the flat Photos grid below, so there are two
-    // matches for this alt text — the inline one (in the Notes section) comes first in DOM order.
-    const images = screen.getAllByAltText('Dubrovnik');
-    expect(images.length).toBeGreaterThanOrEqual(1);
-    expect(images[0]).toHaveAttribute('src', 'https://example.test/dubrovnik/1.jpg');
+    // Unified behavior: a photo referenced inline no longer also appears in a
+    // separate flat gallery below it, unlike the old duplicated NotesModal.
+    expect(screen.getAllByAltText('Dubrovnik')).toHaveLength(1);
   });
 
-  it('renders a video file as a <video> element in both the inline block and the photo grid', () => {
-    const videoMedia = { ...photo, id: 'video-1', storage_path: 'dubrovnik/clip.mov' };
-    mockUseAuth.mockReturnValue({ user: { id: 'user-1' }, signInWithProvider: vi.fn() });
-    mockUseStopNotes.mockReturnValue({
-      content: '{{photo:video-1}}',
-      loading: false,
-      saving: false,
-      save: vi.fn(),
-    });
-    mockUseStopPhotos.mockReturnValue({
-      photos: [videoMedia],
-      loading: false,
-      uploading: false,
-      upload: vi.fn(),
-      remove: vi.fn(),
-      getUrl: (path: string) => `https://example.test/${path}`,
-    });
+  it('calls onClose when the close button is clicked', () => {
+    setup('');
+    const onClose = vi.fn();
+    render(<NotesModal stop={stop} onClose={onClose} />);
 
-    const { container } = render(<NotesModal stop={stop} onClose={vi.fn()} />);
+    fireEvent.click(screen.getByTitle('Close'));
 
-    // One <video> inline in the Notes section, one in the flat Photos grid below.
-    const videos = container.querySelectorAll('video');
-    expect(videos.length).toBe(2);
-    videos.forEach(v => expect(v).toHaveAttribute('src', 'https://example.test/dubrovnik/clip.mov'));
-    expect(container.querySelector('img')).toBeNull();
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls onClose when the backdrop is clicked', () => {
+    setup('');
+    const onClose = vi.fn();
+    const { container } = render(<NotesModal stop={stop} onClose={onClose} />);
+
+    fireEvent.click(container.firstChild as Element);
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not close when clicking inside the card itself', () => {
+    setup('Some existing notes.');
+    const onClose = vi.fn();
+    render(<NotesModal stop={stop} onClose={onClose} />);
+
+    fireEvent.click(screen.getByText('Some existing notes.'));
+
+    expect(onClose).not.toHaveBeenCalled();
   });
 });
