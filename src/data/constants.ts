@@ -1,5 +1,14 @@
 // Shared constants for Mediterranean Odyssey
 
+// The only accounts allowed to edit trip data (journal, photos, stops) — mirrors
+// the RLS policies on sailing_trip_stops/sailing_stop_notes/sailing_stop_photos
+// in Supabase. Kept in sync manually; update both places if this list changes.
+export const EDITOR_EMAILS = [
+  'travisjohnkennedy@gmail.com',
+  'claire.st.aubin@gmail.com',
+  'vivian.st.aubin.kennedy@gmail.com',
+];
+
 // Non-Schengen countries (Schengen counter pauses here)
 export const NON_SCHENGEN = [
   'Montenegro',

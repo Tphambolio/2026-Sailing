@@ -6,7 +6,7 @@ import { getData, saveUserStops, clearUserStops, exportStopsJson } from './servi
 import { healRoute, computePhases, computeStats, insertStop, removeStop, updateStop, computeSchengenStatus, effectiveArrival, effectiveDeparture } from './services/routeEngine';
 import type { Stop, Phase, TripStats } from './types';
 import { DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM } from './types';
-import { NON_SCHENGEN, COUNTRY_COLORS, COUNTRY_FLAGS } from './data/constants';
+import { NON_SCHENGEN, COUNTRY_COLORS, COUNTRY_FLAGS, EDITOR_EMAILS } from './data/constants';
 import { formatDate, daysBetween, todayISO } from './utils/geo';
 import StopEditor from './components/StopEditor';
 import NotesModal from './components/NotesModal';
@@ -165,6 +165,10 @@ function getDistanceColor(km: number): string {
 
 function App() {
   const { user, signInWithProvider, signOut } = useAuth();
+  // Only these signed-in accounts may drag stops to a new position — matches
+  // the RLS allowlist on sailing_trip_stops, so this is UI-level for a clean
+  // experience, not the actual enforcement (Supabase rejects the write either way).
+  const isEditor = !!user?.email && EDITOR_EMAILS.includes(user.email.toLowerCase());
   const [notesModalStop, setNotesModalStop] = useState<Stop | null>(null);
   const [stops, setStops] = useState<Stop[]>([]);
   const [phases, setPhases] = useState<Phase[]>([]);
@@ -600,13 +604,15 @@ function App() {
                 key={stop.id}
                 position={[stop.lat, stop.lon]}
                 icon={createMarkerIcon(stop, zoomLevel, currentStop?.id === stop.id)}
-                draggable
+                draggable={isEditor}
                 eventHandlers={{
                   click: () => setSelectedStop(stop),
-                  dragend: (e) => {
-                    const { lat, lng } = e.target.getLatLng();
-                    handleMoveStop(stop, lat, lng);
-                  },
+                  ...(isEditor && {
+                    dragend: (e) => {
+                      const { lat, lng } = e.target.getLatLng();
+                      handleMoveStop(stop, lat, lng);
+                    },
+                  }),
                 }}
               >
                 <Popup className="compact-popup">
