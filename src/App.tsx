@@ -102,9 +102,14 @@ function createMarkerIcon(stop: Stop, zoom: number, isCurrent: boolean = false):
   const borderWidth = zoom < 7 ? 1 : 2;
   const opacity = stop.visited ? 1 : 0.55;
   const ring = isCurrent ? 'box-shadow:0 0 0 4px rgba(250,204,21,0.6),0 2px 8px rgba(0,0,0,0.3);' : 'box-shadow:0 2px 8px rgba(0,0,0,0.3);';
+  // Bottom-right status badge: a green check once visited, or a question mark
+  // beforehand — signals "planned, not yet happened" rather than reading as
+  // an empty/broken marker.
+  const badgeSize = Math.round(baseSize * 0.5);
+  const badgeFontSize = Math.max(7, fontSize - 4);
   const checkBadge = stop.visited
-    ? `<div style="position:absolute;bottom:-2px;right:-2px;width:${Math.round(baseSize * 0.5)}px;height:${Math.round(baseSize * 0.5)}px;border-radius:50%;background:#22c55e;border:1px solid white;display:flex;align-items:center;justify-content:center;font-size:${Math.max(7, fontSize - 4)}px;color:white;">✓</div>`
-    : '';
+    ? `<div style="position:absolute;bottom:-2px;right:-2px;width:${badgeSize}px;height:${badgeSize}px;border-radius:50%;background:#22c55e;border:1px solid white;display:flex;align-items:center;justify-content:center;font-size:${badgeFontSize}px;color:white;">✓</div>`
+    : `<div style="position:absolute;bottom:-2px;right:-2px;width:${badgeSize}px;height:${badgeSize}px;border-radius:50%;background:#64748b;border:1px solid white;display:flex;align-items:center;justify-content:center;font-size:${badgeFontSize}px;color:white;">?</div>`;
   // Stop order number — same numbering as the sidebar list ("1. Šibenik", "2. Arta
   // Mala", ...). Stands in for the route lines that used to convey ordering visually.
   // min-width (not a fixed width) so 3-digit stop numbers don't get clipped.
