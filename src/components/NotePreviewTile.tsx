@@ -34,7 +34,7 @@ export default function NotePreviewTile({ stop, onExpand }: NotePreviewTileProps
     return (
       <button
         onClick={onExpand}
-        className="mt-2 w-full text-left text-sm text-slate-400 hover:text-emerald-400 border border-dashed border-slate-600 hover:border-emerald-500 rounded-lg px-3 py-2 transition-colors"
+        className="mb-3 w-full text-left text-sm text-slate-400 hover:text-emerald-400 border border-dashed border-slate-600 hover:border-emerald-500 rounded-lg px-3 py-2 transition-colors"
       >
         {'📝'} No journal entry yet — click to add one
       </button>
@@ -46,7 +46,7 @@ export default function NotePreviewTile({ stop, onExpand }: NotePreviewTileProps
   return (
     <button
       onClick={onExpand}
-      className="mt-2 w-full flex items-start gap-3 text-left bg-slate-900/60 hover:bg-slate-900 border border-slate-700 hover:border-emerald-500/50 rounded-lg p-2.5 transition-colors"
+      className="mb-3 w-full flex items-start gap-3 text-left bg-slate-900/60 hover:bg-slate-900 border border-slate-700 hover:border-emerald-500/50 rounded-lg p-2.5 transition-colors"
       title="Read the full entry"
     >
       {thumbPhoto && (

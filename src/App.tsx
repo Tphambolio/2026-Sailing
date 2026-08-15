@@ -624,6 +624,11 @@ function App() {
           {selectedStop && (
             <div className="absolute bottom-0 left-0 right-0 z-[1000] bg-slate-800/95 backdrop-blur border-t border-slate-700 animate-slide-up">
               <div className="p-3 md:p-4">
+                {/* Journal entry preview — the first thing shown for whichever stop is
+                    selected; click to expand into the full editor. Everything else
+                    (dates, links, edit/notes actions) follows below it. */}
+                <NotePreviewTile stop={selectedStop} onExpand={() => setNotesModalStop(selectedStop)} />
+
                 {/* Compact single-row layout */}
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                   {/* Stop name and country */}
@@ -681,9 +686,6 @@ function App() {
                     {selectedStop.notes && <span className="italic text-slate-400">{selectedStop.notes}</span>}
                   </div>
                 )}
-
-                {/* Journal entry preview — auto-shown for whichever stop is selected, click to expand */}
-                <NotePreviewTile stop={selectedStop} onExpand={() => setNotesModalStop(selectedStop)} />
               </div>
             </div>
           )}
