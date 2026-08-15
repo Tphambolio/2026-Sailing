@@ -122,22 +122,46 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
     requestAnimationFrame(() => ta?.focus());
   };
 
+  // Supabase's Free plan hard-caps storage uploads at 50MB with no per-bucket
+  // override — a phone video clip clears this routinely (unlike photos, which
+  // downsampleImage() shrinks first). Checking client-side avoids burning a
+  // full upload attempt (and, for Google Photos imports, a download from
+  // Google first) on a file that's certain to be rejected.
+  const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
+
   // Shared by both the local file picker and the Google Photos picker — uploads
   // each file to Supabase, appends an inline token for it, and tracks progress.
   const uploadFiles = async (files: File[]) => {
     if (files.length === 0) return;
     setUploadProgress({ done: 0, total: files.length });
+    const failures: string[] = [];
     for (const file of files) {
+      if (file.size > MAX_UPLOAD_BYTES) {
+        failures.push(`"${file.name}" is ${(file.size / (1024 * 1024)).toFixed(0)}MB — over the 50MB upload limit on this project's plan. Trim the clip or export at a lower resolution.`);
+        setUploadProgress(p => (p ? { ...p, done: p.done + 1 } : null));
+        continue;
+      }
       const toUpload = await downsampleImage(file);
-      const { data } = await upload(toUpload);
+      const { data, error } = await upload(toUpload);
       if (data) {
         const num = nextNumberFor(data.id);
         setDraft(prev => `${prev}${prev.trim() ? '\n\n' : ''}{{photo ${num}}}`);
+      } else if (error) {
+        failures.push(`"${file.name}": ${error.message}`);
       }
       setUploadProgress(p => (p ? { ...p, done: p.done + 1 } : null));
     }
     setUploadProgress(null);
     setEditing(true);
+    // Previously these were swallowed silently — data-only destructuring meant
+    // a failed upload (e.g. an oversized video) just vanished with no trace,
+    // looking indistinguishable from "nothing happened". Live-confirmed: a
+    // video that downloaded fine via the Google Photos relay never appeared
+    // because the follow-up Supabase upload rejected it over the size limit,
+    // and nothing told the user why.
+    if (failures.length > 0) {
+      alert(`Couldn't upload:\n${failures.map(f => `• ${f}`).join('\n')}`);
+    }
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
