@@ -195,36 +195,6 @@ function getDistanceColor(km: number): string {
   return '#ef4444'; // red
 }
 
-// Distance label icon with arrow - color based on distance
-function createDistanceIcon(distance: number, angle: number): L.DivIcon {
-  const km = Math.round(distance);
-  const color = getDistanceColor(km);
-  return L.divIcon({
-    className: 'distance-label',
-    html: `<div style="display:flex;align-items:center;gap:2px;background:rgba(15,23,42,0.85);padding:2px 6px;border-radius:4px;border:1px solid ${color};white-space:nowrap;">
-      <span style="transform:rotate(${angle}deg);color:${color};font-size:10px;">▶</span>
-      <span style="color:${color};font-size:11px;font-weight:600;">${km}km</span>
-    </div>`,
-    iconSize: [60, 20],
-    iconAnchor: [30, 10],
-  });
-}
-
-// Calculate CSS rotation for direction arrow from point 1 to point 2
-// Returns degrees for CSS transform: rotate()
-function calculateBearing(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const lat1Rad = lat1 * Math.PI / 180;
-  const lat2Rad = lat2 * Math.PI / 180;
-  const y = Math.sin(dLon) * Math.cos(lat2Rad);
-  const x = Math.cos(lat1Rad) * Math.sin(lat2Rad) - Math.sin(lat1Rad) * Math.cos(lat2Rad) * Math.cos(dLon);
-  // This gives navigation bearing: 0°=N, 90°=E, 180°=S, 270°=W
-  const navBearing = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
-  // ▶ points east by default, CSS rotation is clockwise
-  // To convert: rotation = bearing - 90
-  return (navBearing - 90 + 360) % 360;
-}
-
 function App() {
   const { user, signInWithProvider, signOut } = useAuth();
   const [notesModalStop, setNotesModalStop] = useState<Stop | null>(null);
@@ -491,43 +461,6 @@ function App() {
   }, [stops]);
 
   const visitedCount = useMemo(() => stops.filter(s => s.visited).length, [stops]);
-
-  // Draw route lines sequentially, colored by each segment's starting stop's country
-  // Uses routeWaypoints when available to avoid crossing land
-  const routeSegments = useMemo(() => {
-    const segments: { positions: [number, number][]; color: string }[] = [];
-    for (let i = 0; i < filteredStops.length - 1; i++) {
-      const currentStop = filteredStops[i];
-      const nextStop = filteredStops[i + 1];
-      // Get color from the current stop's phase (country)
-      const phase = phases.find(p => p.name === currentStop.phase);
-      // Build positions array: start -> waypoints (if any) -> end
-      const positions: [number, number][] = [
-        [currentStop.lat, currentStop.lon],
-        ...(currentStop.routeWaypoints || []),
-        [nextStop.lat, nextStop.lon],
-      ];
-      segments.push({
-        positions,
-        color: phase?.color || '#6b7280',
-      });
-    }
-    return segments;
-  }, [filteredStops, phases]);
-
-  // Create distance labels with arrows at midpoints between ALL consecutive stops
-  const distanceLabels = stops.slice(0, -1).map((stop, i) => {
-    const nextStop = stops[i + 1];
-    const midLat = (stop.lat + nextStop.lat) / 2;
-    const midLon = (stop.lon + nextStop.lon) / 2;
-    const bearing = calculateBearing(stop.lat, stop.lon, nextStop.lat, nextStop.lon);
-    const distance = calculateDistance(stop.lat, stop.lon, nextStop.lat, nextStop.lon);
-    return {
-      position: [midLat, midLon] as [number, number],
-      angle: bearing,
-      distance,
-    };
-  });
 
   if (loading) {
     return (
@@ -860,23 +793,6 @@ function App() {
                   : handleAddMeasurePoint
               }
             />
-            {/* Route segments - drawn sequentially, colored by country */}
-            {routeSegments.map((segment, i) => (
-              <Polyline
-                key={`route-${i}`}
-                positions={segment.positions}
-                pathOptions={{ color: segment.color, weight: 3, opacity: 0.7 }}
-              />
-            ))}
-            {/* Distance labels with arrows - only show when zoomed in */}
-            {zoomLevel >= 8 && distanceLabels.map((label, i) => (
-              <Marker
-                key={`distance-${i}`}
-                position={label.position}
-                icon={createDistanceIcon(label.distance, label.angle)}
-                interactive={false}
-              />
-            ))}
             {filteredStops.map(stop => (
               <Marker key={stop.id} position={[stop.lat, stop.lon]} icon={createMarkerIcon(stop, zoomLevel, currentStop?.id === stop.id)} eventHandlers={{ click: () => !measureMode && setSelectedStop(stop) }}>
                 <Popup className="compact-popup">
