@@ -1,8 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { Stop } from '../types';
 import { COUNTRY_FLAGS } from '../data/constants';
-import { geocodeTown, searchMarinasNear, type OsmSearchResult } from '../services/osmSearch';
-import { enrichStop, type EnrichmentData } from '../services/enrichment';
 import { addDays } from '../utils/geo';
 
 interface StopEditorProps {
@@ -11,11 +9,9 @@ interface StopEditorProps {
   onSave: (stop: Partial<Stop>) => void;
   onDelete?: () => void;           // only when editing existing stop
   onCancel: () => void;
-  onPickLocation?: () => void;     // only when editing existing stop — arms map-click repositioning
-  pickingLocation?: boolean;       // true while waiting for that map click
 }
 
-export default function StopEditor({ stop, countries, onSave, onDelete, onCancel, onPickLocation, pickingLocation }: StopEditorProps) {
+export default function StopEditor({ stop, countries, onSave, onDelete, onCancel }: StopEditorProps) {
   const isNew = !stop?.id;
 
   const [name, setName] = useState(stop?.name || '');
@@ -30,107 +26,11 @@ export default function StopEditor({ stop, countries, onSave, onDelete, onCancel
     }
     return 3;
   });
-  const [marinaName, setMarinaName] = useState(stop?.marinaName || '');
-  const [marinaUrl, setMarinaUrl] = useState(stop?.marinaUrl || '');
-  // Previously only settable via "Auto-fill Links & Culture", with no way to see,
-  // edit, or clear whatever it produced once saved — this exposes it directly.
-  const [cultureHighlight, setCultureHighlight] = useState(stop?.cultureHighlight || '');
   // Overrides the auto-cascaded planned arrival/departure (which just chains off the
   // previous stop's dates) — needed when backfilling a stop for a specific day that
   // already happened, like a second night at a different anchorage on the same island.
   const [actualArrivalDate, setActualArrivalDate] = useState(stop?.actualArrival || '');
   const [showDelete, setShowDelete] = useState(false);
-
-  // Search state
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<OsmSearchResult[]>([]);
-  const [searching, setSearching] = useState(false);
-  const [searchError, setSearchError] = useState('');
-
-  // Enrichment state
-  const [enrichmentData, setEnrichmentData] = useState<EnrichmentData | null>(null);
-  const [enriching, setEnriching] = useState(false);
-
-  // Update form when stop prop changes (e.g., map click sets lat/lon)
-  useEffect(() => {
-    if (stop?.lat && stop.lat.toString() !== lat) setLat(stop.lat.toString());
-    if (stop?.lon && stop.lon.toString() !== lon) setLon(stop.lon.toString());
-  }, [stop?.lat, stop?.lon]);
-
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) return;
-    setSearching(true);
-    setSearchError('');
-    setSearchResults([]);
-    try {
-      const geo = await geocodeTown(searchQuery);
-      if (!geo) {
-        setSearchError('Town not found in Mediterranean');
-        return;
-      }
-
-      // Try Overpass for marinas, but don't fail the whole search if it's down
-      let results: OsmSearchResult[] = [];
-      try {
-        results = await searchMarinasNear(geo.lat, geo.lon);
-      } catch (err) {
-        console.warn('Overpass API failed, using geocode only:', err);
-      }
-
-      if (results.length > 0) {
-        setSearchResults(results);
-      } else {
-        // Fall back to geocoded location as a single result
-        const townName = geo.displayName.split(',')[0];
-        setSearchResults([{
-          id: 0,
-          name: townName,
-          lat: geo.lat,
-          lon: geo.lon,
-          type: 'anchorage',
-        }]);
-        setSearchError(results.length === 0 ? `Showing location for ${townName} (marina search unavailable)` : '');
-      }
-    } catch (err) {
-      setSearchError('Search failed — check your connection');
-      console.warn('OSM search error:', err);
-    } finally {
-      setSearching(false);
-    }
-  };
-
-  const handleSelectResult = (result: OsmSearchResult) => {
-    setName(result.name);
-    setLat(result.lat.toFixed(4));
-    setLon(result.lon.toFixed(4));
-    setType(result.type);
-    if (result.type === 'marina') {
-      setMarinaName(result.name);
-      if (result.website) setMarinaUrl(result.website);
-    }
-    setSearchResults([]);
-    setSearchQuery('');
-    setSearchError('');
-  };
-
-  const handleEnrich = async () => {
-    const parsedLat = parseFloat(lat);
-    const parsedLon = parseFloat(lon);
-    if (!name.trim() || isNaN(parsedLat) || isNaN(parsedLon)) return;
-
-    setEnriching(true);
-    try {
-      const data = await enrichStop(parsedLat, parsedLon, name.trim());
-      setEnrichmentData(data);
-      // Route the culture blurb into the editable field instead of a hidden
-      // buffer, so what auto-fill produced is immediately visible and editable.
-      if (data.cultureHighlight) setCultureHighlight(data.cultureHighlight);
-    } catch (err) {
-      console.warn('Enrichment failed:', err);
-    } finally {
-      setEnriching(false);
-    }
-  };
 
   const handleSave = () => {
     if (!name.trim()) return;
@@ -146,8 +46,6 @@ export default function StopEditor({ stop, countries, onSave, onDelete, onCancel
       lon: parsedLon,
       type,
       duration: `${durationDays} day${durationDays !== 1 ? 's' : ''}`,
-      marinaName: marinaName.trim() || undefined,
-      marinaUrl: marinaUrl.trim() || undefined,
       // A set date means "we were actually here on this day" — overrides the
       // auto-cascaded planned schedule for Journal ordering and Schengen counting
       // (see effectiveArrival/effectiveDeparture in routeEngine.ts), and implies visited.
@@ -156,12 +54,10 @@ export default function StopEditor({ stop, countries, onSave, onDelete, onCancel
         actualDeparture: addDays(actualArrivalDate, durationDays),
         visited: true,
       } : {}),
-      // Spread enrichment data if available (wiki/food/adventure/provisions links)
-      ...(enrichmentData || {}),
-      // Explicitly after the spread above so the editable field always wins,
-      // even if it was hand-edited after an auto-fill populated enrichmentData.
-      // Empty clears it — no separate "remove" control needed.
-      cultureHighlight: cultureHighlight.trim() || undefined,
+      // marinaName/marinaUrl/cultureHighlight/wikiUrl/foodUrl/adventureUrl/provisionsUrl
+      // aren't edited by this form, but the `...stop` spread above already carries
+      // their existing values through unchanged — don't add explicit overrides for
+      // them here, or an empty/unset local default would wipe whatever's saved.
     });
   };
 
@@ -182,49 +78,6 @@ export default function StopEditor({ stop, countries, onSave, onDelete, onCancel
           the viewport instead of scrolling internally, pushing the footer off-screen. */}
       <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
 
-        {/* Marina/Anchorage Search — only for new stops */}
-        {isNew && (
-          <div className="pb-3 border-b border-slate-700">
-            <label className="block text-xs font-medium text-slate-400 mb-1">Search Marina / Anchorage</label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="Town name (e.g., Dubrovnik)"
-                className="flex-1 bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
-                autoFocus
-              />
-              <button
-                onClick={handleSearch}
-                disabled={searching || !searchQuery.trim()}
-                className="px-3 py-2 bg-cyan-600 text-white rounded-lg text-sm hover:bg-cyan-500 disabled:bg-slate-600 disabled:text-slate-400"
-              >
-                {searching ? '...' : 'Search'}
-              </button>
-            </div>
-            {searchError && <p className="text-xs text-amber-400 mt-1">{searchError}</p>}
-            {searchResults.length > 0 && (
-              <div className="mt-2 max-h-48 overflow-y-auto space-y-1 rounded-lg border border-slate-600">
-                {searchResults.map(r => (
-                  <button
-                    key={r.id}
-                    onClick={() => handleSelectResult(r)}
-                    className="w-full text-left p-2 hover:bg-slate-600 text-sm border-b border-slate-700 last:border-b-0 transition-colors"
-                  >
-                    <span>{r.type === 'marina' ? '\u26F5' : '\u2693'}</span>
-                    <span className="text-white ml-2 font-medium">{r.name}</span>
-                    <span className="text-slate-500 text-xs ml-2">
-                      ({r.lat.toFixed(3)}, {r.lon.toFixed(3)})
-                    </span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
         {/* Name */}
         <div>
           <label className="block text-xs font-medium text-slate-400 mb-1">Name *</label>
@@ -234,6 +87,7 @@ export default function StopEditor({ stop, countries, onSave, onDelete, onCancel
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g., Kotor Bay"
             className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+            autoFocus
           />
         </div>
 
@@ -276,24 +130,6 @@ export default function StopEditor({ stop, countries, onSave, onDelete, onCancel
             />
           </div>
         </div>
-
-        {/* Tip for map click */}
-        {isNew && !searchResults.length && (
-          <p className="text-xs text-slate-500 -mt-2">
-            Tip: Click on the map to set coordinates, or use search above
-          </p>
-        )}
-
-        {/* Reposition an existing stop by clicking the map, instead of typing raw coordinates */}
-        {!isNew && onPickLocation && (
-          <button
-            onClick={onPickLocation}
-            disabled={pickingLocation}
-            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm text-cyan-400 hover:bg-slate-600 hover:border-cyan-500 disabled:text-cyan-300 disabled:border-cyan-500 transition-colors -mt-2"
-          >
-            {pickingLocation ? '📍 Click the correct spot on the map…' : '📍 Pick new location on map'}
-          </button>
-        )}
 
         {/* Type toggle */}
         <div>
@@ -355,66 +191,6 @@ export default function StopEditor({ stop, countries, onSave, onDelete, onCancel
           <p className="text-[11px] text-slate-500 mt-1">
             Leave blank to let it auto-schedule after the previous stop. Setting a date marks this stop as visited and is what the Journal uses to order and place it.
           </p>
-        </div>
-
-        {/* Marina details (if type is marina) */}
-        {type === 'marina' && (
-          <>
-            <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1">Marina Name</label>
-              <input
-                type="text"
-                value={marinaName}
-                onChange={(e) => setMarinaName(e.target.value)}
-                placeholder="e.g., Porto Montenegro"
-                className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1">Marina URL</label>
-              <input
-                type="url"
-                value={marinaUrl}
-                onChange={(e) => setMarinaUrl(e.target.value)}
-                placeholder="https://..."
-                className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
-              />
-            </div>
-          </>
-        )}
-
-        {/* Culture highlight \u2014 the one-line blurb shown on the map popup and
-            journal card (e.g. "Ro\u017eat is a small village near Dubrovnik").
-            Always editable here, whether it was hand-written or came from
-            auto-fill below; clear it to remove it entirely. */}
-        <div>
-          <label className="block text-xs font-medium text-slate-400 mb-1">Culture highlight</label>
-          <textarea
-            value={cultureHighlight}
-            onChange={(e) => setCultureHighlight(e.target.value)}
-            placeholder="e.g., Ro\u017eat is a small village near Dubrovnik, Croatia."
-            rows={2}
-            className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 resize-y"
-          />
-        </div>
-
-        {/* Auto-enrichment */}
-        <div className="pt-2">
-          <button
-            onClick={handleEnrich}
-            disabled={enriching || !name.trim() || !lat || !lon}
-            className="w-full px-3 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-500 disabled:bg-slate-600 disabled:text-slate-400 transition-colors"
-          >
-            {enriching ? 'Enriching...' : '\u2728 Auto-fill Links & Culture'}
-          </button>
-          {enrichmentData && (
-            <div className="mt-2 text-xs text-slate-400 space-y-0.5 bg-slate-700/50 rounded-lg p-2">
-              {enrichmentData.wikiUrl && <p>\ud83d\udcd6 Wikipedia found</p>}
-              {enrichmentData.foodUrl && <p>\ud83c\udf7d\ufe0f Food guide set</p>}
-              {enrichmentData.adventureUrl && <p>\ud83c\udfd4\ufe0f Activities set</p>}
-              {enrichmentData.provisionsUrl && <p>\ud83d\uded2 Provisions set</p>}
-            </div>
-          )}
         </div>
 
         {/* Delete section */}

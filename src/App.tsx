@@ -1,23 +1,17 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { getData, saveUserStops, clearUserStops, exportStopsJson } from './services/dataService';
 import { healRoute, computePhases, computeStats, insertStop, removeStop, updateStop, computeSchengenStatus, effectiveArrival, effectiveDeparture } from './services/routeEngine';
-import type { Stop, Phase, TripStats, FilterState } from './types';
+import type { Stop, Phase, TripStats } from './types';
 import { DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM } from './types';
 import { NON_SCHENGEN, COUNTRY_COLORS, COUNTRY_FLAGS } from './data/constants';
-import { haversine, kmToNm, formatDate, daysBetween, todayISO } from './utils/geo';
-import { CalendarView } from './components/Calendar';
-import RouteEditor from './components/RouteEditor';
+import { formatDate, daysBetween, todayISO } from './utils/geo';
 import StopEditor from './components/StopEditor';
-import TableView from './components/TableView';
 import NotesModal from './components/NotesModal';
 import JournalView from './components/JournalView';
 import { useAuth } from './context/AuthContext';
-
-// Alias for existing calculateDistance usage
-const calculateDistance = haversine;
 
 // Calculate rolling 90/180 Schengen days for each stop
 function calculateSchengenDays(stops: Stop[]): Map<number, { days: number; rolling: number; isPaused: boolean }> {
@@ -137,27 +131,6 @@ function MapController({ selectedStop }: { selectedStop: Stop | null }) {
   return null;
 }
 
-// Component to handle distance measurement clicks
-type MeasurePoint = { lat: number; lon: number };
-
-function MeasureHandler({
-  measureMode,
-  onAddPoint,
-}: {
-  measureMode: boolean;
-  onAddPoint: (point: MeasurePoint) => void;
-}) {
-  useMapEvents({
-    click(e) {
-      if (measureMode) {
-        onAddPoint({ lat: e.latlng.lat, lon: e.latlng.lng });
-      }
-    },
-  });
-
-  return null;
-}
-
 // Component to track zoom level
 function ZoomTracker({ onZoomChange }: { onZoomChange: (zoom: number) => void }) {
   const map = useMap();
@@ -176,16 +149,6 @@ function ZoomTracker({ onZoomChange }: { onZoomChange: (zoom: number) => void })
   }, [map, onZoomChange]);
 
   return null;
-}
-
-// Measure point marker icon
-function createMeasureIcon(index: number): L.DivIcon {
-  return L.divIcon({
-    className: 'measure-marker',
-    html: `<div style="display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#22c55e;border:2px solid white;color:white;font-size:12px;font-weight:bold;box-shadow:0 2px 8px rgba(0,0,0,0.3)">${index + 1}</div>`,
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
-  });
 }
 
 // Get distance color: <50 green, 50-70 yellow, >70 red
@@ -207,28 +170,12 @@ function App() {
   const [selectedStop, setSelectedStop] = useState<Stop | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [legendVisible, setLegendVisible] = useState(true);
-  const [filters, setFilters] = useState<FilterState>({
-    countries: [],
-    types: [],
-    phases: [],
-    seasons: [],
-    searchQuery: '',
-  });
-  const [measureMode, setMeasureMode] = useState(false);
-  const [measurePoints, setMeasurePoints] = useState<MeasurePoint[]>([]);
   const [zoomLevel, setZoomLevel] = useState(DEFAULT_MAP_ZOOM);
   const [mapStyle, setMapStyle] = useState<'dark' | 'satellite' | 'streets'>('satellite');
-  const [activeView, setActiveView] = useState<'map' | 'calendar' | 'table' | 'journal'>('map');
-  const [routeEditMode, setRouteEditMode] = useState(false);
-  const [pendingWaypoints, setPendingWaypoints] = useState<Map<number, [number, number][]>>(new Map());
+  const [activeView, setActiveView] = useState<'map' | 'journal'>('map');
   // Stop editing state
   const [editingStop, setEditingStop] = useState<Stop | null>(null);
   const [insertAfterIndex, setInsertAfterIndex] = useState<number | null>(null);
-  const [addStopMode, setAddStopMode] = useState(false);
-  const [pendingLatLon, setPendingLatLon] = useState<{ lat: number; lon: number } | null>(null);
-  // Repositioning an already-saved stop (as opposed to placing a brand new one via
-  // addStopMode) — the next map click updates editingStop's coordinates in place.
-  const [pickLocationMode, setPickLocationMode] = useState(false);
 
   const tileLayerConfig = {
     dark: { url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', attribution: '&copy; CARTO' },
@@ -239,78 +186,6 @@ function App() {
   const handleZoomChange = useCallback((zoom: number) => {
     setZoomLevel(zoom);
   }, []);
-
-  const handleAddMeasurePoint = useCallback((point: MeasurePoint) => {
-    setMeasurePoints(prev => [...prev, point]);
-  }, []);
-
-  const clearMeasure = useCallback(() => {
-    setMeasurePoints([]);
-  }, []);
-
-  const toggleMeasureMode = useCallback(() => {
-    setMeasureMode(prev => {
-      if (prev) {
-        setMeasurePoints([]);
-      }
-      return !prev;
-    });
-  }, []);
-
-  // Route editing handlers
-  const handleSaveWaypoints = useCallback((stopId: number, waypoints: [number, number][]) => {
-    // Update pending waypoints
-    setPendingWaypoints(prev => {
-      const updated = new Map(prev);
-      if (waypoints.length > 0) {
-        updated.set(stopId, waypoints);
-      } else {
-        updated.delete(stopId);
-      }
-      return updated;
-    });
-
-    // Also update the stops state for immediate visual feedback
-    setStops(prev => prev.map(stop =>
-      stop.id === stopId
-        ? { ...stop, routeWaypoints: waypoints.length > 0 ? waypoints : undefined }
-        : stop
-    ));
-
-    console.log(`Saved waypoints for stop ${stopId}:`, waypoints);
-  }, []);
-
-  const exportWaypoints = useCallback(() => {
-    // Build an object of all modified waypoints
-    const waypointData: Record<number, [number, number][]> = {};
-    stops.forEach(stop => {
-      if (stop.routeWaypoints && stop.routeWaypoints.length > 0) {
-        waypointData[stop.id] = stop.routeWaypoints;
-      }
-    });
-
-    const json = JSON.stringify(waypointData, null, 2);
-    console.log('=== WAYPOINTS DATA ===');
-    console.log(json);
-    console.log('=== END WAYPOINTS ===');
-
-    // Also copy to clipboard
-    navigator.clipboard.writeText(json).then(() => {
-      alert('Waypoints copied to clipboard! Check console for full data.');
-    }).catch(() => {
-      alert('Check console for waypoint data.');
-    });
-  }, [stops]);
-
-  const totalMeasureDistance = measurePoints.length >= 2
-    ? measurePoints.reduce((total, point, i) => {
-        if (i === 0) return 0;
-        return total + calculateDistance(
-          measurePoints[i - 1].lat, measurePoints[i - 1].lon,
-          point.lat, point.lon
-        );
-      }, 0)
-    : 0;
 
   useEffect(() => {
     let cancelled = false;
@@ -368,7 +243,6 @@ function App() {
   const handleAddStop = useCallback((afterIndex: number) => {
     setInsertAfterIndex(afterIndex);
     setEditingStop(null);
-    setPendingLatLon(null);
   }, []);
 
   const handleEditStop = useCallback((stop: Stop) => {
@@ -399,15 +273,11 @@ function App() {
     }
     setEditingStop(null);
     setInsertAfterIndex(null);
-    setPendingLatLon(null);
-    setAddStopMode(false);
   }, [stops, editingStop, insertAfterIndex, applyRouteChange]);
 
   const handleCancelEdit = useCallback(() => {
     setEditingStop(null);
     setInsertAfterIndex(null);
-    setPendingLatLon(null);
-    setAddStopMode(false);
   }, []);
 
   const handleResetRoute = useCallback(async () => {
@@ -425,16 +295,6 @@ function App() {
     setSidebarOpen(isDesktop);
     setLegendVisible(isDesktop);
   }, []);
-
-  const filteredStops = stops.filter(stop => {
-    if (filters.countries.length && !filters.countries.includes(stop.country)) return false;
-    if (filters.types.length && !filters.types.includes(stop.type)) return false;
-    if (filters.searchQuery) {
-      const query = filters.searchQuery.toLowerCase();
-      return stop.name.toLowerCase().includes(query) || stop.country.toLowerCase().includes(query);
-    }
-    return true;
-  });
 
   const countries = [...new Set(stops.map(s => s.country))];
 
@@ -509,13 +369,6 @@ function App() {
           </div>
           {/* Right side: Controls */}
           <div className="flex items-center gap-1 md:gap-4">
-            <input
-              type="text"
-              placeholder="Search..."
-              value={filters.searchQuery}
-              onChange={(e) => setFilters(f => ({ ...f, searchQuery: e.target.value }))}
-              className="hidden md:block bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 w-64"
-            />
             {stats && (
               <div className="hidden lg:flex items-center gap-4 text-sm text-slate-300">
                 <span>{stats.totalDays} days</span>
@@ -541,18 +394,6 @@ function App() {
                 className={`px-1.5 py-1 md:px-2 rounded text-xs font-medium ${activeView === 'map' ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-600'}`}
               >
                 🗺️<span className="hidden md:inline"> Map</span>
-              </button>
-              <button
-                onClick={() => setActiveView('calendar')}
-                className={`px-1.5 py-1 md:px-2 rounded text-xs font-medium ${activeView === 'calendar' ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-600'}`}
-              >
-                📅<span className="hidden md:inline"> Calendar</span>
-              </button>
-              <button
-                onClick={() => setActiveView('table')}
-                className={`px-1.5 py-1 md:px-2 rounded text-xs font-medium ${activeView === 'table' ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-600'}`}
-              >
-                📊<span className="hidden md:inline"> Table</span>
               </button>
               <button
                 onClick={() => setActiveView('journal')}
@@ -633,23 +474,9 @@ function App() {
 
         {/* Sidebar */}
         <aside className={`w-72 md:w-80 bg-slate-800 border-r border-slate-700 flex flex-col fixed md:relative inset-y-0 left-0 z-50 top-14 md:top-0 transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:hidden'}`}>
-            <div className="p-4 border-b border-slate-700">
-              <h2 className="text-sm font-semibold text-slate-400 uppercase mb-3">Filters</h2>
-              <div className="flex gap-2 mb-3">
-                <button onClick={() => setFilters(f => ({ ...f, types: f.types.includes('marina') ? f.types.filter(t => t !== 'marina') : [...f.types, 'marina'] }))}
-                  className={`flex-1 px-3 py-1 rounded text-sm ${filters.types.includes('marina') ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-300'}`}>⛵ Marinas</button>
-                <button onClick={() => setFilters(f => ({ ...f, types: f.types.includes('anchorage') ? f.types.filter(t => t !== 'anchorage') : [...f.types, 'anchorage'] }))}
-                  className={`flex-1 px-3 py-1 rounded text-sm ${filters.types.includes('anchorage') ? 'bg-orange-600 text-white' : 'bg-slate-700 text-slate-300'}`}>⚓ Anchorages</button>
-              </div>
-              <select value={filters.countries[0] || ''} onChange={(e) => setFilters(f => ({ ...f, countries: e.target.value ? [e.target.value] : [] }))}
-                className="w-full bg-slate-700 border border-slate-600 rounded px-2 py-1 text-sm text-white">
-                <option value="">All countries</option>
-                {countries.map(c => <option key={c} value={c}>{COUNTRY_FLAGS[c] || ''} {c}</option>)}
-              </select>
-            </div>
             <div className="flex-1 overflow-y-auto p-2">
-              <p className="text-xs text-slate-500 px-2 mb-2">{filteredStops.length} of {stops.length} stops</p>
-              {filteredStops.map((stop) => {
+              <p className="text-xs text-slate-500 px-2 mb-2 pt-2">{stops.length} stops</p>
+              {stops.map((stop) => {
                 const originalIndex = stops.findIndex(s => s.id === stop.id);
                 return (
                 <div key={stop.id} className="group">
@@ -733,7 +560,7 @@ function App() {
             </div>
           </aside>
 
-        {/* Main Content Area - Map, Calendar, Table, or Journal */}
+        {/* Main Content Area - Map or Journal */}
         {activeView === 'journal' ? (
           <JournalView
             stops={stops}
@@ -743,32 +570,9 @@ function App() {
             onLogArrival={handleLogArrival}
             onLogDeparture={handleLogDeparture}
           />
-        ) : activeView === 'table' ? (
-          <TableView
-            stops={stops}
-            selectedStop={selectedStop}
-            schengenDays={schengenDays}
-            onStopSelect={setSelectedStop}
-            onEditStop={handleEditStop}
-            onDeleteStop={handleDeleteStop}
-            onInsertAfter={handleAddStop}
-          />
-        ) : activeView === 'calendar' ? (
-          <CalendarView
-            stops={stops}
-            phases={phases}
-            selectedStop={selectedStop}
-            onStopSelect={(stop) => {
-              setSelectedStop(stop);
-              if (stop) {
-                // Switch to map view and fly to location
-                setActiveView('map');
-              }
-            }}
-          />
         ) : (
         <main className="flex-1 relative">
-          <MapContainer center={DEFAULT_MAP_CENTER} zoom={DEFAULT_MAP_ZOOM} className={`h-full w-full ${measureMode ? 'cursor-crosshair' : ''}`} style={{ background: '#0f172a' }}>
+          <MapContainer center={DEFAULT_MAP_CENTER} zoom={DEFAULT_MAP_ZOOM} className="h-full w-full" style={{ background: '#0f172a' }}>
             <TileLayer
               key={mapStyle}
               attribution={tileLayerConfig[mapStyle].attribution}
@@ -776,25 +580,8 @@ function App() {
             />
             <MapController selectedStop={selectedStop} />
             <ZoomTracker onZoomChange={handleZoomChange} />
-            <MeasureHandler
-              measureMode={measureMode || addStopMode || pickLocationMode}
-              onAddPoint={
-                pickLocationMode
-                  ? (point) => {
-                      setEditingStop(prev => prev ? { ...prev, lat: point.lat, lon: point.lon } : prev);
-                      setPickLocationMode(false);
-                    }
-                  : addStopMode
-                  ? (point) => {
-                      setPendingLatLon(point);
-                      if (insertAfterIndex === null) setInsertAfterIndex(stops.length - 1);
-                      setAddStopMode(false);
-                    }
-                  : handleAddMeasurePoint
-              }
-            />
-            {filteredStops.map(stop => (
-              <Marker key={stop.id} position={[stop.lat, stop.lon]} icon={createMarkerIcon(stop, zoomLevel, currentStop?.id === stop.id)} eventHandlers={{ click: () => !measureMode && setSelectedStop(stop) }}>
+            {stops.map(stop => (
+              <Marker key={stop.id} position={[stop.lat, stop.lon]} icon={createMarkerIcon(stop, zoomLevel, currentStop?.id === stop.id)} eventHandlers={{ click: () => setSelectedStop(stop) }}>
                 <Popup className="compact-popup">
                   <div className="text-sm">
                     <span className="font-bold">{stop.name}</span>
@@ -805,19 +592,6 @@ function App() {
                 </Popup>
               </Marker>
             ))}
-            {measurePoints.length >= 2 && (
-              <Polyline positions={measurePoints.map(p => [p.lat, p.lon] as [number, number])} pathOptions={{ color: '#22c55e', weight: 3, dashArray: '10, 10' }} />
-            )}
-            {measurePoints.map((point, i) => (
-              <Marker key={`measure-${i}`} position={[point.lat, point.lon]} icon={createMeasureIcon(i)} />
-            ))}
-            {/* Route Editor */}
-            <RouteEditor
-              stops={filteredStops}
-              isEditing={routeEditMode}
-              onSaveWaypoints={handleSaveWaypoints}
-              stopBarVisible={!!selectedStop}
-            />
           </MapContainer>
 
           {selectedStop && (
@@ -867,8 +641,7 @@ function App() {
                     {selectedStop.foodUrl && <a href={selectedStop.foodUrl} target="_blank" rel="noopener noreferrer" className="text-amber-400 hover:text-amber-300">🍽️ Food</a>}
                     {selectedStop.adventureUrl && <a href={selectedStop.adventureUrl} target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300">🏔️ Do</a>}
                     {selectedStop.provisionsUrl && <a href={selectedStop.provisionsUrl} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300">🛒 Shop</a>}
-                    <button onClick={() => handleLogArrival(selectedStop)} className="text-sky-400 hover:text-sky-300" title="Log today as the actual arrival date">{'📌'} Arrived today</button>
-                    <button onClick={() => handleLogDeparture(selectedStop)} className="text-sky-400 hover:text-sky-300" title="Log today as the actual departure date">{'🏁'} Departed today</button>
+                    <button onClick={() => handleEditStop(selectedStop)} className="text-cyan-400 hover:text-cyan-300" title="Edit name, dates, position">✏️ Edit</button>
                     <button onClick={() => setNotesModalStop(selectedStop)} className="text-emerald-400 hover:text-emerald-300 font-medium" title="Read or add notes & photos for this stop">{'📝'} Notes</button>
                     <button onClick={() => setSelectedStop(null)} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white">✕</button>
                   </div>
@@ -914,92 +687,6 @@ function App() {
             {legendVisible ? '✕' : 'ℹ️'}
           </button>
 
-          <div className="absolute top-20 left-4 z-[1000] flex flex-col gap-2">
-            <button
-              onClick={() => {
-                setAddStopMode(!addStopMode);
-                setMeasureMode(false);
-              }}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                addStopMode
-                  ? 'bg-green-600 text-white'
-                  : 'bg-slate-800/90 backdrop-blur text-slate-300 hover:bg-slate-700'
-              }`}
-            >
-              <span>📌</span>
-              {addStopMode ? 'Click map...' : 'Add Stop'}
-            </button>
-
-            <button
-              onClick={toggleMeasureMode}
-              disabled={routeEditMode}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                measureMode
-                  ? 'bg-green-600 text-white'
-                  : routeEditMode
-                    ? 'bg-slate-800/50 text-slate-500 cursor-not-allowed'
-                    : 'bg-slate-800/90 backdrop-blur text-slate-300 hover:bg-slate-700'
-              }`}
-            >
-              <span>📏</span>
-              {measureMode ? 'Measuring...' : 'Measure Distance'}
-            </button>
-
-            <button
-              onClick={() => {
-                if (routeEditMode) {
-                  // When exiting, offer to export
-                  if (pendingWaypoints.size > 0) {
-                    exportWaypoints();
-                  }
-                }
-                setRouteEditMode(!routeEditMode);
-                setMeasureMode(false);
-              }}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                routeEditMode
-                  ? 'bg-amber-600 text-white'
-                  : 'bg-slate-800/90 backdrop-blur text-slate-300 hover:bg-slate-700'
-              }`}
-            >
-              <span>✏️</span>
-              {routeEditMode ? 'Exit Edit Mode' : 'Edit Routes'}
-            </button>
-
-            {routeEditMode && (
-              <button
-                onClick={exportWaypoints}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-cyan-600 text-white hover:bg-cyan-500"
-              >
-                <span>💾</span>
-                Export Waypoints
-              </button>
-            )}
-
-            {measureMode && (
-              <div className="bg-slate-800/90 backdrop-blur rounded-lg p-3">
-                <p className="text-xs text-slate-400 mb-2">Click on the map to add points</p>
-                {measurePoints.length >= 2 && (
-                  <div className="text-white">
-                    <p className="text-lg font-bold text-green-400">
-                      {totalMeasureDistance.toFixed(1)} km
-                    </p>
-                    <p className="text-sm text-slate-300">
-                      {kmToNm(totalMeasureDistance).toFixed(1)} nm
-                    </p>
-                  </div>
-                )}
-                {measurePoints.length > 0 && (
-                  <button
-                    onClick={clearMeasure}
-                    className="mt-2 text-xs text-red-400 hover:text-red-300"
-                  >
-                    Clear points
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
         </main>
         )}
       </div>
@@ -1007,7 +694,7 @@ function App() {
       {/* Stop Editor Panel */}
       {(editingStop !== null || insertAfterIndex !== null) && (
         <StopEditor
-          stop={editingStop || (pendingLatLon ? { lat: pendingLatLon.lat, lon: pendingLatLon.lon } : null)}
+          stop={editingStop}
           countries={countries}
           onSave={handleSaveStop}
           onDelete={editingStop ? () => {
@@ -1016,11 +703,6 @@ function App() {
             setEditingStop(null);
           } : undefined}
           onCancel={handleCancelEdit}
-          onPickLocation={editingStop ? () => {
-            setActiveView('map');
-            setPickLocationMode(true);
-          } : undefined}
-          pickingLocation={pickLocationMode}
         />
       )}
 

@@ -72,15 +72,6 @@ export interface SchengenStatus {
   overstayDate: string | null; // first future date the planned itinerary would exceed 90 days, if any
 }
 
-// Filter state for the sidebar
-export interface FilterState {
-  countries: string[];
-  types: ('marina' | 'anchorage')[];
-  phases: string[];
-  seasons: ('summer' | 'fall' | 'winter')[];
-  searchQuery: string;
-}
-
 // Map state
 export interface MapState {
   center: [number, number];
@@ -93,7 +84,6 @@ export interface AppState {
   stops: Stop[];
   phases: Phase[];
   stats: TripStats;
-  filters: FilterState;
   map: MapState;
   loading: boolean;
   error: string | null;
