@@ -10,6 +10,7 @@ import { NON_SCHENGEN, COUNTRY_COLORS, COUNTRY_FLAGS } from './data/constants';
 import { formatDate, daysBetween, todayISO } from './utils/geo';
 import StopEditor from './components/StopEditor';
 import NotesModal from './components/NotesModal';
+import NotePreviewTile from './components/NotePreviewTile';
 import JournalView from './components/JournalView';
 import { useAuth } from './context/AuthContext';
 
@@ -680,6 +681,9 @@ function App() {
                     {selectedStop.notes && <span className="italic text-slate-400">{selectedStop.notes}</span>}
                   </div>
                 )}
+
+                {/* Journal entry preview — auto-shown for whichever stop is selected, click to expand */}
+                <NotePreviewTile stop={selectedStop} onExpand={() => setNotesModalStop(selectedStop)} />
               </div>
             </div>
           )}
