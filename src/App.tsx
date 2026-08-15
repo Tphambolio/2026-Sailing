@@ -104,10 +104,14 @@ function createMarkerIcon(stop: Stop, zoom: number, isCurrent: boolean = false):
   const checkBadge = stop.visited
     ? `<div style="position:absolute;bottom:-2px;right:-2px;width:${Math.round(baseSize * 0.5)}px;height:${Math.round(baseSize * 0.5)}px;border-radius:50%;background:#22c55e;border:1px solid white;display:flex;align-items:center;justify-content:center;font-size:${Math.max(7, fontSize - 4)}px;color:white;">✓</div>`
     : '';
+  // Stop order number — same numbering as the sidebar list ("1. Šibenik", "2. Arta
+  // Mala", ...). Stands in for the route lines that used to convey ordering visually.
+  // min-width (not a fixed width) so 3-digit stop numbers don't get clipped.
+  const numberBadge = `<div style="position:absolute;top:-4px;left:-4px;min-width:${Math.round(baseSize * 0.55)}px;height:${Math.round(baseSize * 0.55)}px;padding:0 3px;border-radius:${Math.round(baseSize * 0.3)}px;background:#1e293b;border:1px solid white;display:flex;align-items:center;justify-content:center;font-size:${Math.max(7, fontSize - 3)}px;font-weight:700;line-height:1;color:white;">${stop.id}</div>`;
 
   return L.divIcon({
     className: `custom-marker-container${isCurrent ? ' current-stop-marker' : ''}`,
-    html: `<div style="position:relative;opacity:${opacity};"><div style="display:flex;align-items:center;justify-content:center;width:${baseSize}px;height:${baseSize}px;border-radius:50%;background:${bgColor};border:${borderWidth}px solid white;color:white;font-size:${fontSize}px;${ring}cursor:pointer">${iconEmoji}</div>${checkBadge}</div>`,
+    html: `<div style="position:relative;opacity:${opacity};"><div style="display:flex;align-items:center;justify-content:center;width:${baseSize}px;height:${baseSize}px;border-radius:50%;background:${bgColor};border:${borderWidth}px solid white;color:white;font-size:${fontSize}px;${ring}cursor:pointer">${iconEmoji}</div>${checkBadge}${numberBadge}</div>`,
     iconSize: [baseSize, baseSize],
     iconAnchor: [baseSize / 2, baseSize / 2],
   });
