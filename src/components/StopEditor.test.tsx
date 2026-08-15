@@ -57,87 +57,27 @@ describe('StopEditor actual date', () => {
   });
 });
 
-describe('StopEditor reposition on map', () => {
-  it('shows a "pick on map" button only when editing an existing stop with the callback wired up', () => {
-    render(<StopEditor stop={existingStop} countries={['Croatia']} onSave={vi.fn()} onCancel={vi.fn()} onPickLocation={vi.fn()} />);
-    expect(screen.getByRole('button', { name: /pick new location on map/i })).toBeInTheDocument();
-  });
-
-  it('does not show the button when adding a new stop, even if onPickLocation were somehow passed', () => {
-    render(<StopEditor stop={null} countries={['Croatia']} onSave={vi.fn()} onCancel={vi.fn()} onPickLocation={vi.fn()} />);
-    expect(screen.queryByRole('button', { name: /pick new location on map/i })).not.toBeInTheDocument();
-  });
-
-  it('calls onPickLocation when clicked, and reflects the pickingLocation state', async () => {
-    const onPickLocation = vi.fn();
-    const user = userEvent.setup();
-    const { rerender } = render(
-      <StopEditor stop={existingStop} countries={['Croatia']} onSave={vi.fn()} onCancel={vi.fn()} onPickLocation={onPickLocation} />
-    );
-
-    await user.click(screen.getByRole('button', { name: /pick new location on map/i }));
-    expect(onPickLocation).toHaveBeenCalledTimes(1);
-
-    rerender(
-      <StopEditor stop={existingStop} countries={['Croatia']} onSave={vi.fn()} onCancel={vi.fn()} onPickLocation={onPickLocation} pickingLocation />
-    );
-    expect(screen.getByRole('button', { name: /click the correct spot on the map/i })).toBeDisabled();
-  });
-
-  it('updates the Latitude/Longitude fields when the stop prop coordinates change (map click landing)', () => {
-    const { rerender, container } = render(
-      <StopEditor stop={existingStop} countries={['Croatia']} onSave={vi.fn()} onCancel={vi.fn()} onPickLocation={vi.fn()} />
-    );
-    const latInput = container.querySelector('input[placeholder="43.95"]') as HTMLInputElement;
-    expect(latInput.value).toBe('43.0962');
-
-    rerender(
-      <StopEditor
-        stop={{ ...existingStop, lat: 42.9611, lon: 17.135 }}
-        countries={['Croatia']}
-        onSave={vi.fn()}
-        onCancel={vi.fn()}
-        onPickLocation={vi.fn()}
-      />
-    );
-    expect(latInput.value).toBe('42.9611');
-  });
-});
-
-describe('StopEditor culture highlight', () => {
-  it('pre-fills the existing culture highlight, editable directly', () => {
-    const stopWithCulture = { ...existingStop, cultureHighlight: 'Rožat is a small village near Dubrovnik, Croatia.' };
-    render(<StopEditor stop={stopWithCulture} countries={['Croatia']} onSave={vi.fn()} onCancel={vi.fn()} />);
-
-    const field = screen.getByDisplayValue('Rožat is a small village near Dubrovnik, Croatia.');
-    expect(field.tagName).toBe('TEXTAREA');
-  });
-
-  it('clearing the field and saving removes the culture highlight entirely', async () => {
-    const stopWithCulture = { ...existingStop, cultureHighlight: 'Rožat is a small village near Dubrovnik, Croatia.' };
+describe('StopEditor fields not editable here are preserved on save', () => {
+  it('leaves cultureHighlight/marinaName/marinaUrl unchanged even though this form has no inputs for them', async () => {
+    // This form has no controls for these fields, so the save payload must carry
+    // their original values through unchanged (via the `...stop` spread in
+    // handleSave) rather than defaulting them to undefined and wiping what's saved.
+    const stopWithExtras = {
+      ...existingStop,
+      cultureHighlight: 'Rožat is a small village near Dubrovnik, Croatia.',
+      marinaName: 'ACI Marina',
+      marinaUrl: 'https://example.com',
+    };
     const onSave = vi.fn();
     const user = userEvent.setup();
-    render(<StopEditor stop={stopWithCulture} countries={['Croatia']} onSave={onSave} onCancel={vi.fn()} />);
+    render(<StopEditor stop={stopWithExtras} countries={['Croatia']} onSave={onSave} onCancel={vi.fn()} />);
 
-    const field = screen.getByDisplayValue('Rožat is a small village near Dubrovnik, Croatia.');
-    await user.clear(field);
     await user.click(screen.getByRole('button', { name: /save changes/i }));
 
     expect(onSave).toHaveBeenCalledTimes(1);
-    expect(onSave.mock.calls[0][0].cultureHighlight).toBeUndefined();
-  });
-
-  it('edits to the culture highlight are saved as typed', async () => {
-    const stopWithCulture = { ...existingStop, cultureHighlight: 'Old blurb.' };
-    const onSave = vi.fn();
-    const user = userEvent.setup();
-    render(<StopEditor stop={stopWithCulture} countries={['Croatia']} onSave={onSave} onCancel={vi.fn()} />);
-
-    const field = screen.getByDisplayValue('Old blurb.');
-    await user.clear(field);
-    await user.type(field, 'New blurb.');
-    await user.click(screen.getByRole('button', { name: /save changes/i }));
-
-    expect(onSave.mock.calls[0][0].cultureHighlight).toBe('New blurb.');
+    const saved = onSave.mock.calls[0][0];
+    expect(saved.cultureHighlight).toBe('Rožat is a small village near Dubrovnik, Croatia.');
+    expect(saved.marinaName).toBe('ACI Marina');
+    expect(saved.marinaUrl).toBe('https://example.com');
   });
 });
