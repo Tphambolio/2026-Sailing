@@ -227,6 +227,16 @@ function App() {
     applyRouteChange(updateStop(stops, index, { visited: !stop.visited }));
   }, [stops, applyRouteChange]);
 
+  // Dragging a marker to correct its position — simpler than the old
+  // click-to-place "pick location" flow this replaces. healRoute() (inside
+  // applyRouteChange) recomputes distanceToNext for the dragged stop and its
+  // neighbour automatically, same as any other lat/lon edit.
+  const handleMoveStop = useCallback((stop: Stop, lat: number, lon: number) => {
+    const index = stops.findIndex(s => s.id === stop.id);
+    if (index < 0) return;
+    applyRouteChange(updateStop(stops, index, { lat, lon }));
+  }, [stops, applyRouteChange]);
+
   const handleLogArrival = useCallback((stop: Stop) => {
     const index = stops.findIndex(s => s.id === stop.id);
     if (index < 0) return;
@@ -581,7 +591,19 @@ function App() {
             <MapController selectedStop={selectedStop} />
             <ZoomTracker onZoomChange={handleZoomChange} />
             {stops.map(stop => (
-              <Marker key={stop.id} position={[stop.lat, stop.lon]} icon={createMarkerIcon(stop, zoomLevel, currentStop?.id === stop.id)} eventHandlers={{ click: () => setSelectedStop(stop) }}>
+              <Marker
+                key={stop.id}
+                position={[stop.lat, stop.lon]}
+                icon={createMarkerIcon(stop, zoomLevel, currentStop?.id === stop.id)}
+                draggable
+                eventHandlers={{
+                  click: () => setSelectedStop(stop),
+                  dragend: (e) => {
+                    const { lat, lng } = e.target.getLatLng();
+                    handleMoveStop(stop, lat, lng);
+                  },
+                }}
+              >
                 <Popup className="compact-popup">
                   <div className="text-sm">
                     <span className="font-bold">{stop.name}</span>
