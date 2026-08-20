@@ -186,7 +186,7 @@ function App() {
   const [legendVisible, setLegendVisible] = useState(true);
   const [zoomLevel, setZoomLevel] = useState(DEFAULT_MAP_ZOOM);
   const [mapStyle, setMapStyle] = useState<'dark' | 'satellite' | 'streets'>('satellite');
-  const [activeView, setActiveView] = useState<'map' | 'journal'>('map');
+  const [activeView, setActiveView] = useState<'map' | 'journal'>('journal');
   // Stop editing state
   const [editingStop, setEditingStop] = useState<Stop | null>(null);
   const [insertAfterIndex, setInsertAfterIndex] = useState<number | null>(null);
@@ -411,19 +411,19 @@ function App() {
                 </span>
               </div>
             )}
-            {/* View Toggle - icons only on mobile */}
-            <div className="flex items-center gap-0.5 md:gap-1 bg-slate-700 rounded-lg p-0.5 md:p-1">
-              <button
-                onClick={() => setActiveView('map')}
-                className={`px-1.5 py-1 md:px-2 rounded text-xs font-medium ${activeView === 'map' ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-600'}`}
-              >
-                🗺️<span className="hidden md:inline"> Map</span>
-              </button>
+            {/* View Toggle - large and always labeled so it reads as a toggle, not decoration */}
+            <div className="flex items-center gap-1 bg-slate-700 rounded-lg p-1">
               <button
                 onClick={() => setActiveView('journal')}
-                className={`px-1.5 py-1 md:px-2 rounded text-xs font-medium ${activeView === 'journal' ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-600'}`}
+                className={`px-2.5 py-1.5 md:px-3.5 md:py-2 rounded text-sm md:text-base font-semibold whitespace-nowrap ${activeView === 'journal' ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-600'}`}
               >
-                📖<span className="hidden md:inline"> Journal</span>
+                📖 Journal
+              </button>
+              <button
+                onClick={() => setActiveView('map')}
+                className={`px-2.5 py-1.5 md:px-3.5 md:py-2 rounded text-sm md:text-base font-semibold whitespace-nowrap ${activeView === 'map' ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-600'}`}
+              >
+                🗺️ Map
               </button>
             </div>
             {/* Route edit actions */}
