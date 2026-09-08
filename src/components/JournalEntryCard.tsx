@@ -15,6 +15,21 @@ import {
   type GooglePhotosSessionHandle,
 } from '../services/googlePhotosPicker';
 
+// Video thumbnails otherwise look identical to photos until clicked — this overlay
+// is the reader's only cue that a tile plays rather than just enlarges.
+function PlayBadge({ small }: { small?: boolean } = {}) {
+  const size = small ? 'w-8 h-8' : 'w-14 h-14';
+  return (
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <div className={`${size} rounded-full bg-black/55 flex items-center justify-center`}>
+        <svg viewBox="0 0 24 24" fill="white" className={small ? 'w-4 h-4 ml-0.5' : 'w-6 h-6 ml-1'}>
+          <path d="M8 5v14l11-7z" />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
 interface JournalEntryCardProps {
   stop: Stop;
   isCurrent?: boolean;
@@ -474,6 +489,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
                           className="w-full max-h-[520px] object-cover cursor-zoom-in"
                         />
                       )}
+                      {isVideoPath(photo.storage_path) && <PlayBadge />}
                       {user && (
                         <button
                           onClick={() => remove(photo)}
@@ -514,6 +530,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
                     className="w-full h-full object-cover rounded cursor-zoom-in"
                   />
                 )}
+                {isVideoPath(photo.storage_path) && <PlayBadge small />}
                 {user && (
                   <button
                     onClick={() => remove(photo)}
