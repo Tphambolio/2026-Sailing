@@ -115,6 +115,67 @@ describe('googlePhotosPicker (configured)', () => {
     expect(openSpy).not.toHaveBeenCalled();
   });
 
+  it('reuses the OAuth token across sessions instead of re-prompting for every "Add photos" click', async () => {
+    const { startGooglePhotosSession } = await importConfigured();
+
+    let requestCount = 0;
+    window.google = {
+      accounts: {
+        oauth2: {
+          initTokenClient: (config) => ({
+            requestAccessToken: () => {
+              requestCount += 1;
+              config.callback({ access_token: 'fake-access-token', expires_in: 3600 });
+            },
+          }),
+        },
+      },
+    };
+    vi.stubGlobal('fetch', stubFetchFlow());
+
+    const first = await startGooglePhotosSession();
+    const second = await startGooglePhotosSession();
+
+    expect(requestCount).toBe(1);
+    expect(second.token).toBe(first.token);
+  });
+
+  it('re-prompts once the cached token has been rejected with a 401', async () => {
+    const { startGooglePhotosSession } = await importConfigured();
+
+    let requestCount = 0;
+    window.google = {
+      accounts: {
+        oauth2: {
+          initTokenClient: (config) => ({
+            requestAccessToken: () => {
+              requestCount += 1;
+              config.callback({ access_token: `token-${requestCount}`, expires_in: 3600 });
+            },
+          }),
+        },
+      },
+    };
+
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith('/v1/sessions') && (init?.method || 'GET') === 'POST') {
+        const auth = (init?.headers as Record<string, string>).Authorization;
+        // The first token is treated as already-revoked server-side.
+        if (auth === 'Bearer token-1') return { ok: false, status: 401, text: async () => 'revoked' } as Response;
+        return { ok: true, json: async () => ({ id: 's1', pickerUri: 'https://photos.google.com/picker/s1', mediaItemsSet: false }) } as Response;
+      }
+      throw new Error(`Unexpected fetch call: ${url}`);
+    }));
+
+    await expect(startGooglePhotosSession()).rejects.toThrow(/401/);
+    expect(requestCount).toBe(1);
+
+    const handle = await startGooglePhotosSession();
+    expect(requestCount).toBe(2);
+    expect(handle.token).toBe('token-2');
+  });
+
   it('waitForGooglePhotosSelection polls until selection, then downloads the picked files', async () => {
     const { startGooglePhotosSession, waitForGooglePhotosSelection } = await importConfigured();
     stubGis('fake-access-token');

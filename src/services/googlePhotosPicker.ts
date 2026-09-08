@@ -30,6 +30,7 @@ export type GooglePickerStatus = 'opening' | 'waiting' | 'downloading';
 interface TokenResponse {
   access_token?: string;
   error?: string;
+  expires_in?: number;
 }
 
 interface GoogleAccountsOAuth2 {
@@ -75,7 +76,16 @@ export function preloadGoogleIdentityServices(): void {
   });
 }
 
+// Kept for the lifetime of the tab only (no localStorage) — re-requesting
+// after a real page reload is fine; what wasn't fine was every single "Add
+// photos" click on every stop re-running the OAuth prompt even though the
+// token from five minutes ago was still perfectly valid.
+let cachedToken: { token: string; expiresAt: number } | null = null;
+
 function requestAccessToken(): Promise<string> {
+  if (cachedToken && Date.now() < cachedToken.expiresAt) {
+    return Promise.resolve(cachedToken.token);
+  }
   return loadGisScript().then(
     () =>
       new Promise<string>((resolve, reject) => {
@@ -94,8 +104,12 @@ function requestAccessToken(): Promise<string> {
           scope: PICKER_SCOPE,
           callback: (resp) => {
             clearTimeout(timeout);
-            if (resp.error || !resp.access_token) reject(new Error(resp.error || 'No access token returned'));
-            else resolve(resp.access_token);
+            if (resp.error || !resp.access_token) { reject(new Error(resp.error || 'No access token returned')); return; }
+            // Google typically issues 1-hour tokens; trim 5 minutes off so a
+            // download in flight near expiry doesn't get caught out by it.
+            const ttlMs = (resp.expires_in ?? 3600) * 1000 - 5 * 60_000;
+            cachedToken = { token: resp.access_token, expiresAt: Date.now() + Math.max(ttlMs, 0) };
+            resolve(resp.access_token);
           },
         });
         client.requestAccessToken();
@@ -147,6 +161,11 @@ async function apiCall<T>(path: string, token: string, init?: RequestInit): Prom
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', ...(init?.headers || {}) },
   });
   if (!res.ok) {
+    // The cached token's actual expiry can't be verified without a call like
+    // this one, so a 401 is the only signal we get that it's gone stale early
+    // (revoked, clock drift, etc.) — clear it so the next attempt re-prompts
+    // instead of retrying the same dead token forever.
+    if (res.status === 401) cachedToken = null;
     const body = await res.text().catch(() => '');
     throw new Error(`Google Photos Picker API error (${res.status}): ${body || res.statusText}`);
   }
