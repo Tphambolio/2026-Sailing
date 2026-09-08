@@ -7,6 +7,7 @@ import { formatDate } from '../utils/geo';
 import { effectiveArrival, effectiveDeparture } from '../services/routeEngine';
 import { parseContent, isVideoPath, buildPhotoNumberMap, toShortForm, toFullForm, shortFormPhotoIds } from '../utils/journalContent';
 import { downsampleImage } from '../utils/imageResize';
+import { trimVideoToSizeLimit } from '../utils/videoTrim';
 import {
   startGooglePhotosSession,
   waitForGooglePhotosSelection,
@@ -139,9 +140,12 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
 
   // Supabase's Free plan hard-caps storage uploads at 50MB with no per-bucket
   // override — a phone video clip clears this routinely (unlike photos, which
-  // downsampleImage() shrinks first). Checking client-side avoids burning a
-  // full upload attempt (and, for Google Photos imports, a download from
-  // Google first) on a file that's certain to be rejected.
+  // downsampleImage() shrinks first). An oversized video gets trimmed down to
+  // fit instead of rejected outright — see videoTrim.ts for why that's safe
+  // to do losslessly. Non-video files still can't be shrunk this way, so
+  // those are checked client-side to avoid burning a full upload attempt
+  // (and, for Google Photos imports, a download from Google first) on a file
+  // that's certain to be rejected.
   const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
 
   // Shared by both the local file picker and the Google Photos picker — uploads
@@ -151,12 +155,23 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
     setUploadProgress({ done: 0, total: files.length });
     const failures: string[] = [];
     for (const file of files) {
+      let toUpload: File = file;
       if (file.size > MAX_UPLOAD_BYTES) {
-        failures.push(`"${file.name}" is ${(file.size / (1024 * 1024)).toFixed(0)}MB — over the 50MB upload limit on this project's plan. Trim the clip or export at a lower resolution.`);
-        setUploadProgress(p => (p ? { ...p, done: p.done + 1 } : null));
-        continue;
+        if (!file.type.startsWith('video/')) {
+          failures.push(`"${file.name}" is ${(file.size / (1024 * 1024)).toFixed(0)}MB — over the 50MB upload limit on this project's plan.`);
+          setUploadProgress(p => (p ? { ...p, done: p.done + 1 } : null));
+          continue;
+        }
+        try {
+          toUpload = await trimVideoToSizeLimit(file, MAX_UPLOAD_BYTES);
+        } catch (err) {
+          const reason = err instanceof Error ? err.message : String(err);
+          failures.push(`"${file.name}" is ${(file.size / (1024 * 1024)).toFixed(0)}MB and couldn't be trimmed automatically (${reason}) — export a shorter clip and try again.`);
+          setUploadProgress(p => (p ? { ...p, done: p.done + 1 } : null));
+          continue;
+        }
       }
-      const toUpload = await downsampleImage(file);
+      toUpload = await downsampleImage(toUpload);
       const { data, error } = await upload(toUpload);
       if (data) {
         const num = nextNumberFor(data.id);
