@@ -447,9 +447,9 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
                       title="Insert into text"
                     >
                       {isVideoPath(photo.storage_path) ? (
-                        <video src={getUrl(photo.storage_path)} muted playsInline className="w-full h-full object-cover" />
+                        <div className="w-full h-full bg-slate-800" />
                       ) : (
-                        <img src={getUrl(photo.storage_path)} alt="" className="w-full h-full object-cover" />
+                        <img src={getUrl(photo.storage_path)} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
                       )}
                       {isVideoPath(photo.storage_path) && (
                         <span className="absolute top-0 left-0 bg-black/70 text-white text-[9px] px-1">🎥</span>
@@ -493,6 +493,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
                           src={getUrl(photo.storage_path)}
                           muted
                           playsInline
+                          preload="none"
                           onClick={() => setLightboxId(photo.id)}
                           className="w-full max-h-[520px] object-cover cursor-zoom-in"
                         />
@@ -500,6 +501,8 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
                         <img
                           src={getUrl(photo.storage_path)}
                           alt={photo.caption || stop.name}
+                          loading="lazy"
+                          decoding="async"
                           onClick={() => setLightboxId(photo.id)}
                           className="w-full max-h-[520px] object-cover cursor-zoom-in"
                         />
@@ -530,17 +533,16 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
             {galleryPhotos.map(photo => (
               <div key={photo.id} className="relative group aspect-square">
                 {isVideoPath(photo.storage_path) ? (
-                  <video
-                    src={getUrl(photo.storage_path)}
-                    muted
-                    playsInline
+                  <div
                     onClick={() => setLightboxId(photo.id)}
-                    className="w-full h-full object-cover rounded cursor-zoom-in"
+                    className="w-full h-full bg-slate-800 rounded cursor-zoom-in"
                   />
                 ) : (
                   <img
                     src={getUrl(photo.storage_path)}
                     alt={photo.caption || stop.name}
+                    loading="lazy"
+                    decoding="async"
                     onClick={() => setLightboxId(photo.id)}
                     className="w-full h-full object-cover rounded cursor-zoom-in"
                   />

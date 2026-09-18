@@ -53,6 +53,8 @@ export default function NotePreviewTile({ stop, onExpand }: NotePreviewTileProps
         <img
           src={getUrl(thumbPhoto.storage_path)}
           alt=""
+          loading="lazy"
+          decoding="async"
           className="w-14 h-14 rounded object-cover shrink-0"
         />
       )}

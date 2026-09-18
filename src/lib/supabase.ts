@@ -19,7 +19,7 @@ export async function uploadStopPhoto(file: File, stopKey: string) {
   const fileExt = file.name.split('.').pop();
   const path = `${stopKey}/${Date.now()}.${fileExt}`;
   const { error } = await supabase.storage.from(PHOTOS_BUCKET).upload(path, file, {
-    cacheControl: '3600',
+    cacheControl: '31536000',
     upsert: false,
   });
   return { path, error };
