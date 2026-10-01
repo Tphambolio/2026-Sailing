@@ -358,3 +358,15 @@ entrypoint = "./functions/google-photos-video/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/google-photos-video/*.html" ]
+
+[functions.get-upload-url]
+enabled = true
+verify_jwt = true
+import_map = "./functions/get-upload-url/deno.json"
+entrypoint = "./functions/get-upload-url/index.ts"
+
+[functions.delete-photo]
+enabled = true
+verify_jwt = true
+import_map = "./functions/delete-photo/deno.json"
+entrypoint = "./functions/delete-photo/index.ts"
