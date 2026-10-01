@@ -20,21 +20,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    let initialResolved = false;
+    const resolveInitial = (session: Session | null) => {
+      if (initialResolved) return;
+      initialResolved = true;
+      clearTimeout(timeoutId);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
-    });
+    };
+
+    // getSession() can hang indefinitely with no rejection if Supabase Auth
+    // is unreachable (its token-refresh call never resolves) — fall back to
+    // a signed-out view instead of blocking the whole app on this screen.
+    const timeoutId = setTimeout(() => resolveInitial(null), 5000);
+
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => resolveInitial(session))
+      .catch(() => resolveInitial(null));
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
+        resolveInitial(session); // in case this fires before getSession() settles
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(timeoutId);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signInWithProvider = async (provider: OAuthProvider) => {
