@@ -14,6 +14,7 @@ import {
   isGooglePhotosConfigured,
   type GooglePickerStatus,
   type GooglePhotosSessionHandle,
+  pickerOpenUrl,
 } from '../services/googlePhotosPicker';
 
 // Video thumbnails otherwise look identical to photos until clicked — this overlay
@@ -401,7 +402,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
           )}
           {user && googleSession && (
             <a
-              href={googleSession.pickerUri}
+              href={pickerOpenUrl(googleSession.pickerUri)}
               target="_blank"
               rel="noopener noreferrer"
               onClick={handleOpenPickerAndWait}

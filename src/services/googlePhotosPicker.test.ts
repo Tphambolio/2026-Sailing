@@ -340,3 +340,19 @@ describe('googlePhotosPicker (configured)', () => {
     await assertion;
   });
 });
+
+describe('pickerOpenUrl', () => {
+  it('appends /autoclose so the picker closes itself after Done', async () => {
+    const { pickerOpenUrl } = await import('./googlePhotosPicker');
+    expect(pickerOpenUrl('https://photos.google.com/picker/s1')).toBe('https://photos.google.com/picker/s1/autoclose');
+  });
+  it('keeps a query string after the /autoclose segment', async () => {
+    const { pickerOpenUrl } = await import('./googlePhotosPicker');
+    expect(pickerOpenUrl('https://photos.google.com/picker/s1?hl=en')).toBe('https://photos.google.com/picker/s1/autoclose?hl=en');
+  });
+  it('handles a trailing slash and does not double-append', async () => {
+    const { pickerOpenUrl } = await import('./googlePhotosPicker');
+    expect(pickerOpenUrl('https://photos.google.com/picker/s1/')).toBe('https://photos.google.com/picker/s1/autoclose');
+    expect(pickerOpenUrl('https://photos.google.com/picker/s1/autoclose')).toBe('https://photos.google.com/picker/s1/autoclose');
+  });
+});

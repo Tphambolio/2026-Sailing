@@ -361,3 +361,15 @@ export async function waitForGooglePhotosSelection(
 
   return { files, failures };
 }
+
+/**
+ * The URL to actually send the user to. Google's docs: appending /autoclose
+ * makes the picker close itself once the user taps Done, instead of leaving
+ * them on a "continue in your application" page they have to back out of.
+ * Inserted before any query string so the session id path stays intact.
+ */
+export function pickerOpenUrl(pickerUri: string): string {
+  const [path, query] = pickerUri.split('?', 2);
+  const withClose = path.endsWith('/autoclose') ? path : `${path.replace(/\/$/, '')}/autoclose`;
+  return query === undefined ? withClose : `${withClose}?${query}`;
+}
