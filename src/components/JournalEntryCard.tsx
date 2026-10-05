@@ -31,6 +31,14 @@ function PlayBadge({ small }: { small?: boolean } = {}) {
   );
 }
 
+// Renders a video's first frame as its thumbnail. preload="metadata" fetches
+// only the first few hundred KB (a Range request), and the #t=0.1 fragment is
+// what makes iOS Safari actually paint that frame instead of a blank box.
+// Full playback happens in the lightbox.
+function VideoFrame({ src, className, onClick }: { src: string; className: string; onClick?: () => void }) {
+  return <video src={`${src}#t=0.1`} muted playsInline preload="metadata" onClick={onClick} className={className} />;
+}
+
 interface JournalEntryCardProps {
   stop: Stop;
   isCurrent?: boolean;
@@ -447,7 +455,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
                       title="Insert into text"
                     >
                       {isVideoPath(photo.storage_path) ? (
-                        <div className="w-full h-full bg-slate-800" />
+                        <VideoFrame src={getUrl(photo.storage_path)} className="w-full h-full object-cover pointer-events-none" />
                       ) : (
                         <img src={getUrl(photo.storage_path)} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
                       )}
@@ -489,11 +497,8 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
                   return (
                     <div key={i} className="relative group my-4 -mx-5">
                       {isVideoPath(photo.storage_path) ? (
-                        <video
+                        <VideoFrame
                           src={getUrl(photo.storage_path)}
-                          muted
-                          playsInline
-                          preload="none"
                           onClick={() => setLightboxId(photo.id)}
                           className="w-full max-h-[520px] object-cover cursor-zoom-in"
                         />
@@ -533,9 +538,10 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
             {galleryPhotos.map(photo => (
               <div key={photo.id} className="relative group aspect-square">
                 {isVideoPath(photo.storage_path) ? (
-                  <div
+                  <VideoFrame
+                    src={getUrl(photo.storage_path)}
                     onClick={() => setLightboxId(photo.id)}
-                    className="w-full h-full bg-slate-800 rounded cursor-zoom-in"
+                    className="w-full h-full object-cover rounded cursor-zoom-in"
                   />
                 ) : (
                   <img

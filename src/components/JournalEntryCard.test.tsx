@@ -162,7 +162,9 @@ describe('JournalEntryCard video support', () => {
 
     const video = container.querySelector('video');
     expect(video).not.toBeNull();
-    expect(video).toHaveAttribute('src', 'https://example.test/dubrovnik/clip.mp4');
+    // #t=0.1 + preload="metadata" is what gets iOS Safari to paint a first-frame thumbnail
+    expect(video).toHaveAttribute('src', 'https://example.test/dubrovnik/clip.mp4#t=0.1');
+    expect(video).toHaveAttribute('preload', 'metadata');
     expect(container.querySelector('img')).toBeNull();
   });
 });
