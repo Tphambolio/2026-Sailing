@@ -31,11 +31,19 @@ export async function uploadStopPhoto(file: File, stopKey: string) {
     return { path: '', error: fnError ?? new Error('No upload URL returned') };
   }
 
-  const putRes = await fetch(urlData.uploadUrl, {
-    method: 'PUT',
-    body: file,
-    headers: { 'Content-Type': file.type || 'application/octet-stream' },
-  });
+  // A CORS rejection or dropped connection makes fetch() throw rather than
+  // resolve — left uncaught, that skipped every caller's cleanup and froze the
+  // UI on "Importing…" forever. Turn it into an ordinary returned error.
+  let putRes: Response;
+  try {
+    putRes = await fetch(urlData.uploadUrl, {
+      method: 'PUT',
+      body: file,
+      headers: { 'Content-Type': file.type || 'application/octet-stream' },
+    });
+  } catch (err) {
+    return { path: '', error: new Error(`R2 upload failed: ${err instanceof Error ? err.message : String(err)}`) };
+  }
   if (!putRes.ok) {
     return { path: '', error: new Error(`R2 upload failed: ${putRes.status}`) };
   }
