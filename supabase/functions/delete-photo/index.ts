@@ -4,11 +4,12 @@
 // here (server-to-server, no presigning needed — this function just signs
 // and performs the DELETE itself).
 //
-// JWT verification stays on (this project's default for edge functions), so
-// only a signed-in app user can delete a photo.
+// Only signed-in editors may call this — see _shared/requireEditor.ts for why
+// verify_jwt alone isn't enough.
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { AwsClient } from "npm:aws4fetch@1.0.20";
+import { requireEditor } from "../_shared/requireEditor.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -32,6 +33,14 @@ const aws = new AwsClient({
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
+  }
+
+  const denied = await requireEditor(req);
+  if (denied) {
+    return new Response(JSON.stringify({ error: denied.error }), {
+      status: denied.status,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   let body: { path?: unknown };

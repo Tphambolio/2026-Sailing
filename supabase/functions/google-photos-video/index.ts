@@ -8,13 +8,15 @@
 // Server-to-server has no CORS to enforce, so this function does the fetch
 // on Google's behalf and streams the bytes back to the browser.
 //
-// JWT verification stays on (this project's default for edge functions), so
-// only a signed-in app user can call this — not an open relay. The Google
+// Only signed-in editors may call this (see _shared/requireEditor.ts) — it
+// streams bytes back through Supabase, so an anon caller could otherwise burn
+// the project's egress quota through it. The Google
 // OAuth token passed in is short-lived (~1hr) and scoped read-only to the
 // user's own picker selection, so relaying it here doesn't grant anything
 // the caller couldn't already do directly.
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { requireEditor } from "../_shared/requireEditor.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -24,6 +26,14 @@ const corsHeaders = {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
+  }
+
+  const denied = await requireEditor(req);
+  if (denied) {
+    return new Response(JSON.stringify({ error: denied.error }), {
+      status: denied.status,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   let body: { baseUrl?: unknown; googleToken?: unknown };
