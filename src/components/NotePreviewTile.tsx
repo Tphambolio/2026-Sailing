@@ -1,4 +1,5 @@
 import type { Stop } from '../types';
+import { BookOpen, PenLine } from 'lucide-react';
 import StopImage from './StopImage';
 import { useStopNotes, useStopPhotos } from '../hooks/useStopContent';
 import { useAuth } from '../context/AuthContext';
@@ -37,7 +38,7 @@ export default function NotePreviewTile({ stop, onExpand }: NotePreviewTileProps
         onClick={onExpand}
         className="mb-3 w-full text-left text-sm text-slate-400 hover:text-emerald-400 border border-dashed border-slate-600 hover:border-emerald-500 rounded-lg px-3 py-2 transition-colors"
       >
-        {'📝'} No journal entry yet — click to add one
+        <PenLine size={14} aria-hidden className="inline -mt-0.5" /> No journal entry yet — click to add one
       </button>
     );
   }
@@ -61,7 +62,7 @@ export default function NotePreviewTile({ stop, onExpand }: NotePreviewTileProps
       <div className="min-w-0 flex-1">
         {truncated && <p className="text-sm text-slate-300 line-clamp-2">{truncated}</p>}
         <p className="text-xs text-emerald-400 font-medium mt-1">
-          {'📝'} Read full entry
+          <BookOpen size={14} aria-hidden className="inline -mt-0.5" /> Read full entry
           {photos.length > 0 && ` · ${photos.length} photo${photos.length !== 1 ? 's' : ''}`}
           {' →'}
         </p>

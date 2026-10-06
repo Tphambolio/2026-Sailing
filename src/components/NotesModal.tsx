@@ -1,4 +1,5 @@
 import type { Stop } from '../types';
+import { X } from 'lucide-react';
 import JournalEntryCard from './JournalEntryCard';
 
 interface NotesModalProps {
@@ -22,8 +23,9 @@ export default function NotesModal({ stop, isCurrent, onClose }: NotesModalProps
           onClick={onClose}
           className="absolute -top-3 -right-3 z-10 w-8 h-8 flex items-center justify-center bg-slate-700 hover:bg-slate-600 rounded-full text-white shadow-lg"
           title="Close"
+          aria-label="Close"
         >
-          ✕
+          <X size={18} aria-hidden />
         </button>
         <div className="max-h-[85vh] overflow-y-auto rounded-xl">
           <JournalEntryCard stop={stop} isCurrent={isCurrent} onEmptyAndCancelled={onClose} />

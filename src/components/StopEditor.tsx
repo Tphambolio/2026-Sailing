@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { X, Sailboat, Anchor } from 'lucide-react';
 import type { Stop } from '../types';
 import { COUNTRY_FLAGS } from '../data/constants';
 import { addDays } from '../utils/geo';
@@ -68,8 +69,8 @@ export default function StopEditor({ stop, countries, onSave, onDelete, onCancel
         <h2 className="text-lg font-bold text-white">
           {isNew ? 'Add Stop' : `Edit: ${stop?.name}`}
         </h2>
-        <button onClick={onCancel} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white">
-          ✕
+        <button onClick={onCancel} className="w-9 h-9 flex items-center justify-center hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white" aria-label="Close">
+          <X size={18} aria-hidden />
         </button>
       </div>
 
@@ -141,7 +142,7 @@ export default function StopEditor({ stop, countries, onSave, onDelete, onCancel
                 type === 'marina' ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
               }`}
             >
-              ⛵ Marina
+              <span className="inline-flex items-center gap-1.5"><Sailboat size={16} aria-hidden /> Marina</span>
             </button>
             <button
               onClick={() => setType('anchorage')}
@@ -149,7 +150,7 @@ export default function StopEditor({ stop, countries, onSave, onDelete, onCancel
                 type === 'anchorage' ? 'bg-orange-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
               }`}
             >
-              ⚓ Anchorage
+              <span className="inline-flex items-center gap-1.5"><Anchor size={16} aria-hidden /> Anchorage</span>
             </button>
           </div>
         </div>

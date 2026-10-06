@@ -13,7 +13,7 @@ import PhotosView from './components/PhotosView';
 const MapView = lazy(() => import('./components/MapView'));
 import { useAuth } from './context/AuthContext';
 import { supabase } from './lib/supabase';
-import { BookOpen, Map as MapIcon, Images, Menu, X, LogIn, LogOut, Sailboat, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { BookOpen, Map as MapIcon, Images, Menu, X, LogIn, LogOut, Sailboat, Anchor, Pencil, Download, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 
 // Get distance color: <50 green, 50-70 yellow, >70 red
 function getDistanceColor(km: number): string {
@@ -292,7 +292,7 @@ function App() {
             {isEditor && isUserEdited && (
               <div className="hidden md:flex items-center gap-1">
                 <button onClick={() => exportStopsJson(stops)} className="px-2 py-1 bg-cyan-600 hover:bg-cyan-500 rounded text-xs text-white" title="Download stops.json">
-                  💾 Export
+                  <Download size={14} aria-hidden className="inline -mt-0.5" /> Export
                 </button>
               </div>
             )}
@@ -372,7 +372,7 @@ function App() {
                           title={stop.visited ? 'Visited' : 'Planned'}
                         >{'✓'}</span>
                       )}
-                      <span className="text-lg">{stop.type === 'marina' ? '⛵' : '⚓'}</span>
+                      <span className="mt-0.5 text-cyan-400" title={stop.type === 'marina' ? 'Marina' : 'Anchorage'}>{stop.type === 'marina' ? <Sailboat size={18} aria-hidden /> : <Anchor size={18} aria-hidden />}</span>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className={`font-medium truncate ${stop.visited ? 'text-slate-300' : 'text-white'}`}>{stop.id}. {stop.name}</p>
@@ -385,7 +385,8 @@ function App() {
                             onClick={(e) => { e.stopPropagation(); handleEditStop(stop); }}
                             className="ml-auto p-0.5 hover:bg-slate-600 rounded text-slate-500 hover:text-cyan-400 text-xs transition-opacity"
                             title="Edit stop"
-                          >✏️</button>}
+                            aria-label={`Edit ${stop.name}`}
+                          ><Pencil size={14} aria-hidden /></button>}
                         </div>
                         <div className="flex items-center gap-2 text-xs text-slate-400">
                           <span>{COUNTRY_FLAGS[stop.country] || ''} {stop.country}</span>

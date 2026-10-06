@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { X, Info, Moon, Satellite, Map as MapIcon } from 'lucide-react';
+import { X, Info, Moon, Satellite, Map as MapIcon, Sailboat, Anchor, CalendarDays, PenLine, Clock, Ruler, BookOpen, UtensilsCrossed, Mountain, ShoppingBasket, Pencil, Landmark } from 'lucide-react';
 import type { Stop, Phase } from '../types';
 import { DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM } from '../types';
 import { COUNTRY_COLORS, COUNTRY_FLAGS } from '../data/constants';
@@ -178,7 +178,7 @@ export default function MapView({
                 <span className="font-bold">{stop.name}</span>
                 <span className="text-gray-500 ml-1">{COUNTRY_FLAGS[stop.country] || ''}</span>
                 {currentStop?.id === stop.id && <span className="ml-1 text-xs text-gray-500">· {currentStopLabel(stop)}</span>}
-                {stop.cultureHighlight && <div className="text-gray-600 mt-0.5">🏛️ {stop.cultureHighlight}</div>}
+                {stop.cultureHighlight && <div className="text-gray-600 mt-0.5">{stop.cultureHighlight}</div>}
               </div>
             </Popup>
           </Marker>
@@ -197,7 +197,7 @@ export default function MapView({
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
               {/* Stop name and country */}
               <div className="flex items-center gap-2 min-w-0">
-                <span className="text-lg">{selectedStop.type === 'marina' ? '⛵' : '⚓'}</span>
+                <span className="text-cyan-400" title={selectedStop.type === 'marina' ? 'Marina' : 'Anchorage'}>{selectedStop.type === 'marina' ? <Sailboat size={20} aria-hidden /> : <Anchor size={20} aria-hidden />}</span>
                 <h2 className="text-base md:text-lg font-bold text-white truncate">{selectedStop.name}</h2>
                 <span className="text-slate-400 text-sm">{COUNTRY_FLAGS[selectedStop.country] || ''}</span>
                 {selectedStop.phase && <span className="px-2 py-0.5 rounded text-xs" style={{ backgroundColor: COUNTRY_COLORS[selectedStop.phase] || '#6b7280' }}>{selectedStop.phase}</span>}
@@ -218,19 +218,19 @@ export default function MapView({
               <div className="flex items-center gap-3 text-sm text-slate-300">
                 {/* Readers see the real dates only; editors also see the plan vs. actual split */}
                 {!isEditor && effectiveArrival(selectedStop) && (
-                  <span>📅 {formatStay(selectedStop, currentStop?.id === selectedStop.id, formatDate)}</span>
+                  <span className="inline-flex items-center gap-1"><CalendarDays size={15} aria-hidden /> {formatStay(selectedStop, currentStop?.id === selectedStop.id, formatDate)}</span>
                 )}
                 {isEditor && selectedStop.arrival && (
-                  <span>📅 {formatDate(selectedStop.arrival)}{selectedStop.departure && selectedStop.arrival !== selectedStop.departure && ` → ${formatDate(selectedStop.departure)}`}</span>
+                  <span className="inline-flex items-center gap-1"><CalendarDays size={15} aria-hidden /> {formatDate(selectedStop.arrival)}{selectedStop.departure && selectedStop.arrival !== selectedStop.departure && ` → ${formatDate(selectedStop.departure)}`}</span>
                 )}
                 {isEditor && (selectedStop.actualArrival || selectedStop.actualDeparture) && (
                   <span className="text-amber-300" title="Actual logged dates, may differ from the plan above">
-                    {'✍️'} actual: {formatDate(selectedStop.actualArrival || selectedStop.arrival)}
+                    <PenLine size={14} aria-hidden className="inline" /> actual: {formatDate(selectedStop.actualArrival || selectedStop.arrival)}
                     {' → '}{formatDate(selectedStop.actualDeparture || selectedStop.departure)}
                   </span>
                 )}
-                {isEditor && selectedStop.duration && <span>⏱️ {selectedStop.duration}</span>}
-                {isEditor && selectedStop.distanceToNext > 0 && <span>📍 {selectedStop.distanceToNext}km</span>}
+                {isEditor && selectedStop.duration && <span className="inline-flex items-center gap-1"><Clock size={14} aria-hidden /> {selectedStop.duration}</span>}
+                {isEditor && selectedStop.distanceToNext > 0 && <span className="inline-flex items-center gap-1"><Ruler size={14} aria-hidden /> {selectedStop.distanceToNext}km</span>}
                 {isEditor && schengenDays.get(selectedStop.id) && (
                   <span className={schengenDays.get(selectedStop.id)?.isPaused ? 'text-slate-400' : schengenDays.get(selectedStop.id)!.rolling > 80 ? 'text-red-400' : 'text-cyan-400'}>
                     🇪🇺 {schengenDays.get(selectedStop.id)?.rolling}/90
@@ -240,13 +240,13 @@ export default function MapView({
 
               {/* Quick links - inline */}
               <div className="flex items-center gap-3 text-sm ml-auto">
-                {selectedStop.marinaUrl && <a href={selectedStop.marinaUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300">🏠 Marina</a>}
-                {selectedStop.wikiUrl && <a href={selectedStop.wikiUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300">📖 Wiki</a>}
-                {selectedStop.foodUrl && <a href={selectedStop.foodUrl} target="_blank" rel="noopener noreferrer" className="text-amber-400 hover:text-amber-300">🍽️ Food</a>}
-                {selectedStop.adventureUrl && <a href={selectedStop.adventureUrl} target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300">🏔️ Do</a>}
-                {selectedStop.provisionsUrl && <a href={selectedStop.provisionsUrl} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300">🛒 Shop</a>}
-                {isEditor && <button onClick={() => onEditStop(selectedStop)} className="text-cyan-400 hover:text-cyan-300" title="Edit name, dates, position">✏️ Edit</button>}
-                <button onClick={() => onOpenNotes(selectedStop)} className="text-emerald-400 hover:text-emerald-300 font-medium" title="Read or add notes & photos for this stop">{'📝'} Notes</button>
+                {selectedStop.marinaUrl && <a href={selectedStop.marinaUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-cyan-300 hover:text-cyan-200"><Anchor size={14} aria-hidden /> Marina</a>}
+                {selectedStop.wikiUrl && <a href={selectedStop.wikiUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-cyan-300 hover:text-cyan-200"><BookOpen size={14} aria-hidden /> Wiki</a>}
+                {selectedStop.foodUrl && <a href={selectedStop.foodUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-cyan-300 hover:text-cyan-200"><UtensilsCrossed size={14} aria-hidden /> Food</a>}
+                {selectedStop.adventureUrl && <a href={selectedStop.adventureUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-cyan-300 hover:text-cyan-200"><Mountain size={14} aria-hidden /> Do</a>}
+                {selectedStop.provisionsUrl && <a href={selectedStop.provisionsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-cyan-300 hover:text-cyan-200"><ShoppingBasket size={14} aria-hidden /> Shop</a>}
+                {isEditor && <button onClick={() => onEditStop(selectedStop)} className="inline-flex items-center gap-1 text-cyan-300 hover:text-cyan-200" title="Edit name, dates, position"><Pencil size={14} aria-hidden /> Edit</button>}
+                <button onClick={() => onOpenNotes(selectedStop)} className="inline-flex items-center gap-1 text-coral-300 hover:text-coral-400 font-semibold" title="Read the journal entry for this stop"><BookOpen size={15} aria-hidden /> Read</button>
                 <button onClick={() => onSelectStop(null)} className="w-10 h-10 -my-2 flex items-center justify-center hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white" aria-label="Close stop details"><X size={20} aria-hidden /></button>
               </div>
             </div>
@@ -255,7 +255,7 @@ export default function MapView({
             {/* stop.notes are planning notes ("Verified via OpenStreetMap", anchorage tips) — editors only */}
             {(selectedStop.cultureHighlight || (isEditor && selectedStop.notes)) && (
               <div className="mt-2 text-sm text-slate-300 flex flex-wrap gap-x-4">
-                {selectedStop.cultureHighlight && <span>🏛️ {selectedStop.cultureHighlight}</span>}
+                {selectedStop.cultureHighlight && <span className="inline-flex items-center gap-1"><Landmark size={14} aria-hidden className="text-cyan-300" /> {selectedStop.cultureHighlight}</span>}
                 {isEditor && selectedStop.notes && <span className="italic text-slate-400">{selectedStop.notes}</span>}
               </div>
             )}
