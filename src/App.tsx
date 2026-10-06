@@ -6,7 +6,7 @@ import { getData, saveUserStops, clearUserStops, exportStopsJson } from './servi
 import { healRoute, computePhases, computeStats, insertStop, removeStop, updateStop, computeSchengenStatus, effectiveArrival, effectiveDeparture } from './services/routeEngine';
 import type { Stop, Phase, TripStats } from './types';
 import { DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM } from './types';
-import { NON_SCHENGEN, COUNTRY_COLORS, COUNTRY_FLAGS, EDITOR_EMAILS } from './data/constants';
+import { NON_SCHENGEN, COUNTRY_COLORS, COUNTRY_FLAGS } from './data/constants';
 import { formatDate, daysBetween, todayISO } from './utils/geo';
 import StopEditor from './components/StopEditor';
 import NotesModal from './components/NotesModal';
@@ -169,11 +169,10 @@ function getDistanceColor(km: number): string {
 }
 
 function App() {
-  const { user, signInWithProvider, signOut } = useAuth();
-  // Only these signed-in accounts may drag stops to a new position — matches
-  // the RLS allowlist on sailing_trip_stops, so this is UI-level for a clean
-  // experience, not the actual enforcement (Supabase rejects the write either way).
-  const isEditor = !!user?.email && EDITOR_EMAILS.includes(user.email.toLowerCase());
+  // isEditor gates every planning/editing control. Readers (family following
+  // along) get a read-only journal + map; the RLS allowlist is the actual
+  // enforcement, this just keeps controls that would fail out of their way.
+  const { user, isEditor, signInWithProvider, signOut } = useAuth();
   const [notesModalStop, setNotesModalStop] = useState<Stop | null>(null);
   const [stops, setStops] = useState<Stop[]>([]);
   const [phases, setPhases] = useState<Phase[]>([]);
@@ -334,7 +333,10 @@ function App() {
     const today = todayISO();
     // Search from the end: when one stop's departure equals the next's arrival (the
     // usual case), prefer the later stop — the one just arrived at, not the one left.
+    // Visited stops only — an unvisited stop's dates are just the auto-cascaded
+    // plan, which can drift onto today (e.g. "Here now: Bodrum" while still in Paros).
     const inProgress = [...stops].reverse().find(s => {
+      if (!s.visited) return false;
       const arrival = effectiveArrival(s);
       const departure = effectiveDeparture(s);
       return arrival && departure && arrival <= today && today <= departure;
@@ -387,7 +389,7 @@ function App() {
               <span className="hidden sm:inline">Mediterranean Odyssey</span>
               <span className="sm:hidden">Med</span>
             </h1>
-            {isUserEdited && (
+            {isEditor && isUserEdited && (
               <span className="hidden md:inline text-xs px-2 py-1 rounded bg-amber-600">Edited</span>
             )}
           </div>
@@ -398,8 +400,8 @@ function App() {
                 <span>{stats.totalDays} days</span>
                 <span className="text-slate-500">|</span>
                 <span title={`${visitedCount} of ${stops.length} stops visited`}>{visitedCount}/{stops.length} visited</span>
-                <span className="text-slate-500">|</span>
-                <span
+                {isEditor && <span className="text-slate-500">|</span>}
+                {isEditor && <span
                   className={schengenStatus.remaining <= 10 ? 'text-red-400 font-semibold' : schengenStatus.remaining <= 25 ? 'text-amber-400' : 'text-cyan-400'}
                   title={[
                     `${schengenStatus.usedInWindow} Schengen days used in the trailing 180 days (as of today)`,
@@ -408,7 +410,7 @@ function App() {
                   ].filter(Boolean).join(' • ')}
                 >
                   🇪🇺 {schengenStatus.usedInWindow}/90 ({schengenStatus.remaining} left)
-                </span>
+                </span>}
               </div>
             )}
             {/* View Toggle - large and always labeled so it reads as a toggle, not decoration */}
@@ -427,7 +429,7 @@ function App() {
               </button>
             </div>
             {/* Route edit actions */}
-            {isUserEdited && (
+            {isEditor && isUserEdited && (
               <div className="hidden md:flex items-center gap-1">
                 <button onClick={() => exportStopsJson(stops)} className="px-2 py-1 bg-cyan-600 hover:bg-cyan-500 rounded text-xs text-white" title="Download stops.json">
                   💾 Export
@@ -520,11 +522,18 @@ function App() {
                     }}
                     className={`w-full text-left p-3 rounded-lg mb-0.5 cursor-pointer ${selectedStop?.id === stop.id ? 'bg-cyan-600/20 border border-cyan-500' : 'hover:bg-slate-700 border border-transparent'}`}>
                     <div className="flex items-start gap-2">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleToggleVisited(stop); }}
-                        className={`shrink-0 mt-1 w-4 h-4 rounded-full border flex items-center justify-center text-[9px] transition-colors ${stop.visited ? 'bg-green-600 border-green-500 text-white' : 'border-slate-500 text-transparent hover:border-slate-300'}`}
-                        title={stop.visited ? 'Mark as not visited' : 'Mark as visited'}
-                      >{'✓'}</button>
+                      {isEditor ? (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleToggleVisited(stop); }}
+                          className={`shrink-0 mt-1 w-4 h-4 rounded-full border flex items-center justify-center text-[9px] transition-colors ${stop.visited ? 'bg-green-600 border-green-500 text-white' : 'border-slate-500 text-transparent hover:border-slate-300'}`}
+                          title={stop.visited ? 'Mark as not visited' : 'Mark as visited'}
+                        >{'✓'}</button>
+                      ) : (
+                        <span
+                          className={`shrink-0 mt-1 w-4 h-4 rounded-full border flex items-center justify-center text-[9px] ${stop.visited ? 'bg-green-600 border-green-500 text-white' : 'border-slate-600 text-transparent'}`}
+                          title={stop.visited ? 'Visited' : 'Planned'}
+                        >{'✓'}</span>
+                      )}
                       <span className="text-lg">{stop.type === 'marina' ? '⛵' : '⚓'}</span>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
@@ -534,17 +543,17 @@ function App() {
                           {/* Edit button — always visible; hover-only (opacity-0 until
                               group-hover) meant it never rendered on touch devices,
                               the only way to rename/reposition a stop. */}
-                          <button
+                          {isEditor && <button
                             onClick={(e) => { e.stopPropagation(); handleEditStop(stop); }}
                             className="ml-auto p-0.5 hover:bg-slate-600 rounded text-slate-500 hover:text-cyan-400 text-xs transition-opacity"
                             title="Edit stop"
-                          >✏️</button>
+                          >✏️</button>}
                         </div>
                         <div className="flex items-center gap-2 text-xs text-slate-400">
                           <span>{COUNTRY_FLAGS[stop.country] || ''} {stop.country}</span>
                           {effectiveArrival(stop) && <span className="text-slate-500">•</span>}
                           {effectiveArrival(stop) && <span className="text-amber-400">{formatDate(effectiveArrival(stop))}</span>}
-                          {schengenDays.get(stop.id) && (
+                          {isEditor && schengenDays.get(stop.id) && (
                             <span className={`ml-auto px-1.5 py-0.5 rounded text-[10px] font-medium ${
                               schengenDays.get(stop.id)?.isPaused
                                 ? 'bg-slate-600 text-slate-300'
@@ -556,7 +565,7 @@ function App() {
                             </span>
                           )}
                         </div>
-                        {stop.distanceToNext > 0 && (() => {
+                        {isEditor && stop.distanceToNext > 0 && (() => {
                           const nextStop = stops.find(s => s.id === stop.id + 1);
                           const distColor = getDistanceColor(stop.distanceToNext);
                           return nextStop ? (
@@ -571,13 +580,15 @@ function App() {
                   </div>
                   {/* Insert after button — always visible (hover-only meant it never
                       rendered on touch devices, the only way to insert a stop). */}
-                  <div className="flex justify-center -my-1 transition-opacity">
-                    <button
-                      onClick={() => handleAddStop(originalIndex)}
-                      className="px-2 py-0 text-[10px] text-slate-500 hover:text-green-400 hover:bg-slate-700/50 rounded"
-                      title="Add stop here"
-                    >+ add stop</button>
-                  </div>
+                  {isEditor && (
+                    <div className="flex justify-center -my-1 transition-opacity">
+                      <button
+                        onClick={() => handleAddStop(originalIndex)}
+                        className="px-2 py-0 text-[10px] text-slate-500 hover:text-green-400 hover:bg-slate-700/50 rounded"
+                        title="Add stop here"
+                      >+ add stop</button>
+                    </div>
+                  )}
                 </div>
                 );
               })}
@@ -590,9 +601,9 @@ function App() {
             stops={stops}
             currentStop={currentStop}
             focusStop={selectedStop}
-            onToggleVisited={handleToggleVisited}
-            onLogArrival={handleLogArrival}
-            onLogDeparture={handleLogDeparture}
+            onToggleVisited={isEditor ? handleToggleVisited : undefined}
+            onLogArrival={isEditor ? handleLogArrival : undefined}
+            onLogDeparture={isEditor ? handleLogDeparture : undefined}
           />
         ) : (
         <main className="flex-1 relative">
@@ -649,28 +660,36 @@ function App() {
                     <span className="text-slate-400 text-sm">{COUNTRY_FLAGS[selectedStop.country] || ''}</span>
                     {selectedStop.phase && <span className="px-2 py-0.5 rounded text-xs" style={{ backgroundColor: COUNTRY_COLORS[selectedStop.phase] || '#6b7280' }}>{selectedStop.phase}</span>}
                     {currentStop?.id === selectedStop.id && <span className="px-2 py-0.5 rounded text-xs bg-amber-500 text-slate-900 font-semibold">{'📍'} Here now</span>}
-                    <button
-                      onClick={() => handleToggleVisited(selectedStop)}
-                      className={`px-2 py-0.5 rounded text-xs font-medium border ${selectedStop.visited ? 'bg-green-600/80 border-green-500 text-white' : 'border-slate-500 text-slate-400 hover:text-white hover:border-slate-300'}`}
-                    >
-                      {selectedStop.visited ? '✓ Visited' : 'Mark Visited'}
-                    </button>
+                    {isEditor ? (
+                      <button
+                        onClick={() => handleToggleVisited(selectedStop)}
+                        className={`px-2 py-0.5 rounded text-xs font-medium border ${selectedStop.visited ? 'bg-green-600/80 border-green-500 text-white' : 'border-slate-500 text-slate-400 hover:text-white hover:border-slate-300'}`}
+                      >
+                        {selectedStop.visited ? '✓ Visited' : 'Mark Visited'}
+                      </button>
+                    ) : selectedStop.visited && (
+                      <span className="px-2 py-0.5 rounded text-xs font-medium border bg-green-600/80 border-green-500 text-white">✓ Visited</span>
+                    )}
                   </div>
 
                   {/* Schedule info - inline */}
                   <div className="flex items-center gap-3 text-sm text-slate-300">
-                    {selectedStop.arrival && (
+                    {/* Readers see the real dates only; editors also see the plan vs. actual split */}
+                    {!isEditor && effectiveArrival(selectedStop) && (
+                      <span>📅 {formatDate(effectiveArrival(selectedStop))}{effectiveDeparture(selectedStop) && effectiveArrival(selectedStop) !== effectiveDeparture(selectedStop) && ` → ${formatDate(effectiveDeparture(selectedStop))}`}</span>
+                    )}
+                    {isEditor && selectedStop.arrival && (
                       <span>📅 {formatDate(selectedStop.arrival)}{selectedStop.departure && selectedStop.arrival !== selectedStop.departure && ` → ${formatDate(selectedStop.departure)}`}</span>
                     )}
-                    {(selectedStop.actualArrival || selectedStop.actualDeparture) && (
+                    {isEditor && (selectedStop.actualArrival || selectedStop.actualDeparture) && (
                       <span className="text-amber-300" title="Actual logged dates, may differ from the plan above">
                         {'✍️'} actual: {formatDate(selectedStop.actualArrival || selectedStop.arrival)}
                         {' → '}{formatDate(selectedStop.actualDeparture || selectedStop.departure)}
                       </span>
                     )}
-                    {selectedStop.duration && <span>⏱️ {selectedStop.duration}</span>}
-                    {selectedStop.distanceToNext > 0 && <span>📍 {selectedStop.distanceToNext}km</span>}
-                    {schengenDays.get(selectedStop.id) && (
+                    {isEditor && selectedStop.duration && <span>⏱️ {selectedStop.duration}</span>}
+                    {isEditor && selectedStop.distanceToNext > 0 && <span>📍 {selectedStop.distanceToNext}km</span>}
+                    {isEditor && schengenDays.get(selectedStop.id) && (
                       <span className={schengenDays.get(selectedStop.id)?.isPaused ? 'text-slate-400' : schengenDays.get(selectedStop.id)!.rolling > 80 ? 'text-red-400' : 'text-cyan-400'}>
                         🇪🇺 {schengenDays.get(selectedStop.id)?.rolling}/90
                       </span>
@@ -684,7 +703,7 @@ function App() {
                     {selectedStop.foodUrl && <a href={selectedStop.foodUrl} target="_blank" rel="noopener noreferrer" className="text-amber-400 hover:text-amber-300">🍽️ Food</a>}
                     {selectedStop.adventureUrl && <a href={selectedStop.adventureUrl} target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300">🏔️ Do</a>}
                     {selectedStop.provisionsUrl && <a href={selectedStop.provisionsUrl} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300">🛒 Shop</a>}
-                    <button onClick={() => handleEditStop(selectedStop)} className="text-cyan-400 hover:text-cyan-300" title="Edit name, dates, position">✏️ Edit</button>
+                    {isEditor && <button onClick={() => handleEditStop(selectedStop)} className="text-cyan-400 hover:text-cyan-300" title="Edit name, dates, position">✏️ Edit</button>}
                     <button onClick={() => setNotesModalStop(selectedStop)} className="text-emerald-400 hover:text-emerald-300 font-medium" title="Read or add notes & photos for this stop">{'📝'} Notes</button>
                     <button onClick={() => setSelectedStop(null)} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white">✕</button>
                   </div>
@@ -705,15 +724,17 @@ function App() {
           {legendVisible && (
           <div className="absolute z-[1000] bg-slate-800/90 backdrop-blur rounded-lg p-3 text-sm top-4 right-12 md:right-4">
             <h3 className="font-semibold text-slate-400 mb-2 text-xs uppercase">Route by Country</h3>
-            <div className="flex items-center gap-3 mb-2 text-[10px] text-slate-500">
-              <span className="flex items-center gap-1"><span className="text-green-400">●</span> Schengen</span>
-              <span className="flex items-center gap-1"><span className="text-red-400">●</span> Non-Schengen</span>
-            </div>
+            {isEditor && (
+              <div className="flex items-center gap-3 mb-2 text-[10px] text-slate-500">
+                <span className="flex items-center gap-1"><span className="text-green-400">●</span> Schengen</span>
+                <span className="flex items-center gap-1"><span className="text-red-400">●</span> Non-Schengen</span>
+              </div>
+            )}
             {phases.map(phase => (
               <div key={phase.id} className="flex items-center gap-2 mb-1">
                 <span className="w-3 h-3 rounded-full" style={{ backgroundColor: phase.color }} />
                 <span className="text-white text-xs flex-1">{phase.name}</span>
-                <span className={`text-[10px] ${phase.schengen ? 'text-green-400' : 'text-red-400'}`}>
+                <span className={`text-[10px] ${!isEditor ? 'text-slate-400' : phase.schengen ? 'text-green-400' : 'text-red-400'}`}>
                   {phase.days}d
                 </span>
               </div>

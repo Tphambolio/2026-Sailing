@@ -14,7 +14,7 @@ interface NotePreviewTileProps {
 // journal entry, with a click-through to the full NotesModal/JournalEntryCard
 // editor instead of duplicating that UI here.
 export default function NotePreviewTile({ stop, onExpand }: NotePreviewTileProps) {
-  const { user } = useAuth();
+  const { isEditor } = useAuth();
   const { content, loading: notesLoading } = useStopNotes(stop.key);
   const { photos, loading: photosLoading, getUrl } = useStopPhotos(stop.key);
 
@@ -30,7 +30,7 @@ export default function NotePreviewTile({ stop, onExpand }: NotePreviewTileProps
 
   // Nothing written yet — only worth a prompt if this viewer could actually add one.
   if (!hasContent) {
-    if (!user) return null;
+    if (!isEditor) return null;
     return (
       <button
         onClick={onExpand}

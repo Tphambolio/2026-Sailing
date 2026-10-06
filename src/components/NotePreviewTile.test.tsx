@@ -37,7 +37,7 @@ function setup({
   loading = false,
   signedIn = true,
 }) {
-  mockUseAuth.mockReturnValue({ user: signedIn ? { id: 'user-1' } : null });
+  mockUseAuth.mockReturnValue({ user: signedIn ? { id: 'user-1' } : null, isEditor: signedIn });
   mockUseStopNotes.mockReturnValue({ content, loading });
   mockUseStopPhotos.mockReturnValue({
     photos,

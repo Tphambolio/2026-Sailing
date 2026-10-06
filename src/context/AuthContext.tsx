@@ -1,11 +1,15 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { User, Session, Provider } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { EDITOR_EMAILS } from '../data/constants';
 
 type OAuthProvider = 'google' | 'facebook';
 
 interface AuthContextType {
   user: User | null;
+  // One of the three trip editors (matches the RLS allowlist). Anyone else who
+  // signs in is just a reader — edit controls would only fail for them.
+  isEditor: boolean;
   session: Session | null;
   loading: boolean;
   signInWithProvider: (provider: OAuthProvider) => Promise<{ error: Error | null }>;
@@ -68,8 +72,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   };
 
+  const isEditor = !!user?.email && EDITOR_EMAILS.includes(user.email.toLowerCase());
+
   return (
-    <AuthContext.Provider value={{ user, session, loading, signInWithProvider, signOut }}>
+    <AuthContext.Provider value={{ user, isEditor, session, loading, signInWithProvider, signOut }}>
       {children}
     </AuthContext.Provider>
   );

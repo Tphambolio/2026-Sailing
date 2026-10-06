@@ -50,7 +50,7 @@ interface JournalEntryCardProps {
 }
 
 export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onLogArrival, onLogDeparture, onEmptyAndCancelled }: JournalEntryCardProps) {
-  const { user } = useAuth();
+  const { isEditor } = useAuth();
   const { content, loading: notesLoading, saving, save } = useStopNotes(stop.key);
   const { photos, loading: photosLoading, upload, remove, getUrl } = useStopPhotos(stop.key);
   const [draft, setDraft] = useState('');
@@ -92,9 +92,10 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
     setDraft(toShortForm(content, photoNumberMapRef.current));
   }, [content]);
   useEffect(() => {
-    // A freshly-added entry with nothing yet starts straight into edit mode
-    if (!notesLoading && !content && photos.length === 0) setEditing(true);
-  }, [notesLoading]); // eslint-disable-line react-hooks/exhaustive-deps
+    // A freshly-added entry with nothing yet starts straight into edit mode —
+    // for editors only; readers would otherwise land on an empty, editable box.
+    if (isEditor && !notesLoading && !content && photos.length === 0) setEditing(true);
+  }, [notesLoading, isEditor]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     // The change event never fires if the user cancels the native picker
@@ -337,7 +338,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
               {' · '}{stop.country}
             </p>
           </div>
-          {user && !editing && (
+          {isEditor && !editing && (
             <button onClick={() => setEditing(true)} className="shrink-0 text-xs text-cyan-400 hover:text-cyan-300">✏️ Edit</button>
           )}
         </div>
@@ -347,7 +348,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
           {isCurrent && (
             <span className="px-2 py-0.5 rounded text-xs bg-amber-500 text-slate-900 font-semibold">📍 Here now</span>
           )}
-          {onToggleVisited && (
+          {isEditor && onToggleVisited && (
             <button
               onClick={() => onToggleVisited(stop)}
               className={`px-2 py-0.5 rounded text-xs font-medium border ${stop.visited ? 'bg-green-600/80 border-green-500 text-white' : 'border-slate-500 text-slate-400 hover:text-white hover:border-slate-300'}`}
@@ -355,13 +356,13 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
               {stop.visited ? '✓ Visited' : 'Mark Visited'}
             </button>
           )}
-          {user && onLogArrival && (
+          {isEditor && onLogArrival && (
             <button onClick={() => onLogArrival(stop)} className="text-xs text-sky-400 hover:text-sky-300" title="Log today as the actual arrival date">📌 Arrived today</button>
           )}
-          {user && onLogDeparture && (
+          {isEditor && onLogDeparture && (
             <button onClick={() => onLogDeparture(stop)} className="text-xs text-sky-400 hover:text-sky-300" title="Log today as the actual departure date">🏁 Departed today</button>
           )}
-          {user && (
+          {isEditor && (
             <button
               onClick={() => openPicker(fileInputRef)}
               disabled={!!uploadProgress}
@@ -370,7 +371,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
               {uploadProgress ? `Uploading ${uploadProgress.done + 1}/${uploadProgress.total}…` : '📷 Add photos'}
             </button>
           )}
-          {user && (
+          {isEditor && (
             <button
               onClick={() => openPicker(videoInputRef)}
               disabled={!!uploadProgress}
@@ -391,7 +392,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
               Two-step: authorize first (button), then a real link to open the
               picker tab — a native <a target="_blank"> click is the one thing
               browsers don't treat as a blockable pop-up here. */}
-          {user && isGooglePhotosConfigured && !googleSession && (
+          {isEditor && isGooglePhotosConfigured && !googleSession && (
             <button
               onClick={handleGoogleAuthorize}
               disabled={!!googlePickerStatus || !!uploadProgress}
@@ -400,7 +401,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
               {googlePickerStatus === 'opening' ? 'Connecting…' : '🖼️ Google Photos'}
             </button>
           )}
-          {user && googleSession && (
+          {isEditor && googleSession && (
             <a
               href={pickerOpenUrl(googleSession.pickerUri)}
               target="_blank"
@@ -416,14 +417,14 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
               {googlePickerStatus === 'waiting' ? 'Waiting for your picks…' : 'Importing…'}
             </span>
           )}
-          <button
+          {isEditor && <button
             onClick={handleShare}
             disabled={photos.length === 0 || sharing}
             className="text-xs text-pink-400 hover:text-pink-300 disabled:text-slate-500"
             title={photos.length === 0 ? 'Add a photo or video first — Instagram needs media to post' : "Share the photo(s)/video to Instagram or another app. Instagram ignores captions from other apps, so this also copies the caption to your clipboard — paste it in."}
           >
             {sharing ? 'Preparing…' : '📲 Share'}
-          </button>
+          </button>}
         </div>
 
         {stop.cultureHighlight && (
@@ -514,7 +515,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
                         />
                       )}
                       {isVideoPath(photo.storage_path) && <PlayBadge />}
-                      {user && (
+                      {isEditor && (
                         <button
                           onClick={() => remove(photo)}
                           className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center bg-black/70 rounded-full text-white text-xs transition-opacity"
@@ -530,7 +531,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
             )}
           </div>
         ) : (
-          <p className="text-sm text-slate-500 italic mt-3">No notes for this stop.</p>
+          <p className="text-sm text-slate-500 italic mt-3">{isEditor ? 'No notes for this stop.' : 'No entry yet — check back soon.'}</p>
         )}
 
         {/* Any photos not placed inline still show up here — nothing is ever hidden */}
@@ -555,7 +556,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
                   />
                 )}
                 {isVideoPath(photo.storage_path) && <PlayBadge small />}
-                {user && (
+                {isEditor && (
                   <button
                     onClick={() => remove(photo)}
                     className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center bg-black/70 rounded-full text-white text-xs transition-opacity"

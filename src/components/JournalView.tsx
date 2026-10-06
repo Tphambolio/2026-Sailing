@@ -35,7 +35,7 @@ function JournalPlaceholder({ stop, onClick }: { stop: Stop; onClick: () => void
 }
 
 export default function JournalView({ stops, currentStop, focusStop, onToggleVisited, onLogArrival, onLogDeparture }: JournalViewProps) {
-  const { user, signInWithProvider } = useAuth();
+  const { isEditor } = useAuth();
   const { keys, loading, refetch } = useJournalEntryKeys();
   const [openKeys, setOpenKeys] = useState<Set<string>>(new Set());
 
@@ -65,9 +65,9 @@ export default function JournalView({ stops, currentStop, focusStop, onToggleVis
     withContent.sort((a, b) => effectiveArrival(b).localeCompare(effectiveArrival(a)));
 
     const ordered = currentStop ? [currentStop, ...withContent, ...withoutContent] : [...withContent, ...withoutContent];
-    if (user) return ordered;
+    if (isEditor) return ordered;
     return ordered.filter(s => keys.has(s.key) || s.key === currentStop?.key);
-  }, [stops, currentStop, user, keys]);
+  }, [stops, currentStop, isEditor, keys]);
 
   // Clicking a stop anywhere else in the app (sidebar list, search, map pin) jumps
   // straight to its journal slot and opens it for writing — same synced stop list,
@@ -89,11 +89,6 @@ export default function JournalView({ stops, currentStop, focusStop, onToggleVis
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-bold text-white mb-1">📖 Trip Journal</h1>
           <p className="text-sm text-slate-400">Notes and photos from along the way</p>
-          {!user && (
-            <button onClick={() => signInWithProvider('google')} className="mt-2 text-cyan-400 hover:text-cyan-300 text-sm">
-              Sign in to write →
-            </button>
-          )}
         </div>
 
         {loading ? (

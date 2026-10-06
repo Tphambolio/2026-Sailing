@@ -11,7 +11,7 @@ const { mockUseAuth, mockUseJournalEntryKeys } = vi.hoisted(() => ({
 vi.mock('../context/AuthContext', () => ({ useAuth: mockUseAuth }));
 vi.mock('../hooks/useJournalEntries', () => ({ useJournalEntryKeys: mockUseJournalEntryKeys }));
 // JournalEntryCard pulls in useStopNotes/useStopPhotos/Supabase — irrelevant to what
-// this test checks (whether a signed-out visitor can find the sign-in control at all),
+// these tests check (which stops a reader vs an editor sees),
 // so it's stubbed out.
 vi.mock('./JournalEntryCard', () => ({ default: () => <div data-testid="journal-entry-card" /> }));
 
@@ -33,24 +33,40 @@ const stops: Stop[] = [
   },
 ];
 
-describe('JournalView sign-in visibility', () => {
-  it('offers a sign-in control for a signed-out visitor even when entries already exist', () => {
-    mockUseAuth.mockReturnValue({ user: null, signInWithProvider: vi.fn() });
-    // At least one stop already has content — the trip is underway, not empty.
+// Signing in now happens from the header's 👤 button (visible at every width),
+// so the journal itself no longer carries a "Sign in to write" link — family
+// readers can't write anyway. What matters here is that readers get a clean,
+// read-only feed and only editors see write-a-post placeholders.
+describe('JournalView reader vs editor', () => {
+  const twoStops: Stop[] = [stops[0], { ...stops[0], id: 2, key: 'kotor', name: 'Kotor', country: 'Montenegro' }];
+
+  it('shows a reader only stops that have content, with no write placeholders or sign-in prompt', () => {
+    mockUseAuth.mockReturnValue({ user: null, isEditor: false });
     mockUseJournalEntryKeys.mockReturnValue({ keys: new Set(['dubrovnik']), loading: false, refetch: vi.fn() });
 
-    render(<JournalView stops={stops} />);
+    render(<JournalView stops={twoStops} />);
 
-    expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
+    expect(screen.getAllByTestId('journal-entry-card')).toHaveLength(1);
+    expect(screen.queryByText(/write a post/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /sign in/i })).not.toBeInTheDocument();
   });
 
-  it('does not show a sign-in control once signed in', () => {
-    mockUseAuth.mockReturnValue({ user: { id: 'user-1' }, signInWithProvider: vi.fn() });
+  it('treats a signed-in non-editor as a reader', () => {
+    mockUseAuth.mockReturnValue({ user: { id: 'friend' }, isEditor: false });
     mockUseJournalEntryKeys.mockReturnValue({ keys: new Set(['dubrovnik']), loading: false, refetch: vi.fn() });
 
-    render(<JournalView stops={stops} />);
+    render(<JournalView stops={twoStops} />);
 
-    expect(screen.queryByRole('button', { name: /sign in/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/write a post/i)).not.toBeInTheDocument();
+  });
+
+  it('shows an editor a write-a-post placeholder for stops without content', () => {
+    mockUseAuth.mockReturnValue({ user: { id: 'user-1' }, isEditor: true });
+    mockUseJournalEntryKeys.mockReturnValue({ keys: new Set(['dubrovnik']), loading: false, refetch: vi.fn() });
+
+    render(<JournalView stops={twoStops} />);
+
+    expect(screen.getByText(/write a post/i)).toBeInTheDocument();
   });
 });
 
@@ -67,7 +83,7 @@ const orderingStops: Stop[] = [
 
 describe('JournalView feed ordering', () => {
   it('pins the current stop to the top, orders written posts newest-first, and puts unwritten future stops last', () => {
-    mockUseAuth.mockReturnValue({ user: { id: 'user-1' }, signInWithProvider: vi.fn() });
+    mockUseAuth.mockReturnValue({ user: { id: 'user-1' }, isEditor: true, signInWithProvider: vi.fn() });
     // sibenik, split, and dubrovnik have real posts; kotor is a future stop with nothing written yet.
     mockUseJournalEntryKeys.mockReturnValue({ keys: new Set(['sibenik', 'split', 'dubrovnik']), loading: false, refetch: vi.fn() });
 

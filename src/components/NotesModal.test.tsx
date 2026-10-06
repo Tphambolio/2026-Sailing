@@ -45,7 +45,7 @@ const photo = {
 };
 
 function setup(content = '') {
-  mockUseAuth.mockReturnValue({ user: { id: 'user-1' }, signInWithProvider: vi.fn() });
+  mockUseAuth.mockReturnValue({ user: { id: 'user-1' }, isEditor: true, signInWithProvider: vi.fn() });
   mockUseStopNotes.mockReturnValue({
     content,
     loading: false,

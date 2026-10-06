@@ -42,7 +42,7 @@ const photo = {
 };
 
 function setup(content = '') {
-  mockUseAuth.mockReturnValue({ user: { id: 'user-1' } });
+  mockUseAuth.mockReturnValue({ user: { id: 'user-1' }, isEditor: true });
   mockUseStopNotes.mockReturnValue({
     content,
     loading: false,
@@ -91,7 +91,7 @@ describe('JournalEntryCard photo picker', () => {
 
   it('shows existing saved content in short form, and saves it back out as real UUIDs', async () => {
     const save = vi.fn().mockResolvedValue({ error: null });
-    mockUseAuth.mockReturnValue({ user: { id: 'user-1' } });
+    mockUseAuth.mockReturnValue({ user: { id: 'user-1' }, isEditor: true });
     mockUseStopNotes.mockReturnValue({
       content: `Before.\n\n{{photo:${photo.id}}}\n\nAfter.`,
       loading: false,
@@ -143,7 +143,7 @@ describe('JournalEntryCard displayed date', () => {
 describe('JournalEntryCard video support', () => {
   it('renders a video file as a <video> element, not <img>, in the inline content block', () => {
     const videoMedia = { ...photo, id: 'video-1', storage_path: 'dubrovnik/clip.mp4' };
-    mockUseAuth.mockReturnValue({ user: { id: 'user-1' } });
+    mockUseAuth.mockReturnValue({ user: { id: 'user-1' }, isEditor: true });
     mockUseStopNotes.mockReturnValue({
       content: '{{photo:video-1}}',
       loading: false,
@@ -283,5 +283,30 @@ describe('JournalEntryCard Google Photos picker visibility', () => {
     render(<JournalEntryCard stop={stop} />);
 
     expect(screen.queryByRole('button', { name: /google photos/i })).not.toBeInTheDocument();
+  });
+});
+
+describe('JournalEntryCard reader vs editor', () => {
+  function setupEmpty(isEditor: boolean) {
+    mockUseAuth.mockReturnValue({ user: isEditor ? { id: 'user-1' } : null, isEditor });
+    mockUseStopNotes.mockReturnValue({ content: '', loading: false, saving: false, save: vi.fn() });
+    mockUseStopPhotos.mockReturnValue({ photos: [], loading: false, upload: vi.fn(), remove: vi.fn(), getUrl: (p: string) => p });
+  }
+
+  it('does not open an empty, editable box for a reader on a stop with no entry yet', () => {
+    setupEmpty(false);
+    render(<JournalEntryCard stop={stop} isCurrent onToggleVisited={vi.fn()} />);
+
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /save/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /mark visited/i })).not.toBeInTheDocument();
+    expect(screen.getByText(/check back soon/i)).toBeInTheDocument();
+  });
+
+  it('still starts an editor straight into writing on an empty stop', () => {
+    setupEmpty(true);
+    render(<JournalEntryCard stop={stop} isCurrent />);
+
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
   });
 });
