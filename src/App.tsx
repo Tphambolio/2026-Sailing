@@ -7,12 +7,13 @@ import { formatDate, todayISO } from './utils/geo';
 import StopEditor from './components/StopEditor';
 import NotesModal from './components/NotesModal';
 import JournalView from './components/JournalView';
+import PhotosView from './components/PhotosView';
 // Leaflet is the second-largest dependency and most visitors only read the journal —
 // load the map (and its CSS) the first time someone opens the Map tab.
 const MapView = lazy(() => import('./components/MapView'));
 import { useAuth } from './context/AuthContext';
 import { supabase } from './lib/supabase';
-import { BookOpen, Map as MapIcon, Menu, X, LogIn, LogOut, Sailboat, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { BookOpen, Map as MapIcon, Images, Menu, X, LogIn, LogOut, Sailboat, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 
 // Get distance color: <50 green, 50-70 yellow, >70 red
 function getDistanceColor(km: number): string {
@@ -35,7 +36,7 @@ function App() {
   const [isUserEdited, setIsUserEdited] = useState(false);
   const [selectedStop, setSelectedStop] = useState<Stop | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeView, setActiveView] = useState<'map' | 'journal'>('journal');
+  const [activeView, setActiveView] = useState<'map' | 'journal' | 'photos'>('journal');
   // Stop editing state
   const [editingStop, setEditingStop] = useState<Stop | null>(null);
   const [insertAfterIndex, setInsertAfterIndex] = useState<number | null>(null);
@@ -275,22 +276,17 @@ function App() {
             )}
             {/* View Toggle - large and always labeled so it reads as a toggle, not decoration */}
             <div className="flex items-center gap-1 bg-slate-800 rounded-xl p-1" role="tablist" aria-label="View">
-              <button
-                role="tab"
-                aria-selected={activeView === 'journal'}
-                onClick={() => setActiveView('journal')}
-                className={`inline-flex items-center gap-1.5 px-3 py-2 md:px-4 rounded-lg text-sm md:text-base font-semibold whitespace-nowrap ${activeView === 'journal' ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-700'}`}
-              >
-                <BookOpen size={18} aria-hidden /> Journal
-              </button>
-              <button
-                role="tab"
-                aria-selected={activeView === 'map'}
-                onClick={() => setActiveView('map')}
-                className={`inline-flex items-center gap-1.5 px-3 py-2 md:px-4 rounded-lg text-sm md:text-base font-semibold whitespace-nowrap ${activeView === 'map' ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-700'}`}
-              >
-                <MapIcon size={18} aria-hidden /> Map
-              </button>
+              {([['journal', BookOpen, 'Journal'], ['photos', Images, 'Photos'], ['map', MapIcon, 'Map']] as const).map(([view, Icon, label]) => (
+                <button
+                  key={view}
+                  role="tab"
+                  aria-selected={activeView === view}
+                  onClick={() => setActiveView(view)}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-2 md:px-4 rounded-lg text-sm md:text-base font-semibold whitespace-nowrap ${activeView === view ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-700'}`}
+                >
+                  <Icon size={18} aria-hidden /> <span className={activeView === view ? '' : 'sr-only sm:not-sr-only'}>{label}</span>
+                </button>
+              ))}
             </div>
             {/* Route edit actions */}
             {isEditor && isUserEdited && (
@@ -438,7 +434,9 @@ function App() {
           </aside>
 
         {/* Main Content Area - Map or Journal */}
-        {activeView === 'journal' ? (
+        {activeView === 'photos' ? (
+          <PhotosView stops={stops} currentStop={currentStop} onOpenEntry={(stop) => { setActiveView('journal'); setSelectedStop(stop); }} />
+        ) : activeView === 'journal' ? (
           <JournalView
             stops={stops}
             currentStop={currentStop}
