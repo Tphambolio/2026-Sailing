@@ -8,12 +8,12 @@
 # Photos themselves already live in R2; this covers the text and metadata that
 # only exist in Supabase, which has no point-in-time recovery on the free plan.
 #
-# Uses the public anon key — the same read access the site has. Requires an
+# Uses the public publishable key — the same read access the site has. Requires an
 # rclone remote "r2-sailing" (scoped to the sailing-stop-photos bucket).
 set -euo pipefail
 
 PROJECT_URL="https://frxehymsydwsvhlecjqb.supabase.co"
-ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZyeGVoeW1zeWR3c3ZobGVjanFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgxNjI2NDIsImV4cCI6MjA4MzczODY0Mn0.AL5XS12d3SZlFm4YNcJxq5V46BAoj6oUrixYr0wB3GI"
+ANON_KEY="sb_publishable_F6JVprVkhdqiOS3YgiGBaQ_BnN4wMM3"
 BACKUP_ROOT="${BACKUP_ROOT:-$HOME/sailing-backups}"
 KEEP_DAYS=30
 STAMP=$(date -u +%Y-%m-%d)
