@@ -88,16 +88,16 @@ describe('currentStopLabel', () => {
   const base = { id: 1, key: 'parikia', name: 'Parikia', country: 'Greece', lat: 0, lon: 0, type: 'marina' as const, arrival: '2026-09-19', departure: '2026-09-22', duration: '3 days', distanceToNext: 0, season: 'fall' as const, phase: 'Greece', visited: true, actualArrival: '2026-09-19' };
 
   it('says "Here now" while there and recently arrived', () => {
-    expect(currentStopLabel(base, '2026-10-06')).toBe('Here now');
+    expect(currentStopLabel(base, '2026-09-25')).toBe('Here now');
   });
   it('still says "Here now" on the day you log your departure', () => {
-    expect(currentStopLabel({ ...base, actualDeparture: '2026-10-06' }, '2026-10-06')).toBe('Here now');
+    expect(currentStopLabel({ ...base, actualDeparture: '2026-09-23' }, '2026-09-23')).toBe('Here now');
   });
   it('switches to "Latest stop" once departed', () => {
-    expect(currentStopLabel({ ...base, actualDeparture: '2026-10-05' }, '2026-10-06')).toBe('Latest stop');
+    expect(currentStopLabel({ ...base, actualDeparture: '2026-09-22' }, '2026-09-23')).toBe('Latest stop');
   });
-  it('switches to "Latest stop" after three weeks with no departure logged (e.g. long after the trip)', () => {
-    expect(currentStopLabel(base, '2026-10-11')).toBe('Latest stop');
+  it('switches to "Latest stop" after six days with no departure logged (e.g. long after the trip)', () => {
+    expect(currentStopLabel(base, '2026-09-26')).toBe('Latest stop');
     expect(currentStopLabel(base, '2028-01-01')).toBe('Latest stop');
   });
   it('never calls a future-dated stop "Here now"', () => {

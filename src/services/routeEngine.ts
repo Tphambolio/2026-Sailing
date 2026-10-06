@@ -21,11 +21,11 @@ export function effectiveDeparture(stop: Stop): string {
 // How long after arriving a stop can still be called "Here now" without a
 // logged departure. Past that (or once departed) it's just the latest stop —
 // so the label still reads correctly after the trip is over.
-const HERE_NOW_MAX_DAYS = 21;
+const HERE_NOW_MAX_DAYS = 6;
 
 /**
  * Label for the trip's current/most recent stop: "Here now" only while it's
- * plausibly live, otherwise "Latest stop".
+ * plausibly live (arrived within the last 6 days, not yet departed), otherwise "Latest stop".
  */
 export function currentStopLabel(stop: Stop, today: string = todayISO()): 'Here now' | 'Latest stop' {
   if (stop.actualDeparture && stop.actualDeparture < today) return 'Latest stop';
