@@ -40,13 +40,13 @@ const stops: Stop[] = [
 describe('JournalView reader vs editor', () => {
   const twoStops: Stop[] = [stops[0], { ...stops[0], id: 2, key: 'kotor', name: 'Kotor', country: 'Montenegro' }];
 
-  it('shows a reader only stops that have content, with no write placeholders or sign-in prompt', () => {
+  it('shows a reader only stops that have content, with no write placeholders or sign-in prompt', async () => {
     mockUseAuth.mockReturnValue({ user: null, isEditor: false });
     mockUseJournalEntryKeys.mockReturnValue({ keys: new Set(['dubrovnik']), loading: false, refetch: vi.fn() });
 
     render(<JournalView stops={twoStops} />);
 
-    expect(screen.getAllByTestId('journal-entry-card')).toHaveLength(1);
+    expect(await screen.findAllByTestId('journal-entry-card')).toHaveLength(1);
     expect(screen.queryByText(/write a post/i)).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /sign in/i })).not.toBeInTheDocument();
   });

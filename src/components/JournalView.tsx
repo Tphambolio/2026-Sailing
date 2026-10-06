@@ -2,12 +2,13 @@ import { useState, useEffect, useMemo } from 'react';
 import type { Stop } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { useJournalEntryKeys } from '../hooks/useJournalEntries';
-import { effectiveArrival } from '../services/routeEngine';
+import { effectiveArrival, formatStay } from '../services/routeEngine';
 import { preloadGoogleIdentityServices, isGooglePhotosConfigured } from '../services/googlePhotosPicker';
 import { COUNTRY_FLAGS } from '../data/constants';
 import { formatDate } from '../utils/geo';
 import JournalEntryCard from './JournalEntryCard';
 import RouteSoFarCard from './RouteSoFarCard';
+import LazyEntry from './LazyEntry';
 
 interface JournalViewProps {
   stops: Stop[];
@@ -81,7 +82,9 @@ export default function JournalView({ stops, currentStop, focusStop, onToggleVis
   useEffect(() => {
     if (!focusStop) return;
     const id = `journal-${focusStop.key}`;
-    const scrollToIt = () => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Instant, not smooth: a smooth scroll sweeps past every lazy placeholder on
+    // the way, mounting each one and shifting the target mid-scroll.
+    const scrollToIt = () => document.getElementById(id)?.scrollIntoView({ block: 'start' });
     // Cards above the target can still be loading photos, which shifts layout after
     // the first scroll fires — re-correct once things have had time to settle.
     const timers = [100, 500, 1200].map(ms => setTimeout(scrollToIt, ms));
@@ -114,22 +117,28 @@ export default function JournalView({ stops, currentStop, focusStop, onToggleVis
               return (
                 <div key={stop.key} id={`journal-${stop.key}`}>
                   {isOpen ? (
-                    <JournalEntryCard
+                    <LazyEntry
                       stop={stop}
-                      isCurrent={isCurrent}
-                      onToggleVisited={onToggleVisited}
-                      onLogArrival={onLogArrival}
-                      onLogDeparture={onLogDeparture}
-                      onEmptyAndCancelled={() => {
-                        setOpenKeys(prev => {
-                          const next = new Set(prev);
-                          next.delete(stop.key);
-                          return next;
-                        });
-                        setCollapsedKeys(prev => new Set(prev).add(stop.key));
-                        refetch();
-                      }}
-                    />
+                      dateLine={`${formatStay(stop, isCurrent, formatDate)} · ${stop.country}`}
+                      eager={isCurrent || focusStop?.key === stop.key}
+                    >
+                      <JournalEntryCard
+                        stop={stop}
+                        isCurrent={isCurrent}
+                        onToggleVisited={onToggleVisited}
+                        onLogArrival={onLogArrival}
+                        onLogDeparture={onLogDeparture}
+                        onEmptyAndCancelled={() => {
+                          setOpenKeys(prev => {
+                            const next = new Set(prev);
+                            next.delete(stop.key);
+                            return next;
+                          });
+                          setCollapsedKeys(prev => new Set(prev).add(stop.key));
+                          refetch();
+                        }}
+                      />
+                    </LazyEntry>
                   ) : (
                     <JournalPlaceholder stop={stop} onClick={() => {
                       setCollapsedKeys(prev => { const next = new Set(prev); next.delete(stop.key); return next; });
