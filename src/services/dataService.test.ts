@@ -36,6 +36,7 @@ const STORAGE_KEY = 'med_odyssey_user_stops';
 
 describe('dataService', () => {
   beforeEach(() => {
+    vi.resetModules(); // dataService keeps per-page state (server version, load status)
     localStorage.clear();
     mockSelect.mockReturnValue({ eq: vi.fn(() => ({ maybeSingle: mockMaybeSingle })) });
     mockMaybeSingle.mockResolvedValue({ data: null, error: null });
@@ -95,7 +96,8 @@ describe('dataService', () => {
 
   describe('saveUserStops', () => {
     it('always caches locally, and pushes to Supabase when signed in', async () => {
-      const { saveUserStops } = await import('./dataService');
+      const { getData, saveUserStops } = await import('./dataService');
+      await getData(); // server confirmed: no row yet
       const stops = [stubStop()];
 
       await saveUserStops(stops);
@@ -107,7 +109,8 @@ describe('dataService', () => {
 
     it('still caches locally even when not signed in, without attempting the Supabase write', async () => {
       mockGetUser.mockResolvedValue({ data: { user: null } });
-      const { saveUserStops } = await import('./dataService');
+      const { getData, saveUserStops } = await import('./dataService');
+      await getData();
       const stops = [stubStop()];
 
       await saveUserStops(stops);
@@ -118,7 +121,8 @@ describe('dataService', () => {
 
     it('keeps the local cache even if the Supabase write fails', async () => {
       mockUpsert.mockResolvedValue({ error: new Error('RLS rejected') });
-      const { saveUserStops } = await import('./dataService');
+      const { getData, saveUserStops } = await import('./dataService');
+      await getData();
       const stops = [stubStop()];
 
       await expect(saveUserStops(stops)).resolves.toEqual({ status: 'local-only' });
@@ -126,15 +130,15 @@ describe('dataService', () => {
     });
   });
 
-  describe('clearUserStops', () => {
-    it('clears both the local cache and the shared Supabase row', async () => {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify([stubStop()]));
-      const { clearUserStops } = await import('./dataService');
+  describe('offline load guard', () => {
+    it('refuses to save (and never upserts) when the server could not be reached on load', async () => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([stubStop({ key: 'stale-cached' })]));
+      mockMaybeSingle.mockRejectedValue(new Error('network error'));
+      const { getData, saveUserStops } = await import('./dataService');
+      const loaded = await getData(); // falls back to the stale local copy
 
-      await clearUserStops();
-
-      expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
-      expect(mockDeleteEq).toHaveBeenCalledWith('id', 1);
+      expect(await saveUserStops(loaded.stops)).toEqual({ status: 'not-loaded' });
+      expect(mockUpsert).not.toHaveBeenCalled();
     });
   });
 });

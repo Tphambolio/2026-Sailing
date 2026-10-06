@@ -61,7 +61,7 @@ interface JournalEntryCardProps {
 
 export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onLogArrival, onLogDeparture, onEmptyAndCancelled }: JournalEntryCardProps) {
   const { isEditor } = useAuth();
-  const { content, loading: notesLoading, saving, save } = useStopNotes(stop.key);
+  const { content, loading: notesLoading, saving, save, error: notesError, loadFailed, refetch: refetchNotes } = useStopNotes(stop.key);
   const { photos, loading: photosLoading, upload, remove, setCaption, getUrl } = useStopPhotos(stop.key);
   const [draft, setDraft] = useState('');
   const [editing, setEditing] = useState(false);
@@ -107,8 +107,8 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
   useEffect(() => {
     // A freshly-added entry with nothing yet starts straight into edit mode —
     // for editors only; readers would otherwise land on an empty, editable box.
-    if (isEditor && !notesLoading && !content && photos.length === 0) setEditing(true);
-  }, [notesLoading, isEditor]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (isEditor && !notesLoading && !loadFailed && !content && photos.length === 0) setEditing(true);
+  }, [notesLoading, isEditor, loadFailed]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     // The change event never fires if the user cancels the native picker
@@ -153,8 +153,10 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
   );
 
   const handleSave = async () => {
-    await save(toFullForm(draft, photoNumberMapRef.current));
-    setEditing(false);
+    const result = await save(toFullForm(draft, photoNumberMapRef.current));
+    // On failure stay in the editor with the draft intact (the error shows below);
+    // closing would silently discard what was just written.
+    if (!result?.error) setEditing(false);
   };
 
   const handleCancel = () => {
@@ -428,7 +430,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
               <p className="mt-1 text-sm text-slate-400">{dateLine}</p>
             </div>
           ) : <span />}
-          {isEditor && !editing && (
+          {isEditor && !editing && !loadFailed && (
             <button onClick={() => setEditing(true)} className="shrink-0 inline-flex items-center gap-1 text-xs text-cyan-400 hover:text-cyan-300">
               <Pencil size={14} aria-hidden /> Edit
             </button>
@@ -527,7 +529,12 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
           <p className="flex items-center gap-1.5 text-sm text-cyan-300 mb-4"><Landmark size={15} aria-hidden className="shrink-0" /> {stop.cultureHighlight}</p>
         )}
 
-        {notesLoading || photosLoading ? (
+        {loadFailed && !notesLoading ? (
+          <div className="mt-3 rounded-lg border border-coral-400/50 bg-coral-500/10 px-4 py-3 text-sm text-slate-200" role="alert">
+            Couldn't load this entry (connection problem?).{' '}
+            <button onClick={() => refetchNotes()} className="underline text-cyan-300 hover:text-cyan-200">Try again</button>
+          </div>
+        ) : notesLoading || photosLoading ? (
           <p className="text-sm text-slate-500 mt-3">Loading…</p>
         ) : editing ? (
           <div className="space-y-2 mt-3">
@@ -567,6 +574,9 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
                   ))}
                 </div>
               </div>
+            )}
+            {notesError && (
+              <p className="text-sm text-coral-300" role="alert">Not saved: {notesError}</p>
             )}
             <div className="flex items-center gap-2">
               <button

@@ -17,8 +17,16 @@ const TRIP_STOPS_ROW_ID = 1;
 // go through if the row still has this version — otherwise another editor saved
 // in between, and writing our whole stops array would silently wipe their change.
 let lastKnownUpdatedAt: string | null = null;
+// Whether this page actually reached the server on load. If it fell back to the
+// local cache or the bundled default (offline, Starlink drop), saving would push
+// that stale copy over the real itinerary — so saves are refused until reload.
+let serverRow: 'unknown' | 'absent' | 'present' = 'unknown';
+// Saves run one at a time so each uses the version the previous one produced
+// (two quick taps would otherwise both send the same version and the second
+// would be rejected as a false "someone else" conflict).
+let saveQueue: Promise<unknown> = Promise.resolve();
 
-export type SaveResult = { status: 'saved' | 'local-only' | 'conflict' };
+export type SaveResult = { status: 'saved' | 'local-only' | 'conflict' | 'not-loaded' };
 
 /**
  * On first load (no saved user edits yet), default `visited` from the planned schedule
@@ -49,6 +57,7 @@ export async function getData(): Promise<{
       .eq('id', TRIP_STOPS_ROW_ID)
       .maybeSingle();
     if (error) throw error;
+    serverRow = data?.stops ? 'present' : 'absent';
     if (data?.stops) {
       rawStops = data.stops as Stop[];
       lastKnownUpdatedAt = (data as { updated_at?: string }).updated_at ?? null;
@@ -83,7 +92,13 @@ export function getBaseStops(): Stop[] {
  * save — the edit still "sticks" for this browser, and the next successful
  * save (or a future reload once back online) will catch Supabase up.
  */
-export async function saveUserStops(stops: Stop[]): Promise<SaveResult> {
+export function saveUserStops(stops: Stop[]): Promise<SaveResult> {
+  const next = saveQueue.then(() => saveNow(stops));
+  saveQueue = next.catch(() => undefined);
+  return next;
+}
+
+async function saveNow(stops: Stop[]): Promise<SaveResult> {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(stops));
   } catch (error) {
@@ -95,13 +110,16 @@ export async function saveUserStops(stops: Stop[]): Promise<SaveResult> {
     if (!user) return { status: 'local-only' }; // Not signed in — RLS would reject the write anyway; local cache above still holds.
     const updatedAt = new Date().toISOString();
 
+    if (serverRow === 'unknown') return { status: 'not-loaded' };
+
     if (lastKnownUpdatedAt === null) {
-      // No server version seen yet (first save ever, or loaded from cache while offline).
+      // The server confirmed there's no itinerary row yet — the very first save.
       const { error } = await supabase
         .from(TRIP_STOPS_TABLE)
         .upsert({ id: TRIP_STOPS_ROW_ID, stops, updated_by: user.id, updated_at: updatedAt });
       if (error) throw error;
       lastKnownUpdatedAt = updatedAt;
+      serverRow = 'present';
       return { status: 'saved' };
     }
 
@@ -132,20 +150,6 @@ function getUserStops(): Stop[] | null {
     return JSON.parse(saved);
   } catch {
     return null;
-  }
-}
-
-/**
- * Clear user edits (reset to base data) — both the local cache and the shared
- * Supabase row, so Reset is a real reset rather than reappearing on next load.
- */
-export async function clearUserStops(): Promise<void> {
-  localStorage.removeItem(STORAGE_KEY);
-  try {
-    const { error } = await supabase.from(TRIP_STOPS_TABLE).delete().eq('id', TRIP_STOPS_ROW_ID);
-    if (error) throw error;
-  } catch (error) {
-    console.warn('Failed to clear trip stops from Supabase:', error);
   }
 }
 

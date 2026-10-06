@@ -404,3 +404,32 @@ describe('JournalEntryCard captions', () => {
     expect(setCaption).toHaveBeenCalledWith(expect.objectContaining({ id: 'a' }), 'Sunrise');
   });
 });
+
+describe('JournalEntryCard save/load safety', () => {
+  it('keeps the editor open with the draft when a save fails, and shows why', async () => {
+    mockUseAuth.mockReturnValue({ user: { id: 'user-1' }, isEditor: true });
+    const save = vi.fn().mockResolvedValue({ error: new Error('offline') });
+    mockUseStopNotes.mockReturnValue({ content: 'Old text.', loading: false, saving: false, save, error: 'offline' });
+    mockUseStopPhotos.mockReturnValue({ photos: [], loading: false, upload: vi.fn(), remove: vi.fn(), getUrl: (p: string) => p });
+    const user = userEvent.setup();
+    render(<JournalEntryCard stop={stop} />);
+
+    await user.click(screen.getByRole('button', { name: /edit/i }));
+    await user.type(screen.getByRole('textbox'), ' New words.');
+    await user.click(screen.getByRole('button', { name: /^save$/i }));
+
+    expect(screen.getByRole('textbox')).toHaveValue('Old text. New words.');
+    expect(screen.getByRole('alert')).toHaveTextContent(/not saved: offline/i);
+  });
+
+  it('never shows a failed load as an empty, editable entry', () => {
+    mockUseAuth.mockReturnValue({ user: { id: 'user-1' }, isEditor: true });
+    mockUseStopNotes.mockReturnValue({ content: '', loading: false, saving: false, save: vi.fn(), loadFailed: true, refetch: vi.fn() });
+    mockUseStopPhotos.mockReturnValue({ photos: [], loading: false, upload: vi.fn(), remove: vi.fn(), getUrl: (p: string) => p });
+    render(<JournalEntryCard stop={stop} isCurrent />);
+
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /edit/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent(/couldn't load/i);
+  });
+});

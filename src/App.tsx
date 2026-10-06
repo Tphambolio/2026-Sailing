@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
-import { getData, saveUserStops, clearUserStops, exportStopsJson } from './services/dataService';
+import { getData, saveUserStops, exportStopsJson } from './services/dataService';
 import { healRoute, computePhases, computeStats, insertStop, removeStop, updateStop, computeSchengenStatus, effectiveArrival, effectiveDeparture, currentStopLabel } from './services/routeEngine';
 import type { Stop, Phase, TripStats } from './types';
 import { NON_SCHENGEN, COUNTRY_FLAGS } from './data/constants';
@@ -148,6 +148,10 @@ function App() {
     setPhases(computePhases(healed));
     setStats(computeStats(healed));
     saveUserStops(healed).then(({ status }) => {
+      if (status === 'not-loaded') {
+        alert('The itinerary couldn\'t be loaded from the server when this page opened (offline?), so changes can\'t be saved — saving now could overwrite the real one with an old copy. Reload the page when you\'re back online and try again.');
+        return;
+      }
       if (status !== 'conflict') return;
       // Another editor saved the itinerary since this device loaded it. Ours was
       // NOT written (it would have wiped theirs) — show theirs and let the user redo.
@@ -229,14 +233,6 @@ function App() {
     setInsertAfterIndex(null);
   }, []);
 
-  const handleResetRoute = useCallback(async () => {
-    await clearUserStops();
-    const result = await getData();
-    setStops(result.stops);
-    setPhases(result.phases);
-    setStats(result.stats);
-    setIsUserEdited(false);
-  }, []);
 
   // Set initial sidebar state based on screen width (after mount)
   useEffect(() => {
@@ -362,9 +358,6 @@ function App() {
               <div className="hidden md:flex items-center gap-1">
                 <button onClick={() => exportStopsJson(stops)} className="px-2 py-1 bg-cyan-600 hover:bg-cyan-500 rounded text-xs text-white" title="Download stops.json">
                   💾 Export
-                </button>
-                <button onClick={handleResetRoute} className="px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-xs text-slate-300" title="Reset to original">
-                  ↩ Reset
                 </button>
               </div>
             )}

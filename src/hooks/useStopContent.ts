@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase, uploadStopPhoto, deleteStopPhoto, getStopPhotoUrl } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { describeMedia } from '../utils/imageResize';
@@ -15,23 +15,35 @@ export interface StopPhoto {
   height?: number | null;
 }
 
-// Public read (anyone), write gated by RLS to signed-in users only.
+// Public read (anyone), write gated by RLS to the three editors.
 export function useStopNotes(stopKey: string) {
   const { user } = useAuth();
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // A failed load must never look like an empty entry — writing into it would
+  // overwrite the real text. Editing is blocked until a load succeeds.
+  const [loadFailed, setLoadFailed] = useState(false);
+  // updated_at of the version this device loaded/saved; null = server has no row.
+  const versionRef = useRef<string | null>(null);
 
   const refetch = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('sailing_stop_notes')
-      .select('content')
+      .select('content, updated_at')
       .eq('stop_key', stopKey)
       .maybeSingle();
-    if (error) setError(error.message);
-    setContent(data?.content ?? '');
+    if (error) {
+      setError(error.message);
+      setLoadFailed(true);
+    } else {
+      setError(null);
+      setLoadFailed(false);
+      setContent(data?.content ?? '');
+      versionRef.current = data?.updated_at ?? null;
+    }
     setLoading(false);
   }, [stopKey]);
 
@@ -39,19 +51,41 @@ export function useStopNotes(stopKey: string) {
 
   const save = useCallback(async (newContent: string) => {
     if (!user) return { error: new Error('Not signed in') };
+    if (loadFailed) return { error: new Error("This entry didn't load, so it can't be saved safely — reload and try again.") };
     setSaving(true);
     setError(null);
-    const { error } = await supabase
-      .from('sailing_stop_notes')
-      .upsert({ stop_key: stopKey, content: newContent, updated_by: user.id, updated_at: new Date().toISOString() });
+    const updatedAt = new Date().toISOString();
+    const row = { stop_key: stopKey, content: newContent, updated_by: user.id, updated_at: updatedAt };
+    let saveError: Error | null = null;
+
+    if (versionRef.current === null) {
+      // No entry yet: insert (not upsert), so a concurrent first save by
+      // another editor fails loudly instead of being overwritten.
+      const { error } = await supabase.from('sailing_stop_notes').insert(row);
+      if (error) saveError = error.code === '23505' ? new Error(CONFLICT_MESSAGE) : error;
+    } else {
+      // Only overwrite the version we loaded — otherwise someone else saved in between.
+      const { data, error } = await supabase
+        .from('sailing_stop_notes')
+        .update(row)
+        .eq('stop_key', stopKey)
+        .eq('updated_at', versionRef.current)
+        .select('updated_at');
+      if (error) saveError = error;
+      else if (!data || data.length === 0) saveError = new Error(CONFLICT_MESSAGE);
+    }
+
     setSaving(false);
-    if (error) { setError(error.message); return { error }; }
+    if (saveError) { setError(saveError.message); return { error: saveError }; }
+    versionRef.current = updatedAt;
     setContent(newContent);
     return { error: null };
-  }, [stopKey, user]);
+  }, [stopKey, user, loadFailed]);
 
-  return { content, loading, saving, error, save, refetch };
+  return { content, loading, saving, error, loadFailed, save, refetch };
 }
+
+const CONFLICT_MESSAGE = 'Someone else saved this entry while you were editing, so yours wasn\'t saved (to avoid overwriting theirs). Copy your text, reload, and merge.';
 
 export function useStopPhotos(stopKey: string) {
   const { user } = useAuth();
