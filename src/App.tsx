@@ -125,16 +125,31 @@ function App() {
   }, []);
 
   // Apply route changes: heal, recompute, persist
+  const reloadStops = useCallback(async () => {
+    const result = await getData();
+    setStops(result.stops);
+    setPhases(result.phases);
+    setStats(result.stats);
+    setIsUserEdited(result.isUserEdited);
+    setSelectedStop(prev => prev ? result.stops.find(s => s.key === prev.key) || null : prev);
+  }, []);
+
   const applyRouteChange = useCallback((newStops: Stop[]) => {
     const healed = healRoute(newStops);
     setStops(healed);
     setPhases(computePhases(healed));
     setStats(computeStats(healed));
-    saveUserStops(healed);
+    saveUserStops(healed).then(({ status }) => {
+      if (status !== 'conflict') return;
+      // Another editor saved the itinerary since this device loaded it. Ours was
+      // NOT written (it would have wiped theirs) — show theirs and let the user redo.
+      alert('Someone else updated the itinerary since you opened it, so your last change wasn\'t saved. Loading the latest version now — please make your change again.');
+      reloadStops();
+    });
     setIsUserEdited(true);
     // Keep the open detail panel in sync with the freshly healed stop data
     setSelectedStop(prev => prev ? healed.find(s => s.id === prev.id) || null : prev);
-  }, []);
+  }, [reloadStops]);
 
   // Reality tracking handlers
   const handleToggleVisited = useCallback((stop: Stop) => {

@@ -13,6 +13,13 @@ const STORAGE_KEY = 'med_odyssey_user_stops';
 const TRIP_STOPS_TABLE = 'sailing_trip_stops';
 const TRIP_STOPS_ROW_ID = 1;
 
+// The server version (updated_at) this device last loaded or saved. Saves only
+// go through if the row still has this version — otherwise another editor saved
+// in between, and writing our whole stops array would silently wipe their change.
+let lastKnownUpdatedAt: string | null = null;
+
+export type SaveResult = { status: 'saved' | 'local-only' | 'conflict' };
+
 /**
  * On first load (no saved user edits yet), default `visited` from the planned schedule
  * so past stops aren't all unchecked. Fully overridable per-stop afterward.
@@ -38,11 +45,16 @@ export async function getData(): Promise<{
   try {
     const { data, error } = await supabase
       .from(TRIP_STOPS_TABLE)
-      .select('stops')
+      .select('stops, updated_at')
       .eq('id', TRIP_STOPS_ROW_ID)
       .maybeSingle();
     if (error) throw error;
-    if (data?.stops) rawStops = data.stops as Stop[];
+    if (data?.stops) {
+      rawStops = data.stops as Stop[];
+      lastKnownUpdatedAt = (data as { updated_at?: string }).updated_at ?? null;
+      // Keep the offline fallback current, not just whatever this device last saved.
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(rawStops)); } catch { /* quota/private mode */ }
+    }
   } catch (err) {
     console.warn('Failed to load trip stops from Supabase, falling back to local cache:', err);
   }
@@ -71,7 +83,7 @@ export function getBaseStops(): Stop[] {
  * save — the edit still "sticks" for this browser, and the next successful
  * save (or a future reload once back online) will catch Supabase up.
  */
-export async function saveUserStops(stops: Stop[]): Promise<void> {
+export async function saveUserStops(stops: Stop[]): Promise<SaveResult> {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(stops));
   } catch (error) {
@@ -80,13 +92,32 @@ export async function saveUserStops(stops: Stop[]): Promise<void> {
 
   try {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return; // Not signed in — RLS would reject the write anyway; local cache above still holds.
-    const { error } = await supabase
+    if (!user) return { status: 'local-only' }; // Not signed in — RLS would reject the write anyway; local cache above still holds.
+    const updatedAt = new Date().toISOString();
+
+    if (lastKnownUpdatedAt === null) {
+      // No server version seen yet (first save ever, or loaded from cache while offline).
+      const { error } = await supabase
+        .from(TRIP_STOPS_TABLE)
+        .upsert({ id: TRIP_STOPS_ROW_ID, stops, updated_by: user.id, updated_at: updatedAt });
+      if (error) throw error;
+      lastKnownUpdatedAt = updatedAt;
+      return { status: 'saved' };
+    }
+
+    const { data, error } = await supabase
       .from(TRIP_STOPS_TABLE)
-      .upsert({ id: TRIP_STOPS_ROW_ID, stops, updated_by: user.id, updated_at: new Date().toISOString() });
+      .update({ stops, updated_by: user.id, updated_at: updatedAt })
+      .eq('id', TRIP_STOPS_ROW_ID)
+      .eq('updated_at', lastKnownUpdatedAt)
+      .select('updated_at');
     if (error) throw error;
+    if (!data || data.length === 0) return { status: 'conflict' };
+    lastKnownUpdatedAt = (data[0] as { updated_at: string }).updated_at;
+    return { status: 'saved' };
   } catch (error) {
     console.warn('Failed to sync trip stops to Supabase (kept in local cache):', error);
+    return { status: 'local-only' };
   }
 }
 

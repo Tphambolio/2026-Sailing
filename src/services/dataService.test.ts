@@ -4,7 +4,8 @@ import type { Stop } from '../types';
 // dataService now syncs through Supabase — mock the client rather than wiring
 // up real credentials, and give each Supabase call its own controllable stub
 // since getData()/saveUserStops()/clearUserStops() each chain differently.
-const { mockSelect, mockMaybeSingle, mockUpsert, mockDeleteEq, mockGetUser } = vi.hoisted(() => ({
+const { mockSelect, mockMaybeSingle, mockUpsert, mockDeleteEq, mockGetUser, mockUpdate } = vi.hoisted(() => ({
+  mockUpdate: vi.fn(),
   mockSelect: vi.fn(),
   mockMaybeSingle: vi.fn(),
   mockUpsert: vi.fn(),
@@ -18,6 +19,7 @@ vi.mock('../lib/supabase', () => ({
     from: vi.fn(() => ({
       select: mockSelect,
       upsert: mockUpsert,
+      update: mockUpdate,
       delete: vi.fn(() => ({ eq: mockDeleteEq })),
     })),
   },
@@ -119,7 +121,7 @@ describe('dataService', () => {
       const { saveUserStops } = await import('./dataService');
       const stops = [stubStop()];
 
-      await expect(saveUserStops(stops)).resolves.toBeUndefined();
+      await expect(saveUserStops(stops)).resolves.toEqual({ status: 'local-only' });
       expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!)).toEqual(stops);
     });
   });
@@ -134,5 +136,51 @@ describe('dataService', () => {
       expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
       expect(mockDeleteEq).toHaveBeenCalledWith('id', 1);
     });
+  });
+});
+
+describe('saveUserStops conflict protection', () => {
+  // Chain: update(...).eq('id').eq('updated_at', v).select('updated_at')
+  function updateReturns(result: { data: unknown; error: unknown }) {
+    const eq2 = vi.fn(() => ({ select: vi.fn().mockResolvedValue(result) }));
+    const eq1 = vi.fn(() => ({ eq: eq2 }));
+    mockUpdate.mockReturnValue({ eq: eq1 });
+    return eq2;
+  }
+
+  beforeEach(() => {
+    vi.resetModules();
+    localStorage.clear();
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } });
+    mockSelect.mockReturnValue({ eq: vi.fn(() => ({ maybeSingle: mockMaybeSingle })) });
+    mockMaybeSingle.mockResolvedValue({ data: { stops: [stubStop()], updated_at: 'v1' }, error: null });
+  });
+
+  it('only writes if the row still has the version this device loaded, then tracks the new version', async () => {
+    const eqVersion = updateReturns({ data: [{ updated_at: 'v2' }], error: null });
+    const { getData, saveUserStops } = await import('./dataService');
+    await getData();
+
+    expect(await saveUserStops([stubStop()])).toEqual({ status: 'saved' });
+    expect(eqVersion).toHaveBeenCalledWith('updated_at', 'v1');
+
+    const eqNext = updateReturns({ data: [{ updated_at: 'v3' }], error: null });
+    await saveUserStops([stubStop()]);
+    expect(eqNext).toHaveBeenCalledWith('updated_at', 'v2');
+  });
+
+  it('reports a conflict (and writes nothing) when another editor saved in between', async () => {
+    updateReturns({ data: [], error: null });
+    const { getData, saveUserStops } = await import('./dataService');
+    await getData();
+
+    expect(await saveUserStops([stubStop()])).toEqual({ status: 'conflict' });
+    expect(mockUpsert).not.toHaveBeenCalled();
+  });
+
+  it('refreshes the offline cache whenever the latest itinerary loads', async () => {
+    const { getData } = await import('./dataService');
+    await getData();
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!)[0].key).toBe('test-stop');
   });
 });
