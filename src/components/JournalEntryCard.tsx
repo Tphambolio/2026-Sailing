@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useStopNotes, useStopPhotos } from '../hooks/useStopContent';
 import { COUNTRY_FLAGS } from '../data/constants';
 import { formatDate } from '../utils/geo';
-import { effectiveArrival, effectiveDeparture } from '../services/routeEngine';
+import { effectiveArrival, effectiveDeparture, currentStopLabel } from '../services/routeEngine';
 import { parseContent, isVideoPath, buildPhotoNumberMap, toShortForm, toFullForm, shortFormPhotoIds } from '../utils/journalContent';
 import { downsampleImage } from '../utils/imageResize';
 import { trimVideoToSizeLimit } from '../utils/videoTrim';
@@ -42,10 +42,10 @@ function VideoFrame({ src, className, onClick, width, height }: { src: string; c
   return <video src={`${src}#t=0.1`} muted playsInline preload="metadata" onClick={onClick} width={width ?? undefined} height={height ?? undefined} className={className} />;
 }
 
-function HereNowChip() {
+function HereNowChip({ stop }: { stop: Stop }) {
   return (
     <span className="mb-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-coral-400 text-slate-950">
-      <MapPin size={12} aria-hidden /> Here now
+      <MapPin size={12} aria-hidden /> {currentStopLabel(stop)}
     </span>
   );
 }
@@ -388,7 +388,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/25 to-transparent" />
           <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6 text-left">
-            {isCurrent && <HereNowChip />}
+            {isCurrent && <HereNowChip stop={stop} />}
             <h2 className="font-serif text-3xl sm:text-4xl font-bold text-white leading-tight drop-shadow">
               {stop.name} <span className="text-2xl align-middle">{COUNTRY_FLAGS[stop.country] || ''}</span>
             </h2>
@@ -400,7 +400,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
         <div className="flex items-start justify-between gap-3 mb-2">
           {!heroPhoto ? (
             <div>
-              {isCurrent && <HereNowChip />}
+              {isCurrent && <HereNowChip stop={stop} />}
               <h2 className="font-serif text-2xl sm:text-3xl font-bold text-white leading-tight">
                 {stop.name} <span className="text-xl align-middle">{COUNTRY_FLAGS[stop.country] || ''}</span>
               </h2>

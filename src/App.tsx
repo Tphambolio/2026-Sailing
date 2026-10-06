@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 import { getData, saveUserStops, clearUserStops, exportStopsJson } from './services/dataService';
-import { healRoute, computePhases, computeStats, insertStop, removeStop, updateStop, computeSchengenStatus, effectiveArrival, effectiveDeparture } from './services/routeEngine';
+import { healRoute, computePhases, computeStats, insertStop, removeStop, updateStop, computeSchengenStatus, effectiveArrival, effectiveDeparture, currentStopLabel } from './services/routeEngine';
 import type { Stop, Phase, TripStats } from './types';
 import { NON_SCHENGEN, COUNTRY_FLAGS } from './data/constants';
 import { formatDate, daysBetween, todayISO } from './utils/geo';
@@ -426,7 +426,7 @@ function App() {
                         <div className="flex items-center gap-2">
                           <p className={`font-medium truncate ${stop.visited ? 'text-slate-300' : 'text-white'}`}>{stop.id}. {stop.name}</p>
                           {stop.duration && <span className="text-[10px] text-slate-500">({stop.duration})</span>}
-                          {currentStop?.id === stop.id && <span className="text-[10px] px-1 py-0.5 rounded bg-amber-500 text-slate-900 font-semibold">{'📍'} Here</span>}
+                          {currentStop?.id === stop.id && <span className="text-[10px] px-1 py-0.5 rounded bg-coral-400 text-slate-950 font-semibold whitespace-nowrap">{currentStopLabel(stop) === 'Here now' ? 'Here' : 'Latest'}</span>}
                           {/* Edit button — always visible; hover-only (opacity-0 until
                               group-hover) meant it never rendered on touch devices,
                               the only way to rename/reposition a stop. */}

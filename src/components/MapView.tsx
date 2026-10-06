@@ -7,7 +7,7 @@ import type { Stop, Phase } from '../types';
 import { DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM } from '../types';
 import { COUNTRY_COLORS, COUNTRY_FLAGS } from '../data/constants';
 import { formatDate } from '../utils/geo';
-import { effectiveArrival, effectiveDeparture } from '../services/routeEngine';
+import { effectiveArrival, effectiveDeparture, currentStopLabel } from '../services/routeEngine';
 import NotePreviewTile from './NotePreviewTile';
 
 // Split out of App.tsx and lazy-loaded: Leaflet is one of the largest
@@ -155,7 +155,7 @@ export default function MapView({
               <div className="text-sm">
                 <span className="font-bold">{stop.name}</span>
                 <span className="text-gray-500 ml-1">{COUNTRY_FLAGS[stop.country] || ''}</span>
-                {currentStop?.id === stop.id && <span className="ml-1">{'📍'}</span>}
+                {currentStop?.id === stop.id && <span className="ml-1 text-xs text-gray-500">· {currentStopLabel(stop)}</span>}
                 {stop.cultureHighlight && <div className="text-gray-600 mt-0.5">🏛️ {stop.cultureHighlight}</div>}
               </div>
             </Popup>
@@ -179,7 +179,7 @@ export default function MapView({
                 <h2 className="text-base md:text-lg font-bold text-white truncate">{selectedStop.name}</h2>
                 <span className="text-slate-400 text-sm">{COUNTRY_FLAGS[selectedStop.country] || ''}</span>
                 {selectedStop.phase && <span className="px-2 py-0.5 rounded text-xs" style={{ backgroundColor: COUNTRY_COLORS[selectedStop.phase] || '#6b7280' }}>{selectedStop.phase}</span>}
-                {currentStop?.id === selectedStop.id && <span className="px-2 py-0.5 rounded text-xs bg-amber-500 text-slate-900 font-semibold">{'📍'} Here now</span>}
+                {currentStop?.id === selectedStop.id && <span className="px-2 py-0.5 rounded text-xs bg-coral-400 text-slate-950 font-semibold">{currentStopLabel(selectedStop)}</span>}
                 {isEditor ? (
                   <button
                     onClick={() => onToggleVisited(selectedStop)}
