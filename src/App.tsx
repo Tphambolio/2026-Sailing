@@ -446,6 +446,7 @@ function App() {
             onToggleVisited={isEditor ? handleToggleVisited : undefined}
             onLogArrival={isEditor ? handleLogArrival : undefined}
             onLogDeparture={isEditor ? handleLogDeparture : undefined}
+            onOpenMap={() => setActiveView('map')}
           />
         ) : (
         <Suspense fallback={<div className="flex-1 flex items-center justify-center bg-slate-900 text-slate-500 text-sm">Loading map…</div>}>

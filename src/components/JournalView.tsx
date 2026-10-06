@@ -7,6 +7,7 @@ import { preloadGoogleIdentityServices, isGooglePhotosConfigured } from '../serv
 import { COUNTRY_FLAGS } from '../data/constants';
 import { formatDate } from '../utils/geo';
 import JournalEntryCard from './JournalEntryCard';
+import RouteSoFarCard from './RouteSoFarCard';
 
 interface JournalViewProps {
   stops: Stop[];
@@ -15,6 +16,7 @@ interface JournalViewProps {
   onToggleVisited?: (stop: Stop) => void;
   onLogArrival?: (stop: Stop) => void;
   onLogDeparture?: (stop: Stop) => void;
+  onOpenMap?: () => void;
 }
 
 function JournalPlaceholder({ stop, onClick }: { stop: Stop; onClick: () => void }) {
@@ -34,7 +36,7 @@ function JournalPlaceholder({ stop, onClick }: { stop: Stop; onClick: () => void
   );
 }
 
-export default function JournalView({ stops, currentStop, focusStop, onToggleVisited, onLogArrival, onLogDeparture }: JournalViewProps) {
+export default function JournalView({ stops, currentStop, focusStop, onToggleVisited, onLogArrival, onLogDeparture, onOpenMap }: JournalViewProps) {
   const { isEditor } = useAuth();
   const { keys, loading, refetch } = useJournalEntryKeys();
   const [openKeys, setOpenKeys] = useState<Set<string>>(new Set());
@@ -94,6 +96,8 @@ export default function JournalView({ stops, currentStop, focusStop, onToggleVis
           <h1 className="font-serif text-3xl sm:text-4xl font-bold text-white mb-2">The Journal</h1>
           <p className="text-sm text-slate-400">Notes and photos from along the way</p>
         </div>
+
+        {onOpenMap && <RouteSoFarCard stops={stops} onOpenMap={onOpenMap} />}
 
         {loading ? (
           <p className="text-center text-slate-500">Loading journal…</p>
