@@ -118,3 +118,24 @@ describe('formatStay', () => {
     expect(formatStay(s, false)).toBe('2026-09-19 → 2026-09-22');
   });
 });
+
+describe('Schengen counting reflects what actually happened', () => {
+  it('ignores past dates of a stop explicitly marked not visited (skipped)', () => {
+    const stops = [stop({ key: 'skipped', arrival: '2026-09-01', departure: '2026-09-10', visited: false })];
+    expect(computeSchengenStatus(stops, '2026-10-06').usedInWindow).toBe(0);
+  });
+
+  it('counts the current stay through today when no departure is logged', () => {
+    const stops = [stop({ key: 'paros', arrival: '2026-09-19', departure: '2026-09-22', visited: true, actualArrival: '2026-09-19' })];
+    // Sep 19 .. Oct 6 inclusive = 18 days, not the planned 4
+    expect(computeSchengenStatus(stops, '2026-10-06').usedInWindow).toBe(18);
+  });
+
+  it('reports an overstay that has already started instead of "within the limit"', () => {
+    const stops = [stop({ key: 'long', arrival: '2026-06-01', departure: '2026-06-01', visited: true, actualArrival: '2026-06-01' })];
+    // Open stay from Jun 1 to Oct 6 = 128 days > 90; day 91 is Aug 30
+    const status = computeSchengenStatus(stops, '2026-10-06');
+    expect(status.usedInWindow).toBeGreaterThan(90);
+    expect(status.overstayDate).toBe('2026-08-30');
+  });
+});

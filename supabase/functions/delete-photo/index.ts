@@ -55,9 +55,9 @@ Deno.serve(async (req) => {
   }
 
   const { path } = body;
-  // Expected shape is "<stopKey>/<timestamp>.<ext>" — reject anything that
-  // could escape the bucket via traversal or an absolute path.
-  if (typeof path !== "string" || !path || path.startsWith("/") || path.includes("..")) {
+  // Exactly the shape get-upload-url creates — "<stopKey>/<timestamp>.<ext>" — so
+  // this can never be pointed at backups/, trash/ or anything else in the bucket.
+  if (typeof path !== "string" || !/^[a-z0-9-]+\/\d+\.[A-Za-z0-9]+$/.test(path) || /^(backups|trash)\//.test(path)) {
     return new Response(JSON.stringify({ error: "Invalid path" }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

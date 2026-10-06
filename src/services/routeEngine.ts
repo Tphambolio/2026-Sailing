@@ -54,11 +54,33 @@ export interface DateRange {
 /**
  * Schengen stay ranges (effective/actual-if-logged dates) for every Schengen stop on the route.
  */
-export function buildSchengenRanges(stops: Stop[]): DateRange[] {
-  return stops
-    .filter(s => !NON_SCHENGEN.includes(s.country))
-    .map(s => ({ start: effectiveArrival(s), end: effectiveDeparture(s) }))
-    .filter(r => r.start && r.end);
+export function buildSchengenRanges(stops: Stop[], asOf: string = todayISO()): DateRange[] {
+  // The stay you're in right now: the latest visited stop with no departure
+  // logged counts through today, not to its stale planned departure date.
+  let lastVisited = -1;
+  stops.forEach((s, i) => { if (s.visited) lastVisited = i; });
+
+  const ranges: DateRange[] = [];
+  stops.forEach((s, i) => {
+    if (NON_SCHENGEN.includes(s.country)) return;
+    let start = effectiveArrival(s);
+    let end = effectiveDeparture(s);
+    if (!start || !end) return;
+    if (s.visited === false) {
+      // A stop explicitly not visited: its past dates are a plan that didn't
+      // happen (skipped, or the trip ran differently) — only count the future.
+      if (end < asOf) return;
+      if (start < asOf) start = asOf;
+    }
+    if (i === lastVisited && !s.actualDeparture && s.actualArrival && end < asOf) end = asOf;
+    ranges.push({ start, end });
+  });
+  return ranges;
+}
+
+/** Rolling 180-day Schengen count as of `date` (inclusive window). */
+export function rollingSchengenDays(ranges: DateRange[], date: string): number {
+  return schengenDaysInRange(ranges, addDays(date, -179), date);
 }
 
 /**
@@ -99,8 +121,25 @@ export function schengenDaysInRange(ranges: DateRange[], windowStart: string, wi
  * - overstayDate projects forward through the remaining planned/actual itinerary and
  *   flags the first future date where the rolling 180-day count would exceed 90.
  */
+/** Rolling 90/180 count at each Schengen stop's (effective) departure, for the per-stop badges. */
+export function schengenByStop(stops: Stop[], asOf: string = todayISO()): Map<number, { days: number; rolling: number; isPaused: boolean }> {
+  const ranges = buildSchengenRanges(stops, asOf);
+  const out = new Map<number, { days: number; rolling: number; isPaused: boolean }>();
+  for (const s of stops) {
+    const arrival = effectiveArrival(s);
+    const departure = effectiveDeparture(s);
+    if (!arrival) { out.set(s.id, { days: 0, rolling: 0, isPaused: true }); continue; }
+    out.set(s.id, {
+      days: departure ? daysBetween(arrival, departure) : 0,
+      rolling: rollingSchengenDays(ranges, departure || arrival),
+      isPaused: NON_SCHENGEN.includes(s.country),
+    });
+  }
+  return out;
+}
+
 export function computeSchengenStatus(stops: Stop[], asOf: string = todayISO()): SchengenStatus {
-  const ranges = buildSchengenRanges(stops);
+  const ranges = buildSchengenRanges(stops, asOf);
   // A "180-day period" is 180 calendar days including the reference day itself,
   // i.e. [asOf - 179, asOf] — not asOf - 180, which would span 181 days.
   const windowStart = addDays(asOf, -179);
@@ -116,8 +155,18 @@ export function computeSchengenStatus(stops: Stop[], asOf: string = todayISO()):
   });
   const nextFreeDate = earliestCounted ? addDays(earliestCounted, 180) : null;
 
-  // Forward projection: check the rolling count as of each future Schengen stop's departure
+  // Already over? Report the first day in the current window the count went past
+  // 90 — previously only future departures were checked, so an overstay that had
+  // already begun vanished and the plan read as "within the limit".
   let overstayDate: string | null = null;
+  if (usedInWindow > 90) {
+    for (let d = windowStart; d <= asOf; d = addDays(d, 1)) {
+      if (rollingSchengenDays(ranges, d) > 90) { overstayDate = d; break; }
+    }
+    return { usedInWindow, remaining, windowStart, nextFreeDate, overstayDate };
+  }
+
+  // Forward projection: check the rolling count as of each future Schengen stop's departure
   for (const stop of stops) {
     if (NON_SCHENGEN.includes(stop.country)) continue;
     const departure = effectiveDeparture(stop);

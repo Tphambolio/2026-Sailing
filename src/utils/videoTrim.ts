@@ -1,6 +1,6 @@
-// Supabase Storage hard-caps uploads at 50MB on this project's plan (see
-// JournalEntryCard's MAX_UPLOAD_BYTES) — a phone video clip clears that far
-// more often than a photo does (downsampleImage() already shrinks photos).
+// Uploads are capped (JournalEntryCard's MAX_UPLOAD_BYTES — originally
+// Supabase's 50MB limit, now a 200MB Starlink-friendly cap on R2) — a phone
+// video clip clears that far more often than a photo does.
 // Rather than reject the whole clip and send the user off to re-export it
 // manually, this trims the tail off client-side so it fits, keeping playback
 // from the start intact.

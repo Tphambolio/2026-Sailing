@@ -175,15 +175,12 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
     requestAnimationFrame(() => ta?.focus());
   };
 
-  // Supabase's Free plan hard-caps storage uploads at 50MB with no per-bucket
-  // override — a phone video clip clears this routinely (unlike photos, which
-  // downsampleImage() shrinks first). An oversized video gets trimmed down to
-  // fit instead of rejected outright — see videoTrim.ts for why that's safe
-  // to do losslessly. Non-video files still can't be shrunk this way, so
-  // those are checked client-side to avoid burning a full upload attempt
-  // (and, for Google Photos imports, a download from Google first) on a file
-  // that's certain to be rejected.
-  const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
+  // Uploads go straight to R2 (no Supabase 50MB cap any more). 200MB keeps a
+  // single upload sane over boat Starlink — well over a minute of phone video.
+  // Anything bigger is trimmed losslessly to fit (see videoTrim.ts), and the
+  // user is told so; non-video files that big are rejected up front.
+  const MAX_UPLOAD_BYTES = 200 * 1024 * 1024;
+  const MAX_UPLOAD_MB = MAX_UPLOAD_BYTES / (1024 * 1024);
 
   // Shared by both the local file picker and the Google Photos picker — uploads
   // each file to Supabase, appends an inline token for it, and tracks progress.
@@ -191,16 +188,18 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
     if (files.length === 0) return;
     setUploadProgress({ done: 0, total: files.length });
     const failures: string[] = [];
+    const notices: string[] = [];
     for (const file of files) {
       let toUpload: File = file;
       if (file.size > MAX_UPLOAD_BYTES) {
         if (!file.type.startsWith('video/')) {
-          failures.push(`"${file.name}" is ${(file.size / (1024 * 1024)).toFixed(0)}MB — over the 50MB upload limit on this project's plan.`);
+          failures.push(`"${file.name}" is ${(file.size / (1024 * 1024)).toFixed(0)}MB — over the ${MAX_UPLOAD_MB}MB upload limit.`);
           setUploadProgress(p => (p ? { ...p, done: p.done + 1 } : null));
           continue;
         }
         try {
           toUpload = await trimVideoToSizeLimit(file, MAX_UPLOAD_BYTES);
+          notices.push(`"${file.name}" was ${(file.size / (1024 * 1024)).toFixed(0)}MB, so only the first ~${Math.round((toUpload.size / file.size) * 100)}% was kept to fit the ${MAX_UPLOAD_MB}MB limit.`);
         } catch (err) {
           const reason = err instanceof Error ? err.message : String(err);
           failures.push(`"${file.name}" is ${(file.size / (1024 * 1024)).toFixed(0)}MB and couldn't be trimmed automatically (${reason}) — export a shorter clip and try again.`);
@@ -226,8 +225,11 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
     // video that downloaded fine via the Google Photos relay never appeared
     // because the follow-up Supabase upload rejected it over the size limit,
     // and nothing told the user why.
-    if (failures.length > 0) {
-      alert(`Couldn't upload:\n${failures.map(f => `• ${f}`).join('\n')}`);
+    if (failures.length > 0 || notices.length > 0) {
+      alert([
+        failures.length > 0 ? `Couldn't upload:\n${failures.map(f => `• ${f}`).join('\n')}` : '',
+        notices.length > 0 ? `Trimmed:\n${notices.map(n => `• ${n}`).join('\n')}` : '',
+      ].filter(Boolean).join('\n\n'));
     }
   };
 

@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 import { getData, saveUserStops, exportStopsJson } from './services/dataService';
-import { healRoute, computePhases, computeStats, insertStop, removeStop, updateStop, computeSchengenStatus, effectiveArrival, effectiveDeparture, currentStopLabel } from './services/routeEngine';
+import { healRoute, computePhases, computeStats, insertStop, removeStop, updateStop, computeSchengenStatus, schengenByStop, effectiveArrival, effectiveDeparture, currentStopLabel } from './services/routeEngine';
 import type { Stop, Phase, TripStats } from './types';
-import { NON_SCHENGEN, COUNTRY_FLAGS } from './data/constants';
-import { formatDate, daysBetween, todayISO } from './utils/geo';
+import { COUNTRY_FLAGS } from './data/constants';
+import { formatDate, todayISO } from './utils/geo';
 import StopEditor from './components/StopEditor';
 import NotesModal from './components/NotesModal';
 import JournalView from './components/JournalView';
@@ -11,71 +11,8 @@ import JournalView from './components/JournalView';
 // load the map (and its CSS) the first time someone opens the Map tab.
 const MapView = lazy(() => import('./components/MapView'));
 import { useAuth } from './context/AuthContext';
+import { supabase } from './lib/supabase';
 import { BookOpen, Map as MapIcon, Menu, X, LogIn, LogOut, Sailboat, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
-
-// Calculate rolling 90/180 Schengen days for each stop
-function calculateSchengenDays(stops: Stop[]): Map<number, { days: number; rolling: number; isPaused: boolean }> {
-  const schengenMap = new Map<number, { days: number; rolling: number; isPaused: boolean }>();
-
-  // Build a list of all Schengen day ranges (arrival to departure for each Schengen stop)
-  const schengenRanges: { start: Date; end: Date }[] = [];
-
-  stops.forEach((stop) => {
-    const arrival = effectiveArrival(stop);
-    const departure = effectiveDeparture(stop);
-    if (!arrival || !departure) return;
-    const isSchengen = !NON_SCHENGEN.includes(stop.country);
-    if (isSchengen) {
-      const [y1, m1, d1] = arrival.split('-').map(Number);
-      const [y2, m2, d2] = departure.split('-').map(Number);
-      schengenRanges.push({
-        start: new Date(y1, m1 - 1, d1),
-        end: new Date(y2, m2 - 1, d2),
-      });
-    }
-  });
-
-  // For each stop, calculate rolling 90/180
-  stops.forEach((stop) => {
-    const arrival = effectiveArrival(stop);
-    const departure = effectiveDeparture(stop);
-    if (!arrival) {
-      schengenMap.set(stop.id, { days: 0, rolling: 0, isPaused: true });
-      return;
-    }
-
-    const isSchengen = !NON_SCHENGEN.includes(stop.country);
-    const stayDays = arrival && departure ? daysBetween(arrival, departure) : 0;
-
-    // Calculate the reference date (end of stay at this stop)
-    const [y, m, d] = departure ? departure.split('-').map(Number) : arrival.split('-').map(Number);
-    const referenceDate = new Date(y, m - 1, d);
-
-    // Look back 180 days from reference date
-    const windowStart = new Date(referenceDate);
-    windowStart.setDate(windowStart.getDate() - 180);
-
-    // Count Schengen days in the 180-day window
-    let daysInWindow = 0;
-    schengenRanges.forEach(range => {
-      // Find overlap between this range and the 180-day window
-      const overlapStart = new Date(Math.max(range.start.getTime(), windowStart.getTime()));
-      const overlapEnd = new Date(Math.min(range.end.getTime(), referenceDate.getTime()));
-
-      if (overlapStart < overlapEnd) {
-        daysInWindow += Math.round((overlapEnd.getTime() - overlapStart.getTime()) / (1000 * 60 * 60 * 24));
-      }
-    });
-
-    schengenMap.set(stop.id, {
-      days: stayDays,
-      rolling: daysInWindow,
-      isPaused: !isSchengen
-    });
-  });
-
-  return schengenMap;
-}
 
 // Get distance color: <50 green, 50-70 yellow, >70 red
 function getDistanceColor(km: number): string {
@@ -243,7 +180,7 @@ function App() {
   const countries = [...new Set(stops.map(s => s.country))];
 
   // Calculate Schengen days for each stop
-  const schengenDays = useMemo(() => calculateSchengenDays(stops), [stops]);
+  const schengenDays = useMemo(() => schengenByStop(stops), [stops]);
 
   // Live 90/180 Schengen status as of today
   const schengenStatus = useMemo(() => computeSchengenStatus(stops), [stops]);
@@ -327,7 +264,9 @@ function App() {
                   title={[
                     `${schengenStatus.usedInWindow} Schengen days used in the trailing 180 days (as of today)`,
                     schengenStatus.nextFreeDate ? `Next day frees up ${formatDate(schengenStatus.nextFreeDate)}` : null,
-                    schengenStatus.overstayDate ? `⚠ Plan exceeds 90 days around ${formatDate(schengenStatus.overstayDate)}` : 'Plan stays within the 90-day limit',
+                    schengenStatus.usedInWindow > 90
+                      ? `⚠ OVER the 90-day limit (since ${formatDate(schengenStatus.overstayDate || todayISO())})`
+                      : schengenStatus.overstayDate ? `⚠ Plan exceeds 90 days around ${formatDate(schengenStatus.overstayDate)}` : 'Plan stays within the 90-day limit',
                   ].filter(Boolean).join(' • ')}
                 >
                   🇪🇺 {schengenStatus.usedInWindow}/90 ({schengenStatus.remaining} left)
@@ -533,7 +472,17 @@ function App() {
           stop={editingStop}
           countries={countries}
           onSave={handleSaveStop}
-          onDelete={editingStop ? () => {
+          onDelete={editingStop ? async () => {
+            // A stop's journal entry and photos are keyed to it — deleting the stop
+            // leaves them in the database but nothing displays them any more.
+            const [{ count: notes }, { count: photos }] = await Promise.all([
+              supabase.from('sailing_stop_notes').select('stop_key', { count: 'exact', head: true }).eq('stop_key', editingStop.key).neq('content', ''),
+              supabase.from('sailing_stop_photos').select('id', { count: 'exact', head: true }).eq('stop_key', editingStop.key),
+            ]);
+            if ((notes ?? 0) > 0 || (photos ?? 0) > 0) {
+              const what = [(notes ?? 0) > 0 ? 'a journal entry' : '', (photos ?? 0) > 0 ? `${photos} photo${photos === 1 ? '' : 's'}` : ''].filter(Boolean).join(' and ');
+              if (!window.confirm(`"${editingStop.name}" has ${what}. Deleting the stop will hide them from the site (they stay in the database and can be restored). Delete anyway?`)) return;
+            }
             const index = stops.findIndex(s => s.id === editingStop.id);
             if (index >= 0) handleDeleteStop(index);
             setEditingStop(null);
