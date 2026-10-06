@@ -433,3 +433,19 @@ describe('JournalEntryCard save/load safety', () => {
     expect(screen.getByRole('alert')).toHaveTextContent(/couldn't load/i);
   });
 });
+
+describe('JournalEntryCard unplaced photos', () => {
+  it('shows a photo that was never placed in the text full-width after it, not as a thumbnail grid', () => {
+    const mk = (id: string) => ({ ...photo, id, storage_path: `dubrovnik/${id}.jpg`, width: 1200, height: 900 });
+    mockUseAuth.mockReturnValue({ user: null, isEditor: false });
+    mockUseStopNotes.mockReturnValue({ content: 'Intro.\n\n{{photo:a}}\n\nEnd.', loading: false, saving: false, save: vi.fn() });
+    mockUseStopPhotos.mockReturnValue({ photos: [mk('a'), mk('b'), mk('c')], loading: false, upload: vi.fn(), remove: vi.fn(), getUrl: (p: string) => `https://x.test/${p}` });
+    const { container } = render(<JournalEntryCard stop={stop} />);
+
+    expect(container.querySelector('.grid')).toBeNull();
+    // a = header photo; b and c (unplaced) render as full-width blocks with reserved size
+    const imgs = [...container.querySelectorAll('img')].filter(i => /\/(b|c)\.w1000\.jpg$/.test(i.getAttribute('src') ?? ''));
+    expect(imgs).toHaveLength(2);
+    imgs.forEach(i => { expect(i.className).toContain('w-full'); expect(i).toHaveAttribute('width', '1200'); });
+  });
+});

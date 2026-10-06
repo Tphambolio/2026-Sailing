@@ -394,6 +394,48 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
 
   const dateLine = `${formatStay(stop, isCurrent, formatDate)} · ${stop.country}`;
 
+  // One full-width photo/video block, used both for photos placed in the text and
+  // for any not placed — so a forgotten photo still reads as part of the story,
+  // never as a stray thumbnail at the bottom.
+  const renderPhotoBlock = (photo: (typeof photos)[number], key: string) => (
+      <div key={key} className="relative group my-7 -mx-5 sm:-mx-6 bg-slate-800">
+        {isVideoPath(photo.storage_path) ? (
+          <VideoFrame
+            src={getUrl(photo.storage_path)}
+            width={photo.width}
+            height={photo.height}
+            onClick={() => setLightboxId(photo.id)}
+            className="w-full h-auto max-h-[560px] object-cover cursor-zoom-in"
+          />
+        ) : (
+          <button type="button" onClick={() => setLightboxId(photo.id)} className="block w-full cursor-zoom-in" aria-label={`Open photo from ${stop.name}`}>
+            <StopImage
+              src={getUrl(photo.storage_path)}
+              alt={photo.caption || stop.name}
+              width={photo.width}
+              height={photo.height}
+              sizes="(min-width: 672px) 672px, 100vw"
+              className="w-full h-auto max-h-[560px] object-cover"
+            />
+          </button>
+        )}
+        {isVideoPath(photo.storage_path) && <PlayBadge />}
+        {photo.caption && (
+          <p className="px-5 sm:px-6 py-2 font-serif text-sm italic text-slate-400 bg-slate-900/40">{photo.caption}</p>
+        )}
+        {isEditor && (
+          <button
+            onClick={() => remove(photo)}
+            className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-black/70 rounded-full text-white"
+            title="Delete photo"
+            aria-label="Delete photo"
+          >
+            <X size={16} aria-hidden />
+          </button>
+        )}
+      </div>
+  );
+
   return (
     <article className={`rounded-2xl overflow-hidden bg-slate-800/60 ring-1 ${isCurrent ? 'ring-coral-400/70' : 'ring-slate-700/70'}`}>
       {heroPhoto && (
@@ -604,44 +646,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
                 (() => {
                   const photo = photos.find(p => p.id === block.id);
                   if (!photo || photo.id === heroPhoto?.id) return null;
-                  return (
-                    <div key={i} className="relative group my-7 -mx-5 sm:-mx-6 bg-slate-800">
-                      {isVideoPath(photo.storage_path) ? (
-                        <VideoFrame
-                          src={getUrl(photo.storage_path)}
-                          width={photo.width}
-                          height={photo.height}
-                          onClick={() => setLightboxId(photo.id)}
-                          className="w-full h-auto max-h-[560px] object-cover cursor-zoom-in"
-                        />
-                      ) : (
-                        <button type="button" onClick={() => setLightboxId(photo.id)} className="block w-full cursor-zoom-in" aria-label={`Open photo from ${stop.name}`}>
-                          <StopImage
-                            src={getUrl(photo.storage_path)}
-                            alt={photo.caption || stop.name}
-                            width={photo.width}
-                            height={photo.height}
-                            sizes="(min-width: 672px) 672px, 100vw"
-                            className="w-full h-auto max-h-[560px] object-cover"
-                          />
-                        </button>
-                      )}
-                      {isVideoPath(photo.storage_path) && <PlayBadge />}
-                      {photo.caption && (
-                        <p className="px-5 sm:px-6 py-2 font-serif text-sm italic text-slate-400 bg-slate-900/40">{photo.caption}</p>
-                      )}
-                      {isEditor && (
-                        <button
-                          onClick={() => remove(photo)}
-                          className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-black/70 rounded-full text-white"
-                          title="Delete photo"
-                          aria-label="Delete photo"
-                        >
-                          <X size={16} aria-hidden />
-                        </button>
-                      )}
-                    </div>
-                  );
+                  return renderPhotoBlock(photo, String(i));
                 })()
               )
             )}
@@ -650,42 +655,9 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
           <p className="text-sm text-slate-500 italic mt-3">{isEditor ? 'No notes for this stop.' : 'No entry yet — check back soon.'}</p>
         )}
 
-        {/* Any photos not placed inline still show up here — nothing is ever hidden */}
-        {!editing && galleryPhotos.some(p => p.id !== heroPhoto?.id) && (
-          <div className="mt-6 grid grid-cols-3 sm:grid-cols-4 gap-1">
-            {galleryPhotos.filter(p => p.id !== heroPhoto?.id).map(photo => (
-              <div key={photo.id} className="relative group aspect-square bg-slate-800 rounded overflow-hidden">
-                {isVideoPath(photo.storage_path) ? (
-                  <VideoFrame
-                    src={getUrl(photo.storage_path)}
-                    onClick={() => setLightboxId(photo.id)}
-                    className="w-full h-full object-cover rounded cursor-zoom-in"
-                  />
-                ) : (
-                  <button type="button" onClick={() => setLightboxId(photo.id)} className="block w-full h-full cursor-zoom-in" aria-label={`Open photo from ${stop.name}`}>
-                    <StopImage
-                      src={getUrl(photo.storage_path)}
-                      alt={photo.caption || stop.name}
-                      sizes="(min-width: 640px) 160px, 33vw"
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                )}
-                {isVideoPath(photo.storage_path) && <PlayBadge small />}
-                {isEditor && (
-                  <button
-                    onClick={() => remove(photo)}
-                    className="absolute top-1 right-1 w-7 h-7 flex items-center justify-center bg-black/70 rounded-full text-white"
-                    title="Delete photo"
-                    aria-label="Delete photo"
-                  >
-                    <X size={14} aria-hidden />
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+        {/* Any photos not placed in the text still show — full width after it, like
+            the rest, rather than as a thumbnail grid. Nothing is ever hidden. */}
+        {!editing && galleryPhotos.filter(p => p.id !== heroPhoto?.id).map(photo => renderPhotoBlock(photo, photo.id))}
       </div>
 
       {lightboxPhoto && (
