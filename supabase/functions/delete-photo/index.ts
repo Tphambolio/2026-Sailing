@@ -66,6 +66,15 @@ Deno.serve(async (req) => {
   const objectUrl = `${r2Endpoint}/${R2_BUCKET}/${path}`;
   const res = await aws.fetch(objectUrl, { method: "DELETE" });
 
+  // Also remove any size variants stored beside an image (<name>.w480.jpg etc.).
+  // Best-effort: a leftover variant is harmless, so it never fails the delete.
+  if (/\.(jpe?g|png|webp)$/i.test(path)) {
+    const base = path.replace(/\.[^./]+$/, "");
+    await Promise.all(["w480", "w1000"].map((v) =>
+      aws.fetch(`${r2Endpoint}/${R2_BUCKET}/${base}.${v}.jpg`, { method: "DELETE" }).catch(() => null)
+    ));
+  }
+
   if (!res.ok && res.status !== 404) {
     const detail = await res.text().catch(() => "");
     return new Response(JSON.stringify({ error: `R2 delete failed: ${res.status}${detail ? `: ${detail}` : ""}` }), {

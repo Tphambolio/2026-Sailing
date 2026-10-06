@@ -1,4 +1,5 @@
 import type { Stop } from '../types';
+import StopImage from './StopImage';
 import { useStopNotes, useStopPhotos } from '../hooks/useStopContent';
 import { useAuth } from '../context/AuthContext';
 import { parseContent, isVideoPath } from '../utils/journalContent';
@@ -50,11 +51,10 @@ export default function NotePreviewTile({ stop, onExpand }: NotePreviewTileProps
       title="Read the full entry"
     >
       {thumbPhoto && (
-        <img
+        <StopImage
           src={getUrl(thumbPhoto.storage_path)}
           alt=""
-          loading="lazy"
-          decoding="async"
+          sizes="56px"
           className="w-14 h-14 rounded object-cover shrink-0"
         />
       )}

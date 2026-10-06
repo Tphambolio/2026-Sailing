@@ -23,9 +23,9 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 // delete-photo edge functions are JWT-verified, and the actual file bytes
 // never pass through Supabase (upload PUTs straight to a presigned R2 URL),
 // so this doesn't count against Supabase's quotas either.
-export async function uploadStopPhoto(file: File, stopKey: string) {
+export async function uploadStopPhoto(file: File, stopKey: string, variants: Partial<Record<string, Blob>> = {}) {
   const { data: urlData, error: fnError } = await supabase.functions.invoke('get-upload-url', {
-    body: { stopKey, filename: file.name },
+    body: { stopKey, filename: file.name, variants: Object.keys(variants) },
   });
   if (fnError || !urlData?.uploadUrl) {
     return { path: '', error: fnError ?? new Error('No upload URL returned') };
@@ -47,6 +47,19 @@ export async function uploadStopPhoto(file: File, stopKey: string) {
   if (!putRes.ok) {
     return { path: '', error: new Error(`R2 upload failed: ${putRes.status}`) };
   }
+
+  // Size variants are an optimization: the page falls back to the original if one
+  // is missing, so a failed variant PUT never fails the upload.
+  const variantUrls: Record<string, string> = urlData.variantUploadUrls ?? {};
+  await Promise.all(Object.entries(variantUrls).map(async ([name, url]) => {
+    const blob = variants[name];
+    if (!blob) return;
+    try {
+      await fetch(url, { method: 'PUT', body: blob, headers: { 'Content-Type': 'image/jpeg' } });
+    } catch (err) {
+      console.warn(`Variant ${name} upload failed (original still fine):`, err);
+    }
+  }));
 
   return { path: urlData.path as string, error: null };
 }

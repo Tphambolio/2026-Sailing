@@ -50,3 +50,74 @@ export async function downsampleImage(file: File): Promise<File> {
     bitmap.close();
   }
 }
+
+// Width-limited JPEG copies stored next to each original as <name>.w480.jpg and
+// <name>.w1000.jpg — thumbnails/previews use w480, inline photos on phones pick
+// w1000 via srcset. Saves ~90% of bytes for grids on slow boat connections.
+export const VARIANT_WIDTHS = { w480: 480, w1000: 1000 } as const;
+export type VariantName = keyof typeof VARIANT_WIDTHS;
+
+export interface MediaInfo {
+  width: number;
+  height: number;
+  variants: Partial<Record<VariantName, Blob>>;
+}
+
+/** Points a photo URL at one of its stored size variants (images only). */
+export function variantUrl(url: string, variant: VariantName): string {
+  return url.replace(/\.(jpe?g|png|webp)$/i, `.${variant}.jpg`);
+}
+
+async function imageInfo(file: File): Promise<MediaInfo | null> {
+  let bitmap: ImageBitmap;
+  try {
+    bitmap = await createImageBitmap(file);
+  } catch {
+    return null;
+  }
+  try {
+    const { width, height } = bitmap;
+    const variants: MediaInfo['variants'] = {};
+    for (const [name, target] of Object.entries(VARIANT_WIDTHS) as [VariantName, number][]) {
+      const scale = Math.min(1, target / width);
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(width * scale));
+      canvas.height = Math.max(1, Math.round(height * scale));
+      const ctx = canvas.getContext('2d');
+      if (!ctx) continue;
+      ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.78));
+      if (blob) variants[name] = blob;
+    }
+    return { width, height, variants };
+  } finally {
+    bitmap.close();
+  }
+}
+
+function videoInfo(file: File): Promise<MediaInfo | null> {
+  return new Promise(resolve => {
+    const url = URL.createObjectURL(file);
+    const video = document.createElement('video');
+    const done = (info: MediaInfo | null) => { URL.revokeObjectURL(url); resolve(info); };
+    const timer = setTimeout(() => done(null), 8000);
+    video.preload = 'metadata';
+    video.onloadedmetadata = () => { clearTimeout(timer); done(video.videoWidth ? { width: video.videoWidth, height: video.videoHeight, variants: {} } : null); };
+    video.onerror = () => { clearTimeout(timer); done(null); };
+    video.src = url;
+  });
+}
+
+/**
+ * Dimensions (for layout-shift-free rendering) plus size variants for an upload.
+ * Best-effort: null means "upload without them", never a failed upload.
+ */
+export async function describeMedia(file: File): Promise<MediaInfo | null> {
+  try {
+    if (file.type.startsWith('video/')) return await videoInfo(file);
+    if (file.type.startsWith('image/') && file.type !== 'image/gif') return await imageInfo(file);
+  } catch {
+    /* optional optimization — fall through */
+  }
+  return null;
+}

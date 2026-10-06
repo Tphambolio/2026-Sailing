@@ -8,6 +8,7 @@ import { effectiveArrival, effectiveDeparture } from '../services/routeEngine';
 import { parseContent, isVideoPath, buildPhotoNumberMap, toShortForm, toFullForm, shortFormPhotoIds } from '../utils/journalContent';
 import { downsampleImage } from '../utils/imageResize';
 import { trimVideoToSizeLimit } from '../utils/videoTrim';
+import StopImage from './StopImage';
 import { MapPin, Landmark, Pencil, Camera, Video, Images, Share2, Flag, LogIn, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   startGooglePhotosSession,
@@ -37,8 +38,8 @@ function PlayBadge({ small }: { small?: boolean } = {}) {
 // only the first few hundred KB (a Range request), and the #t=0.1 fragment is
 // what makes iOS Safari actually paint that frame instead of a blank box.
 // Full playback happens in the lightbox.
-function VideoFrame({ src, className, onClick }: { src: string; className: string; onClick?: () => void }) {
-  return <video src={`${src}#t=0.1`} muted playsInline preload="metadata" onClick={onClick} className={className} />;
+function VideoFrame({ src, className, onClick, width, height }: { src: string; className: string; onClick?: () => void; width?: number | null; height?: number | null }) {
+  return <video src={`${src}#t=0.1`} muted playsInline preload="metadata" onClick={onClick} width={width ?? undefined} height={height ?? undefined} className={className} />;
 }
 
 function HereNowChip() {
@@ -377,11 +378,12 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
           className="relative block w-full aspect-[4/3] sm:aspect-[16/9] bg-slate-800 cursor-zoom-in"
           aria-label={`Open photo from ${stop.name}`}
         >
-          <img
+          <StopImage
             src={getUrl(heroPhoto.storage_path)}
             alt={heroPhoto.caption || stop.name}
-            loading="lazy"
-            decoding="async"
+            width={heroPhoto.width}
+            height={heroPhoto.height}
+            sizes="(min-width: 672px) 672px, 100vw"
             className="absolute inset-0 w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/25 to-transparent" />
@@ -525,7 +527,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
                       {isVideoPath(photo.storage_path) ? (
                         <VideoFrame src={getUrl(photo.storage_path)} className="w-full h-full object-cover pointer-events-none" />
                       ) : (
-                        <img src={getUrl(photo.storage_path)} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
+                        <StopImage src={getUrl(photo.storage_path)} alt="" sizes="64px" className="w-full h-full object-cover" />
                       )}
                       {isVideoPath(photo.storage_path) && (
                         <span className="absolute top-0 left-0 bg-black/70 text-white text-[9px] px-1">🎥</span>
@@ -567,17 +569,20 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
                       {isVideoPath(photo.storage_path) ? (
                         <VideoFrame
                           src={getUrl(photo.storage_path)}
+                          width={photo.width}
+                          height={photo.height}
                           onClick={() => setLightboxId(photo.id)}
-                          className="w-full max-h-[560px] object-cover cursor-zoom-in"
+                          className="w-full h-auto max-h-[560px] object-cover cursor-zoom-in"
                         />
                       ) : (
                         <button type="button" onClick={() => setLightboxId(photo.id)} className="block w-full cursor-zoom-in" aria-label={`Open photo from ${stop.name}`}>
-                          <img
+                          <StopImage
                             src={getUrl(photo.storage_path)}
                             alt={photo.caption || stop.name}
-                            loading="lazy"
-                            decoding="async"
-                            className="w-full max-h-[560px] object-cover"
+                            width={photo.width}
+                            height={photo.height}
+                            sizes="(min-width: 672px) 672px, 100vw"
+                            className="w-full h-auto max-h-[560px] object-cover"
                           />
                         </button>
                       )}
@@ -615,11 +620,10 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
                   />
                 ) : (
                   <button type="button" onClick={() => setLightboxId(photo.id)} className="block w-full h-full cursor-zoom-in" aria-label={`Open photo from ${stop.name}`}>
-                    <img
+                    <StopImage
                       src={getUrl(photo.storage_path)}
                       alt={photo.caption || stop.name}
-                      loading="lazy"
-                      decoding="async"
+                      sizes="(min-width: 640px) 160px, 33vw"
                       className="w-full h-full object-cover"
                     />
                   </button>

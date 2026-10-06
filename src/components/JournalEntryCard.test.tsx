@@ -331,8 +331,8 @@ describe('JournalEntryCard hero header and lightbox', () => {
     setupTwo();
     const { container } = render(<JournalEntryCard stop={stop} />);
     const srcs = [...container.querySelectorAll('img')].map(i => i.getAttribute('src'));
-    expect(srcs.filter(s => s?.endsWith('p1.jpg'))).toHaveLength(1);
-    expect(srcs.filter(s => s?.endsWith('p2.jpg'))).toHaveLength(1);
+    expect(srcs.filter(s => /p1(\.w1000)?\.jpg$/.test(s ?? ''))).toHaveLength(1);
+    expect(srcs.filter(s => /p2(\.w1000)?\.jpg$/.test(s ?? ''))).toHaveLength(1);
     expect(screen.getByRole('heading', { name: /dubrovnik/i })).toBeInTheDocument();
   });
 

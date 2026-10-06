@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase, uploadStopPhoto, deleteStopPhoto, getStopPhotoUrl } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import { describeMedia } from '../utils/imageResize';
 
 export interface StopPhoto {
   id: string;
@@ -9,6 +10,9 @@ export interface StopPhoto {
   caption: string | null;
   created_by: string | null;
   created_at: string;
+  // Display dimensions (post-rotation); null for rows that predate them.
+  width?: number | null;
+  height?: number | null;
 }
 
 // Public read (anyone), write gated by RLS to signed-in users only.
@@ -75,12 +79,13 @@ export function useStopPhotos(stopKey: string) {
     setUploading(true);
     setError(null);
 
-    const { path, error: uploadError } = await uploadStopPhoto(file, stopKey);
+    const info = await describeMedia(file);
+    const { path, error: uploadError } = await uploadStopPhoto(file, stopKey, info?.variants);
     if (uploadError) { setError(uploadError.message); setUploading(false); return { error: uploadError }; }
 
     const { data, error: dbError } = await supabase
       .from('sailing_stop_photos')
-      .insert({ stop_key: stopKey, storage_path: path, caption: caption || null, created_by: user.id })
+      .insert({ stop_key: stopKey, storage_path: path, caption: caption || null, created_by: user.id, width: info?.width ?? null, height: info?.height ?? null })
       .select()
       .single();
 

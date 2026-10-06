@@ -109,7 +109,9 @@ describe('NotePreviewTile', () => {
     // Decorative thumbnail — alt="" intentionally, so it's role="presentation"
     // rather than role="img"; query the DOM directly instead of by role.
     const img = container.querySelector('img');
-    expect(img).toHaveAttribute('src', 'https://example.test/dubrovnik/1.jpg');
+    // Small preview: served from the stored size variants, not the full original
+    expect(img).toHaveAttribute('src', 'https://example.test/dubrovnik/1.w1000.jpg');
+    expect(img?.getAttribute('srcset')).toContain('https://example.test/dubrovnik/1.w480.jpg 480w');
     expect(screen.getByText(/2 photos/)).toBeInTheDocument();
   });
 

@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
     });
   }
 
-  let body: { stopKey?: unknown; filename?: unknown };
+  let body: { stopKey?: unknown; filename?: unknown; variants?: unknown };
   try {
     body = await req.json();
   } catch {
@@ -76,19 +76,28 @@ Deno.serve(async (req) => {
   const ext = filename.includes(".") ? filename.split(".").pop() : "bin";
   const path = `${stopKey}/${Date.now()}.${ext}`;
 
-  const objectUrl = new URL(`${r2Endpoint}/${R2_BUCKET}/${path}`);
-  objectUrl.searchParams.set("X-Amz-Expires", "300"); // 5 minutes — just long enough for one upload
+  const presign = async (key: string) => {
+    const objectUrl = new URL(`${r2Endpoint}/${R2_BUCKET}/${key}`);
+    objectUrl.searchParams.set("X-Amz-Expires", "300"); // 5 minutes — just long enough for one upload
+    return (await aws.sign(objectUrl.toString(), { method: "PUT", aws: { signQuery: true } })).url;
+  };
+  const signed = { url: await presign(path) };
 
-  const signed = await aws.sign(objectUrl.toString(), {
-    method: "PUT",
-    aws: { signQuery: true },
-  });
+  // Optional size variants stored beside the original (<name>.w480.jpg etc.) —
+  // only the known names, so a caller can't mint URLs for arbitrary keys.
+  const base = path.replace(/\.[^./]+$/, "");
+  const requested = Array.isArray(body.variants) ? body.variants : [];
+  const variantUploadUrls: Record<string, string> = {};
+  for (const v of ["w480", "w1000"]) {
+    if (requested.includes(v)) variantUploadUrls[v] = await presign(`${base}.${v}.jpg`);
+  }
 
   return new Response(
     JSON.stringify({
       path,
       uploadUrl: signed.url,
       publicUrl: `${R2_PUBLIC_URL}/${path}`,
+      variantUploadUrls,
     }),
     { headers: { ...corsHeaders, "Content-Type": "application/json" } },
   );

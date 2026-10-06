@@ -1,6 +1,7 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { Sailboat } from 'lucide-react';
 import { getStopPhotoUrl } from '../lib/supabase';
+import StopImage from './StopImage';
 
 // Backdrop for the gate — a sunset over the Aegean from Serifos. Photos are
 // publicly readable anyway, so showing one before the password leaks nothing.
@@ -50,10 +51,13 @@ export default function PasswordGate({ children }: PasswordGateProps) {
 
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-start bg-slate-950 px-5 pt-[18vh] overflow-hidden">
-      <img
+      <StopImage
         src={getStopPhotoUrl(GATE_PHOTO)}
         alt=""
-        aria-hidden
+        width={1200}
+        height={1600}
+        sizes="100vw"
+        loading="eager"
         className="absolute inset-0 w-full h-full object-cover opacity-70"
       />
       <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/40 to-slate-950/90" aria-hidden />
