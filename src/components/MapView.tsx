@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { X, Info, Moon, Satellite, Map as MapIcon } from 'lucide-react';
@@ -7,7 +7,7 @@ import type { Stop, Phase } from '../types';
 import { DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM } from '../types';
 import { COUNTRY_COLORS, COUNTRY_FLAGS } from '../data/constants';
 import { formatDate } from '../utils/geo';
-import { effectiveArrival, formatStay, currentStopLabel } from '../services/routeEngine';
+import { effectiveArrival, formatStay, currentStopLabel, sailedTrack } from '../services/routeEngine';
 import NotePreviewTile from './NotePreviewTile';
 
 // Split out of App.tsx and lazy-loaded: Leaflet is one of the largest
@@ -59,6 +59,19 @@ function createMarkerIcon(stop: Stop, zoom: number, isCurrent: boolean = false):
 }
 
 // Map component that handles flying to selected stop
+// On first open (nothing selected), frame the trip so far instead of a fixed
+// zoomed-in default view.
+function FitToTrack({ track, skip }: { track: [number, number][]; skip: boolean }) {
+  const map = useMap();
+  const done = useRef(false);
+  useEffect(() => {
+    if (done.current || skip || track.length < 2) return;
+    done.current = true;
+    map.fitBounds(L.latLngBounds(track), { padding: [40, 40] });
+  }, [map, track, skip]);
+  return null;
+}
+
 function MapController({ selectedStop }: { selectedStop: Stop | null }) {
   const map = useMap();
   const lastFlyToId = useRef<number | null>(null);
@@ -124,6 +137,7 @@ export default function MapView({
   const [mapStyle, setMapStyle] = useState<keyof typeof TILE_LAYERS>('satellite');
   const [legendVisible, setLegendVisible] = useState(() => window.innerWidth >= 768);
   const tileLayerConfig = TILE_LAYERS;
+  const track = useMemo(() => sailedTrack(stops), [stops]);
 
   return (
     <main className="flex-1 relative">
@@ -134,6 +148,14 @@ export default function MapView({
           url={tileLayerConfig[mapStyle].url}
         />
         <MapController selectedStop={selectedStop} />
+        <FitToTrack track={track} skip={!!selectedStop} />
+        {track.length > 1 && (
+          <>
+            {/* soft halo so the line reads on satellite imagery */}
+            <Polyline positions={track} pathOptions={{ color: '#07111b', weight: 6, opacity: 0.45 }} interactive={false} />
+            <Polyline positions={track} pathOptions={{ color: '#ff9a6b', weight: 3, opacity: 0.95 }} interactive={false} />
+          </>
+        )}
         <ZoomTracker onZoomChange={setZoomLevel} />
         {stops.map(stop => (
           <Marker

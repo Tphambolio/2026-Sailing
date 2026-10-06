@@ -46,6 +46,22 @@ export function formatStay(stop: Stop, isCurrent = false, fmt: (iso: string) => 
   return departure && departure !== arrival ? `${fmt(arrival)} → ${fmt(departure)}` : fmt(arrival);
 }
 
+/**
+ * The track actually sailed: visited stops in order, following each stop's
+ * stored routeWaypoints (points between it and the next stop) so the line goes
+ * around headlands. Planned stops are pins only — the full planned route lines
+ * were removed earlier on purpose.
+ */
+export function sailedTrack(stops: Stop[]): [number, number][] {
+  const visited = stops.filter(s => s.visited);
+  const path: [number, number][] = [];
+  visited.forEach((s, i) => {
+    path.push([s.lat, s.lon]);
+    if (i < visited.length - 1 && s.routeWaypoints?.length) path.push(...s.routeWaypoints);
+  });
+  return path;
+}
+
 export interface DateRange {
   start: string;
   end: string;

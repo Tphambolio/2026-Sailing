@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { schengenDaysInRange, computeSchengenStatus, currentStopLabel, formatStay, type DateRange } from './routeEngine';
+import { schengenDaysInRange, computeSchengenStatus, currentStopLabel, formatStay, sailedTrack, type DateRange } from './routeEngine';
 import type { Stop } from '../types';
 
 function stop(overrides: Partial<Stop>): Stop {
@@ -137,5 +137,17 @@ describe('Schengen counting reflects what actually happened', () => {
     const status = computeSchengenStatus(stops, '2026-10-06');
     expect(status.usedInWindow).toBeGreaterThan(90);
     expect(status.overstayDate).toBe('2026-08-30');
+  });
+});
+
+describe('sailedTrack', () => {
+  it('connects visited stops in order through their routing waypoints, ignoring planned stops', () => {
+    const stops = [
+      stop({ key: 'a', lat: 1, lon: 1, visited: true, routeWaypoints: [[1.5, 1.5]] }),
+      stop({ key: 'b', lat: 2, lon: 2, visited: true, routeWaypoints: [[2.5, 2.5]] }),
+      stop({ key: 'c', lat: 3, lon: 3, visited: false }),
+    ];
+    // b's waypoints lead to the (unvisited) next stop, so they're not part of the sailed track
+    expect(sailedTrack(stops)).toEqual([[1, 1], [1.5, 1.5], [2, 2]]);
   });
 });
