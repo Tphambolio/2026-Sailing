@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
 
   // stopKey/filename only ever form a storage path here — reject anything
   // that could escape that path (traversal, extra segments).
-  if (/[\/\\]|\.\./.test(stopKey) || /[\/\\]|\.\./.test(filename)) {
+  if (/[/\\]|\.\./.test(stopKey) || /[/\\]|\.\./.test(filename)) {
     return new Response(JSON.stringify({ error: "Invalid stopKey or filename" }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

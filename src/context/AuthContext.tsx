@@ -81,6 +81,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// The hook lives with its provider on purpose (one import site for auth).
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {

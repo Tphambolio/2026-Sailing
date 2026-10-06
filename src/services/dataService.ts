@@ -6,7 +6,6 @@ import type { Stop, Phase, TripStats } from '../types';
 import { healRoute, computePhases, computeStats } from './routeEngine';
 import { todayISO } from '../utils/geo';
 import { supabase } from '../lib/supabase';
-import fallbackStops from '../data/stops.json';
 
 const STORAGE_KEY = 'med_odyssey_user_stops';
 // Singleton row — this app has exactly one itinerary, not one per visitor.
@@ -71,18 +70,14 @@ export async function getData(): Promise<{
   if (!rawStops) rawStops = getUserStops();
 
   const isUserEdited = !!rawStops;
-  const stops = healRoute(rawStops ? rawStops : seedVisitedFromSchedule(fallbackStops as Stop[]));
+  // The bundled default itinerary (~110KB) is only needed when there's no server
+  // or cached copy at all, so it's loaded on demand rather than shipped to everyone.
+  const base = rawStops ?? seedVisitedFromSchedule((await import('../data/stops.json')).default as Stop[]);
+  const stops = healRoute(base);
   const phases = computePhases(stops);
   const stats = computeStats(stops);
 
   return { stops, phases, stats, isUserEdited };
-}
-
-/**
- * Get the base (committed) stops without user edits
- */
-export function getBaseStops(): Stop[] {
-  return fallbackStops as Stop[];
 }
 
 /**

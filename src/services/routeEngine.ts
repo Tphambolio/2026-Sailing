@@ -277,7 +277,7 @@ export function computeStats(stops: Stop[]): TripStats {
   // Sum stay days per stop
   let totalStayDays = 0;
   let extendedStayDays = 0;
-  let schengenDaysByYear: Record<number, number> = {};
+  const schengenDaysByYear: Record<number, number> = {};
   let totalSchengenDays = 0;
 
   stops.forEach(stop => {

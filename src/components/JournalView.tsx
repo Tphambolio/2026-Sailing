@@ -38,6 +38,8 @@ export default function JournalView({ stops, currentStop, focusStop, onToggleVis
   const { isEditor } = useAuth();
   const { keys, loading, refetch } = useJournalEntryKeys();
   const [openKeys, setOpenKeys] = useState<Set<string>>(new Set());
+  // Entries the editor collapsed (cancelled an empty new entry) — beats "focused".
+  const [collapsedKeys, setCollapsedKeys] = useState<Set<string>>(new Set());
 
   // Load the Google Identity Services script as soon as the Journal tab opens,
   // well before any "Google Photos" button click — Chrome's popup blocker
@@ -72,9 +74,10 @@ export default function JournalView({ stops, currentStop, focusStop, onToggleVis
   // Clicking a stop anywhere else in the app (sidebar list, search, map pin) jumps
   // straight to its journal slot and opens it for writing — same synced stop list,
   // no separate picker needed.
+  // (Being the focused stop opens it directly — see isOpen below — so this effect
+  // only has to scroll.)
   useEffect(() => {
     if (!focusStop) return;
-    setOpenKeys(prev => (prev.has(focusStop.key) ? prev : new Set(prev).add(focusStop.key)));
     const id = `journal-${focusStop.key}`;
     const scrollToIt = () => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     // Cards above the target can still be loading photos, which shifts layout after
@@ -102,7 +105,8 @@ export default function JournalView({ stops, currentStop, focusStop, onToggleVis
           <div className="space-y-8">
             {entryStops.map(stop => {
               const isCurrent = currentStop?.key === stop.key;
-              const isOpen = isCurrent || keys.has(stop.key) || openKeys.has(stop.key);
+              const isOpen = isCurrent || keys.has(stop.key) || openKeys.has(stop.key)
+                || (focusStop?.key === stop.key && !collapsedKeys.has(stop.key));
               return (
                 <div key={stop.key} id={`journal-${stop.key}`}>
                   {isOpen ? (
@@ -118,11 +122,15 @@ export default function JournalView({ stops, currentStop, focusStop, onToggleVis
                           next.delete(stop.key);
                           return next;
                         });
+                        setCollapsedKeys(prev => new Set(prev).add(stop.key));
                         refetch();
                       }}
                     />
                   ) : (
-                    <JournalPlaceholder stop={stop} onClick={() => setOpenKeys(prev => new Set(prev).add(stop.key))} />
+                    <JournalPlaceholder stop={stop} onClick={() => {
+                      setCollapsedKeys(prev => { const next = new Set(prev); next.delete(stop.key); return next; });
+                      setOpenKeys(prev => new Set(prev).add(stop.key));
+                    }} />
                   )}
                 </div>
               );

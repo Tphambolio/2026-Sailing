@@ -15,6 +15,11 @@ export interface StopPhoto {
   height?: number | null;
 }
 
+const fetchNote = (stopKey: string) =>
+  supabase.from('sailing_stop_notes').select('content, updated_at').eq('stop_key', stopKey).maybeSingle();
+const fetchPhotos = (stopKey: string) =>
+  supabase.from('sailing_stop_photos').select('*').eq('stop_key', stopKey).order('created_at', { ascending: false });
+
 // Public read (anyone), write gated by RLS to the three editors.
 export function useStopNotes(stopKey: string) {
   const { user } = useAuth();
@@ -28,13 +33,7 @@ export function useStopNotes(stopKey: string) {
   // updated_at of the version this device loaded/saved; null = server has no row.
   const versionRef = useRef<string | null>(null);
 
-  const refetch = useCallback(async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('sailing_stop_notes')
-      .select('content, updated_at')
-      .eq('stop_key', stopKey)
-      .maybeSingle();
+  const apply = useCallback(({ data, error }: Awaited<ReturnType<typeof fetchNote>>) => {
     if (error) {
       setError(error.message);
       setLoadFailed(true);
@@ -45,9 +44,14 @@ export function useStopNotes(stopKey: string) {
       versionRef.current = data?.updated_at ?? null;
     }
     setLoading(false);
-  }, [stopKey]);
+  }, []);
+  const refetch = useCallback(async () => { setLoading(true); apply(await fetchNote(stopKey)); }, [stopKey, apply]);
 
-  useEffect(() => { refetch(); }, [refetch]);
+  useEffect(() => {
+    let ignore = false; // a late response after unmount/key change must not set state
+    fetchNote(stopKey).then(result => { if (!ignore) apply(result); });
+    return () => { ignore = true; };
+  }, [stopKey, apply]);
 
   const save = useCallback(async (newContent: string) => {
     if (!user) return { error: new Error('Not signed in') };
@@ -94,19 +98,18 @@ export function useStopPhotos(stopKey: string) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const refetch = useCallback(async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('sailing_stop_photos')
-      .select('*')
-      .eq('stop_key', stopKey)
-      .order('created_at', { ascending: false });
+  const apply = useCallback(({ data, error }: Awaited<ReturnType<typeof fetchPhotos>>) => {
     if (error) setError(error.message);
-    setPhotos(data ?? []);
+    setPhotos((data ?? []) as StopPhoto[]);
     setLoading(false);
-  }, [stopKey]);
+  }, []);
+  const refetch = useCallback(async () => { setLoading(true); apply(await fetchPhotos(stopKey)); }, [stopKey, apply]);
 
-  useEffect(() => { refetch(); }, [refetch]);
+  useEffect(() => {
+    let ignore = false;
+    fetchPhotos(stopKey).then(result => { if (!ignore) apply(result); });
+    return () => { ignore = true; };
+  }, [stopKey, apply]);
 
   const upload = useCallback(async (file: File, caption?: string) => {
     if (!user) return { error: new Error('Not signed in') };
