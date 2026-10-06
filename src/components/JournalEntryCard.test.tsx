@@ -360,3 +360,18 @@ describe('JournalEntryCard hero header and lightbox', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });
+
+describe('JournalEntryCard send link', () => {
+  it('copies a direct link to the entry for readers when there is no share sheet', async () => {
+    mockUseAuth.mockReturnValue({ user: null, isEditor: false });
+    mockUseStopNotes.mockReturnValue({ content: 'Hello.', loading: false, saving: false, save: vi.fn() });
+    mockUseStopPhotos.mockReturnValue({ photos: [], loading: false, upload: vi.fn(), remove: vi.fn(), getUrl: (p: string) => p });
+    // jsdom has no navigator.share; userEvent.setup() installs a clipboard stub we can read back.
+    const user = userEvent.setup();
+    render(<JournalEntryCard stop={stop} />);
+    await user.click(screen.getByRole('button', { name: /send link/i }));
+
+    expect(await navigator.clipboard.readText()).toMatch(/#dubrovnik$/);
+    expect(await screen.findByText(/link copied/i)).toBeInTheDocument();
+  });
+});

@@ -115,6 +115,14 @@ function App() {
         setStats(result.stats);
         setIsUserEdited(result.isUserEdited);
         setError(null);
+        // Deep link: tripjournal/#<stop-key> opens straight to that entry (the
+        // hash survives the password gate since it's the same page).
+        const linkedKey = decodeURIComponent(window.location.hash.slice(1));
+        const linked = linkedKey ? result.stops.find(s => s.key === linkedKey) : undefined;
+        if (linked) {
+          setActiveView('journal');
+          setSelectedStop(linked);
+        }
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load data');
       } finally {

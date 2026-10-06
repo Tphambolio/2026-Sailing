@@ -7,7 +7,7 @@ import type { Stop, Phase } from '../types';
 import { DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM } from '../types';
 import { COUNTRY_COLORS, COUNTRY_FLAGS } from '../data/constants';
 import { formatDate } from '../utils/geo';
-import { effectiveArrival, effectiveDeparture, currentStopLabel } from '../services/routeEngine';
+import { effectiveArrival, formatStay, currentStopLabel } from '../services/routeEngine';
 import NotePreviewTile from './NotePreviewTile';
 
 // Split out of App.tsx and lazy-loaded: Leaflet is one of the largest
@@ -196,7 +196,7 @@ export default function MapView({
               <div className="flex items-center gap-3 text-sm text-slate-300">
                 {/* Readers see the real dates only; editors also see the plan vs. actual split */}
                 {!isEditor && effectiveArrival(selectedStop) && (
-                  <span>📅 {formatDate(effectiveArrival(selectedStop))}{effectiveDeparture(selectedStop) && effectiveArrival(selectedStop) !== effectiveDeparture(selectedStop) && ` → ${formatDate(effectiveDeparture(selectedStop))}`}</span>
+                  <span>📅 {formatStay(selectedStop, currentStop?.id === selectedStop.id, formatDate)}</span>
                 )}
                 {isEditor && selectedStop.arrival && (
                   <span>📅 {formatDate(selectedStop.arrival)}{selectedStop.departure && selectedStop.arrival !== selectedStop.departure && ` → ${formatDate(selectedStop.departure)}`}</span>

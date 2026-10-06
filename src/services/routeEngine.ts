@@ -34,6 +34,18 @@ export function currentStopLabel(stop: Stop, today: string = todayISO()): 'Here 
   return daysBetween(arrived, today) <= HERE_NOW_MAX_DAYS ? 'Here now' : 'Latest stop';
 }
 
+/**
+ * "19 Sep → 22 Sep" for a stay; for the stop you're at now with no departure
+ * logged yet, an open-ended "19 Sep →" rather than the stale planned date.
+ */
+export function formatStay(stop: Stop, isCurrent = false, fmt: (iso: string) => string = (d) => d): string {
+  const arrival = effectiveArrival(stop);
+  if (!arrival) return '';
+  if (isCurrent && stop.visited && !stop.actualDeparture) return `${fmt(arrival)} →`;
+  const departure = effectiveDeparture(stop);
+  return departure && departure !== arrival ? `${fmt(arrival)} → ${fmt(departure)}` : fmt(arrival);
+}
+
 export interface DateRange {
   start: string;
   end: string;

@@ -4,12 +4,12 @@ import { useAuth } from '../context/AuthContext';
 import { useStopNotes, useStopPhotos } from '../hooks/useStopContent';
 import { COUNTRY_FLAGS } from '../data/constants';
 import { formatDate } from '../utils/geo';
-import { effectiveArrival, effectiveDeparture, currentStopLabel } from '../services/routeEngine';
+import { effectiveArrival, formatStay, currentStopLabel } from '../services/routeEngine';
 import { parseContent, isVideoPath, buildPhotoNumberMap, toShortForm, toFullForm, shortFormPhotoIds } from '../utils/journalContent';
 import { downsampleImage } from '../utils/imageResize';
 import { trimVideoToSizeLimit } from '../utils/videoTrim';
 import StopImage from './StopImage';
-import { MapPin, Landmark, Pencil, Camera, Video, Images, Share2, Flag, LogIn, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MapPin, Landmark, Pencil, Camera, Video, Images, Share2, Flag, LogIn, X, ChevronLeft, ChevronRight, Link2, Check } from 'lucide-react';
 import {
   startGooglePhotosSession,
   waitForGooglePhotosSelection,
@@ -68,6 +68,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
   const [uploadProgress, setUploadProgress] = useState<{ done: number; total: number } | null>(null);
   const [lightboxId, setLightboxId] = useState<string | null>(null);
   const [sharing, setSharing] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const [googlePickerStatus, setGooglePickerStatus] = useState<GooglePickerStatus | null>(null);
   // Set once authorization + session creation succeed. While this is set, the
   // status-row button is replaced by a real <a target="_blank"> link — the
@@ -333,6 +334,24 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
     }
   };
 
+  // A direct link to this entry (App opens #<stop-key> on load). The phone's own
+  // share sheet when available, otherwise copy to the clipboard.
+  const handleSendLink = async () => {
+    const url = `${window.location.origin}${window.location.pathname}#${encodeURIComponent(stop.key)}`;
+    try {
+      if (typeof navigator.share === 'function') {
+        await navigator.share({ title: `${stop.name} — Mediterranean Odyssey`, url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') return; // closed the share sheet
+      window.prompt('Copy this link:', url);
+    }
+  };
+
   // Escape closes the lightbox
   useEffect(() => {
     if (!lightboxId) return;
@@ -367,7 +386,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
   // The keydown listener is registered once per open; read the latest index through a ref.
   showLightboxRef.current = showLightbox;
 
-  const dateLine = `${formatDate(effectiveArrival(stop))}${effectiveDeparture(stop) && effectiveArrival(stop) !== effectiveDeparture(stop) ? ` → ${formatDate(effectiveDeparture(stop))}` : ''} · ${stop.country}`;
+  const dateLine = `${formatStay(stop, isCurrent, formatDate)} · ${stop.country}`;
 
   return (
     <article className={`rounded-2xl overflow-hidden bg-slate-800/60 ring-1 ${isCurrent ? 'ring-coral-400/70' : 'ring-slate-700/70'}`}>
@@ -485,6 +504,13 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
               {googlePickerStatus === 'waiting' ? 'Waiting for your picks…' : 'Importing…'}
             </span>
           )}
+          <button
+            onClick={handleSendLink}
+            className="inline-flex items-center gap-1 text-xs text-cyan-400 hover:text-cyan-300"
+            title="Send a link straight to this entry"
+          >
+            {linkCopied ? <><Check size={14} aria-hidden /> Link copied</> : <><Link2 size={14} aria-hidden /> Send link</>}
+          </button>
           {isEditor && <button
             onClick={handleShare}
             disabled={photos.length === 0 || sharing}

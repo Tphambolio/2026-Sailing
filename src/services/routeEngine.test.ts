@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { schengenDaysInRange, computeSchengenStatus, currentStopLabel, type DateRange } from './routeEngine';
+import { schengenDaysInRange, computeSchengenStatus, currentStopLabel, formatStay, type DateRange } from './routeEngine';
 import type { Stop } from '../types';
 
 function stop(overrides: Partial<Stop>): Stop {
@@ -102,5 +102,19 @@ describe('currentStopLabel', () => {
   });
   it('never calls a future-dated stop "Here now"', () => {
     expect(currentStopLabel({ ...base, actualArrival: '2026-11-01' }, '2026-10-06')).toBe('Latest stop');
+  });
+});
+
+describe('formatStay', () => {
+  const s = { id: 1, key: 'p', name: 'P', country: 'Greece', lat: 0, lon: 0, type: 'marina' as const, arrival: '2026-09-19', departure: '2026-09-22', duration: '3 days', distanceToNext: 0, season: 'fall' as const, phase: 'Greece', visited: true, actualArrival: '2026-09-19' };
+
+  it('is open-ended for the current stop with no departure logged (not the stale planned date)', () => {
+    expect(formatStay(s, true)).toBe('2026-09-19 →');
+  });
+  it('shows the full range once a departure is logged', () => {
+    expect(formatStay({ ...s, actualDeparture: '2026-10-08' }, true)).toBe('2026-09-19 → 2026-10-08');
+  });
+  it('shows the full range for past stops', () => {
+    expect(formatStay(s, false)).toBe('2026-09-19 → 2026-09-22');
   });
 });
