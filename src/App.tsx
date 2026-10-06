@@ -13,6 +13,7 @@ import NotesModal from './components/NotesModal';
 import NotePreviewTile from './components/NotePreviewTile';
 import JournalView from './components/JournalView';
 import { useAuth } from './context/AuthContext';
+import { BookOpen, Map as MapIcon, Menu, X, LogIn, LogOut, Sailboat, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 
 // Calculate rolling 90/180 Schengen days for each stop
 function calculateSchengenDays(stops: Stop[]): Map<number, { days: number; rolling: number; isPaused: boolean }> {
@@ -352,8 +353,9 @@ function App() {
     return (
       <div className="flex items-center justify-center h-screen bg-slate-900">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-cyan-500 mx-auto mb-4"></div>
-          <p className="text-slate-300 text-lg">Loading Mediterranean Odyssey...</p>
+          <Sailboat size={40} className="text-cyan-400 mx-auto mb-4 animate-pulse" aria-hidden />
+          <p className="font-serif text-slate-200 text-xl">Mediterranean Odyssey</p>
+          <p className="text-slate-500 text-sm mt-1">Loading the journal…</p>
         </div>
       </div>
     );
@@ -372,22 +374,21 @@ function App() {
 
   return (
     <div className="h-screen flex flex-col bg-slate-900">
-      <header className="bg-slate-800 border-b border-slate-700 px-2 md:px-4 py-2 md:py-3">
+      <header className="bg-slate-900/95 backdrop-blur border-b border-slate-800 px-2 md:px-4 py-2 md:py-2.5">
         <div className="flex items-center justify-between gap-1 md:gap-2">
           {/* Left side: Hamburger (mobile) + Logo */}
           <div className="flex items-center gap-1 md:gap-2 min-w-0">
             {/* Hamburger menu for mobile */}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 hover:bg-slate-700 rounded-lg md:hidden"
-              aria-label="Toggle menu"
+              className="w-10 h-10 flex items-center justify-center text-slate-200 hover:bg-slate-800 rounded-lg md:hidden"
+              aria-label={sidebarOpen ? 'Close stop list' : 'Open stop list'}
             >
-              {sidebarOpen ? '✕' : '☰'}
+              {sidebarOpen ? <X size={22} aria-hidden /> : <Menu size={22} aria-hidden />}
             </button>
-            <h1 className="text-base md:text-xl font-bold text-white flex items-center gap-1 md:gap-2">
-              <span className="text-xl md:text-2xl">🌊</span>
-              <span className="hidden sm:inline">Mediterranean Odyssey</span>
-              <span className="sm:hidden">Med</span>
+            <h1 className="flex items-center gap-2 text-white">
+              <Sailboat size={22} className="text-cyan-400 shrink-0" aria-hidden />
+              <span className="hidden sm:inline font-serif text-lg md:text-xl font-bold">Mediterranean Odyssey</span>
             </h1>
             {isEditor && isUserEdited && (
               <span className="hidden md:inline text-xs px-2 py-1 rounded bg-amber-600">Edited</span>
@@ -414,18 +415,22 @@ function App() {
               </div>
             )}
             {/* View Toggle - large and always labeled so it reads as a toggle, not decoration */}
-            <div className="flex items-center gap-1 bg-slate-700 rounded-lg p-1">
+            <div className="flex items-center gap-1 bg-slate-800 rounded-xl p-1" role="tablist" aria-label="View">
               <button
+                role="tab"
+                aria-selected={activeView === 'journal'}
                 onClick={() => setActiveView('journal')}
-                className={`px-2.5 py-1.5 md:px-3.5 md:py-2 rounded text-sm md:text-base font-semibold whitespace-nowrap ${activeView === 'journal' ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-600'}`}
+                className={`inline-flex items-center gap-1.5 px-3 py-2 md:px-4 rounded-lg text-sm md:text-base font-semibold whitespace-nowrap ${activeView === 'journal' ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-700'}`}
               >
-                📖 Journal
+                <BookOpen size={18} aria-hidden /> Journal
               </button>
               <button
+                role="tab"
+                aria-selected={activeView === 'map'}
                 onClick={() => setActiveView('map')}
-                className={`px-2.5 py-1.5 md:px-3.5 md:py-2 rounded text-sm md:text-base font-semibold whitespace-nowrap ${activeView === 'map' ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-600'}`}
+                className={`inline-flex items-center gap-1.5 px-3 py-2 md:px-4 rounded-lg text-sm md:text-base font-semibold whitespace-nowrap ${activeView === 'map' ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-700'}`}
               >
-                🗺️ Map
+                <MapIcon size={18} aria-hidden /> Map
               </button>
             </div>
             {/* Route edit actions */}
@@ -469,22 +474,26 @@ function App() {
             {user ? (
               <button
                 onClick={() => signOut()}
-                className="px-2 py-1 rounded text-xs text-slate-300 hover:bg-slate-700"
+                className="h-10 px-2 inline-flex items-center gap-1.5 rounded-lg text-xs text-slate-300 hover:bg-slate-800"
                 title={`Signed in as ${user.email || user.user_metadata?.name || 'you'} — click to sign out`}
+                aria-label="Sign out"
               >
-                👤<span className="hidden md:inline"> Sign out</span>
+                <LogOut size={18} aria-hidden /><span className="hidden md:inline">Sign out</span>
               </button>
             ) : (
               <button
                 onClick={() => signInWithProvider('google')}
-                className="px-2 py-1 rounded text-xs text-cyan-400 hover:bg-slate-700"
-                title="Sign in to add notes & photos"
+                className="h-10 px-2 inline-flex items-center gap-1.5 rounded-lg text-xs text-slate-400 hover:text-cyan-300 hover:bg-slate-800"
+                title="Editors: sign in to write"
+                aria-label="Sign in"
               >
-                👤<span className="hidden md:inline"> Sign in</span>
+                <LogIn size={18} aria-hidden /><span className="hidden md:inline">Sign in</span>
               </button>
             )}
             {/* Desktop sidebar toggle */}
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="hidden md:block p-2 hover:bg-slate-700 rounded-lg">{sidebarOpen ? '◀' : '▶'}</button>
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="hidden md:flex w-10 h-10 items-center justify-center text-slate-300 hover:bg-slate-800 rounded-lg" aria-label={sidebarOpen ? 'Hide stop list' : 'Show stop list'}>
+              {sidebarOpen ? <PanelLeftClose size={20} aria-hidden /> : <PanelLeftOpen size={20} aria-hidden />}
+            </button>
           </div>
         </div>
       </header>
@@ -705,15 +714,16 @@ function App() {
                     {selectedStop.provisionsUrl && <a href={selectedStop.provisionsUrl} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300">🛒 Shop</a>}
                     {isEditor && <button onClick={() => handleEditStop(selectedStop)} className="text-cyan-400 hover:text-cyan-300" title="Edit name, dates, position">✏️ Edit</button>}
                     <button onClick={() => setNotesModalStop(selectedStop)} className="text-emerald-400 hover:text-emerald-300 font-medium" title="Read or add notes & photos for this stop">{'📝'} Notes</button>
-                    <button onClick={() => setSelectedStop(null)} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white">✕</button>
+                    <button onClick={() => setSelectedStop(null)} className="w-10 h-10 -my-2 flex items-center justify-center hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white" aria-label="Close stop details"><X size={20} aria-hidden /></button>
                   </div>
                 </div>
 
                 {/* Secondary row for culture highlight and notes */}
-                {(selectedStop.cultureHighlight || selectedStop.notes) && (
+                {/* stop.notes are planning notes ("Verified via OpenStreetMap", anchorage tips) — editors only */}
+                {(selectedStop.cultureHighlight || (isEditor && selectedStop.notes)) && (
                   <div className="mt-2 text-sm text-slate-300 flex flex-wrap gap-x-4">
                     {selectedStop.cultureHighlight && <span>🏛️ {selectedStop.cultureHighlight}</span>}
-                    {selectedStop.notes && <span className="italic text-slate-400">{selectedStop.notes}</span>}
+                    {isEditor && selectedStop.notes && <span className="italic text-slate-400">{selectedStop.notes}</span>}
                   </div>
                 )}
               </div>

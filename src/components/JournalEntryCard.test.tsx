@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import JournalEntryCard from './JournalEntryCard';
 import type { Stop } from '../types';
@@ -308,5 +308,55 @@ describe('JournalEntryCard reader vs editor', () => {
     render(<JournalEntryCard stop={stop} isCurrent />);
 
     expect(screen.getByRole('textbox')).toBeInTheDocument();
+  });
+});
+
+describe('JournalEntryCard hero header and lightbox', () => {
+  const mk = (id: string) => ({ ...photo, id, storage_path: `dubrovnik/${id}.jpg` });
+
+  function setupTwo() {
+    mockUseAuth.mockReturnValue({ user: null, isEditor: false });
+    mockUseStopNotes.mockReturnValue({
+      content: 'First paragraph.\n\n{{photo:p1}}\n\nSecond paragraph.\n\n{{photo:p2}}',
+      loading: false, saving: false, save: vi.fn(),
+    });
+    // Upload order is the reverse of reading order on purpose.
+    mockUseStopPhotos.mockReturnValue({
+      photos: [mk('p2'), mk('p1')], loading: false, upload: vi.fn(), remove: vi.fn(),
+      getUrl: (p: string) => `https://example.test/${p}`,
+    });
+  }
+
+  it('promotes the first photo to the header without repeating it inline', () => {
+    setupTwo();
+    const { container } = render(<JournalEntryCard stop={stop} />);
+    const srcs = [...container.querySelectorAll('img')].map(i => i.getAttribute('src'));
+    expect(srcs.filter(s => s?.endsWith('p1.jpg'))).toHaveLength(1);
+    expect(srcs.filter(s => s?.endsWith('p2.jpg'))).toHaveLength(1);
+    expect(screen.getByRole('heading', { name: /dubrovnik/i })).toBeInTheDocument();
+  });
+
+  it('steps through photos in reading order with a counter, arrow keys and swipe', async () => {
+    setupTwo();
+    const user = userEvent.setup();
+    render(<JournalEntryCard stop={stop} />);
+
+    await user.click(screen.getAllByRole('button', { name: /open photo/i })[0]);
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toHaveTextContent('1 / 2');
+    expect(dialog.querySelector('img')?.getAttribute('src')).toMatch(/p1\.jpg$/);
+
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getByRole('dialog')).toHaveTextContent('2 / 2');
+    expect(screen.getByRole('dialog').querySelector('img')?.getAttribute('src')).toMatch(/p2\.jpg$/);
+
+    // Swipe right goes back
+    const stage = screen.getByRole('dialog').querySelector('img')!.parentElement!;
+    fireEvent.touchStart(stage, { touches: [{ clientX: 100 }] });
+    fireEvent.touchEnd(stage, { changedTouches: [{ clientX: 220 }] });
+    expect(screen.getByRole('dialog')).toHaveTextContent('1 / 2');
+
+    await user.click(screen.getByRole('button', { name: /close/i }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });

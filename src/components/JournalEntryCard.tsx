@@ -8,6 +8,7 @@ import { effectiveArrival, effectiveDeparture } from '../services/routeEngine';
 import { parseContent, isVideoPath, buildPhotoNumberMap, toShortForm, toFullForm, shortFormPhotoIds } from '../utils/journalContent';
 import { downsampleImage } from '../utils/imageResize';
 import { trimVideoToSizeLimit } from '../utils/videoTrim';
+import { MapPin, Landmark, Pencil, Camera, Video, Images, Share2, Flag, LogIn, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   startGooglePhotosSession,
   waitForGooglePhotosSelection,
@@ -40,6 +41,14 @@ function VideoFrame({ src, className, onClick }: { src: string; className: strin
   return <video src={`${src}#t=0.1`} muted playsInline preload="metadata" onClick={onClick} className={className} />;
 }
 
+function HereNowChip() {
+  return (
+    <span className="mb-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-coral-400 text-slate-950">
+      <MapPin size={12} aria-hidden /> Here now
+    </span>
+  );
+}
+
 interface JournalEntryCardProps {
   stop: Stop;
   isCurrent?: boolean;
@@ -67,6 +76,8 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const touchStartX = useRef<number | null>(null);
+  const showLightboxRef = useRef<(delta: number) => void>(() => {});
   // Guards against a rapid double-tap firing the OS file chooser twice before
   // React's disabled-button re-render catches up — a plausible cause of the
   // native picker getting stuck reopening. A ref (not state) so the check is
@@ -118,6 +129,18 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
     [displayBlocks]
   );
   const galleryPhotos = useMemo(() => photos.filter(p => !inlinePhotoIds.has(p.id)), [photos, inlinePhotoIds]);
+  // The entry's first still photo becomes a full-bleed header (stop name and dates
+  // over it) and isn't repeated further down. While editing, everything stays
+  // exactly where the author placed it, so there's no hero then.
+  const heroPhoto = useMemo(() => {
+    if (editing) return null;
+    for (const b of displayBlocks) {
+      if (b.type !== 'photo') continue;
+      const p = photos.find(x => x.id === b.id);
+      if (p && !isVideoPath(p.storage_path)) return p;
+    }
+    return galleryPhotos.find(p => !isVideoPath(p.storage_path)) ?? null;
+  }, [editing, displayBlocks, photos, galleryPhotos]);
   // Separate from inlinePhotoIds (which tracks saved `content`) so the picker reflects
   // photos just inserted into `draft` during the current edit, before Save is clicked.
   // draft is in the short {{photo N}} form (see photoNumberMapRef above), so this
@@ -312,42 +335,85 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
   // Escape closes the lightbox
   useEffect(() => {
     if (!lightboxId) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setLightboxId(null); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setLightboxId(null);
+      else if (e.key === 'ArrowRight') showLightboxRef.current(1);
+      else if (e.key === 'ArrowLeft') showLightboxRef.current(-1);
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [lightboxId]);
 
-  const lightboxIndex = lightboxId ? photos.findIndex(p => p.id === lightboxId) : -1;
-  const lightboxPhoto = lightboxIndex >= 0 ? photos[lightboxIndex] : null;
+  // Lightbox steps through photos in reading order (header photo, then inline
+  // photos as they appear, then the gallery), not upload order.
+  const readingOrder = useMemo(() => {
+    const seen = new Set<string>();
+    const ordered: typeof photos = [];
+    const add = (p: (typeof photos)[number] | undefined | null) => { if (p && !seen.has(p.id)) { seen.add(p.id); ordered.push(p); } };
+    add(heroPhoto);
+    for (const b of displayBlocks) if (b.type === 'photo') add(photos.find(p => p.id === b.id));
+    galleryPhotos.forEach(add);
+    photos.forEach(add); // anything else (e.g. while editing)
+    return ordered;
+  }, [heroPhoto, displayBlocks, photos, galleryPhotos]);
+  const lightboxIndex = lightboxId ? readingOrder.findIndex(p => p.id === lightboxId) : -1;
+  const lightboxPhoto = lightboxIndex >= 0 ? readingOrder[lightboxIndex] : null;
   const showLightbox = (delta: number) => {
-    if (lightboxIndex < 0 || photos.length === 0) return;
-    const next = (lightboxIndex + delta + photos.length) % photos.length;
-    setLightboxId(photos[next].id);
+    if (lightboxIndex < 0 || readingOrder.length === 0) return;
+    const next = (lightboxIndex + delta + readingOrder.length) % readingOrder.length;
+    setLightboxId(readingOrder[next].id);
   };
+  // The keydown listener is registered once per open; read the latest index through a ref.
+  showLightboxRef.current = showLightbox;
+
+  const dateLine = `${formatDate(effectiveArrival(stop))}${effectiveDeparture(stop) && effectiveArrival(stop) !== effectiveDeparture(stop) ? ` → ${formatDate(effectiveDeparture(stop))}` : ''} · ${stop.country}`;
 
   return (
-    <article className={`bg-slate-800 border rounded-xl overflow-hidden ${isCurrent ? 'border-amber-500' : 'border-slate-700'}`}>
-      <div className="p-5">
-        <div className="flex items-start justify-between gap-3 mb-1">
-          <div>
-            <h2 className="text-xl font-bold text-white">
-              {COUNTRY_FLAGS[stop.country] || ''} {stop.name}
+    <article className={`rounded-2xl overflow-hidden bg-slate-800/60 ring-1 ${isCurrent ? 'ring-coral-400/70' : 'ring-slate-700/70'}`}>
+      {heroPhoto && (
+        <button
+          type="button"
+          onClick={() => setLightboxId(heroPhoto.id)}
+          className="relative block w-full aspect-[4/3] sm:aspect-[16/9] bg-slate-800 cursor-zoom-in"
+          aria-label={`Open photo from ${stop.name}`}
+        >
+          <img
+            src={getUrl(heroPhoto.storage_path)}
+            alt={heroPhoto.caption || stop.name}
+            loading="lazy"
+            decoding="async"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/25 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6 text-left">
+            {isCurrent && <HereNowChip />}
+            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-white leading-tight drop-shadow">
+              {stop.name} <span className="text-2xl align-middle">{COUNTRY_FLAGS[stop.country] || ''}</span>
             </h2>
-            <p className="text-sm text-slate-400">
-              {formatDate(effectiveArrival(stop))}{effectiveDeparture(stop) && effectiveArrival(stop) !== effectiveDeparture(stop) && ` → ${formatDate(effectiveDeparture(stop))}`}
-              {' · '}{stop.country}
-            </p>
+            <p className="mt-1 text-sm text-slate-200">{dateLine}</p>
           </div>
+        </button>
+      )}
+      <div className="p-5 sm:p-6">
+        <div className="flex items-start justify-between gap-3 mb-2">
+          {!heroPhoto ? (
+            <div>
+              {isCurrent && <HereNowChip />}
+              <h2 className="font-serif text-2xl sm:text-3xl font-bold text-white leading-tight">
+                {stop.name} <span className="text-xl align-middle">{COUNTRY_FLAGS[stop.country] || ''}</span>
+              </h2>
+              <p className="mt-1 text-sm text-slate-400">{dateLine}</p>
+            </div>
+          ) : <span />}
           {isEditor && !editing && (
-            <button onClick={() => setEditing(true)} className="shrink-0 text-xs text-cyan-400 hover:text-cyan-300">✏️ Edit</button>
+            <button onClick={() => setEditing(true)} className="shrink-0 inline-flex items-center gap-1 text-xs text-cyan-400 hover:text-cyan-300">
+              <Pencil size={14} aria-hidden /> Edit
+            </button>
           )}
         </div>
 
         {/* Status row — mirrors the map's per-stop controls */}
         <div className="flex flex-wrap items-center gap-2 mb-3">
-          {isCurrent && (
-            <span className="px-2 py-0.5 rounded text-xs bg-amber-500 text-slate-900 font-semibold">📍 Here now</span>
-          )}
           {isEditor && onToggleVisited && (
             <button
               onClick={() => onToggleVisited(stop)}
@@ -357,10 +423,10 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
             </button>
           )}
           {isEditor && onLogArrival && (
-            <button onClick={() => onLogArrival(stop)} className="text-xs text-sky-400 hover:text-sky-300" title="Log today as the actual arrival date">📌 Arrived today</button>
+            <button onClick={() => onLogArrival(stop)} className="text-xs text-sky-400 hover:text-sky-300" title="Log today as the actual arrival date"><span className="inline-flex items-center gap-1"><MapPin size={14} aria-hidden /> Arrived today</span></button>
           )}
           {isEditor && onLogDeparture && (
-            <button onClick={() => onLogDeparture(stop)} className="text-xs text-sky-400 hover:text-sky-300" title="Log today as the actual departure date">🏁 Departed today</button>
+            <button onClick={() => onLogDeparture(stop)} className="text-xs text-sky-400 hover:text-sky-300" title="Log today as the actual departure date"><span className="inline-flex items-center gap-1"><Flag size={14} aria-hidden /> Departed today</span></button>
           )}
           {isEditor && (
             <button
@@ -368,7 +434,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
               disabled={!!uploadProgress}
               className="text-xs text-cyan-400 hover:text-cyan-300 disabled:text-slate-500"
             >
-              {uploadProgress ? `Uploading ${uploadProgress.done + 1}/${uploadProgress.total}…` : '📷 Add photos'}
+              {uploadProgress ? `Uploading ${uploadProgress.done + 1}/${uploadProgress.total}…` : <span className="inline-flex items-center gap-1"><Camera size={14} aria-hidden /> Add photos</span>}
             </button>
           )}
           {isEditor && (
@@ -377,7 +443,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
               disabled={!!uploadProgress}
               className="text-xs text-cyan-400 hover:text-cyan-300 disabled:text-slate-500"
             >
-              {uploadProgress ? `Uploading ${uploadProgress.done + 1}/${uploadProgress.total}…` : '🎥 Add video'}
+              {uploadProgress ? `Uploading ${uploadProgress.done + 1}/${uploadProgress.total}…` : <span className="inline-flex items-center gap-1"><Video size={14} aria-hidden /> Add video</span>}
             </button>
           )}
           {/* Separate inputs — accept="image/*,video/*" on one input can make some
@@ -398,7 +464,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
               disabled={!!googlePickerStatus || !!uploadProgress}
               className="text-xs text-cyan-400 hover:text-cyan-300 disabled:text-slate-500"
             >
-              {googlePickerStatus === 'opening' ? 'Connecting…' : '🖼️ Google Photos'}
+              {googlePickerStatus === 'opening' ? 'Connecting…' : <span className="inline-flex items-center gap-1"><Images size={14} aria-hidden /> Google Photos</span>}
             </button>
           )}
           {isEditor && googleSession && (
@@ -409,7 +475,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
               onClick={handleOpenPickerAndWait}
               className="text-xs text-cyan-400 hover:text-cyan-300 underline"
             >
-              ▶️ Click to open Google Photos
+              <span className="inline-flex items-center gap-1"><LogIn size={14} aria-hidden /> Click to open Google Photos</span>
             </a>
           )}
           {(googlePickerStatus === 'waiting' || googlePickerStatus === 'downloading') && (
@@ -423,12 +489,12 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
             className="text-xs text-pink-400 hover:text-pink-300 disabled:text-slate-500"
             title={photos.length === 0 ? 'Add a photo or video first — Instagram needs media to post' : "Share the photo(s)/video to Instagram or another app. Instagram ignores captions from other apps, so this also copies the caption to your clipboard — paste it in."}
           >
-            {sharing ? 'Preparing…' : '📲 Share'}
+            {sharing ? 'Preparing…' : <span className="inline-flex items-center gap-1"><Share2 size={14} aria-hidden /> Share</span>}
           </button>}
         </div>
 
         {stop.cultureHighlight && (
-          <p className="text-sm text-cyan-400 mb-3">🏛️ {stop.cultureHighlight}</p>
+          <p className="flex items-center gap-1.5 text-sm text-cyan-300 mb-4"><Landmark size={15} aria-hidden className="shrink-0" /> {stop.cultureHighlight}</p>
         )}
 
         {notesLoading || photosLoading ? (
@@ -486,42 +552,44 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
             </div>
           </div>
         ) : displayBlocks.length > 0 ? (
-          <div className="mt-3">
+          <div className="mt-2">
             {displayBlocks.map((block, i) =>
               block.type === 'text' ? (
                 block.text.split(/\n{2,}/).map(s => s.trim()).filter(Boolean).map((para, j) => (
-                  <p key={`${i}-${j}`} className="text-sm text-slate-200 whitespace-pre-wrap leading-relaxed mb-3 last:mb-0">{para}</p>
+                  <p key={`${i}-${j}`} className="font-serif text-[17px] sm:text-[18px] leading-[1.75] text-slate-100 whitespace-pre-wrap mb-5 last:mb-0">{para}</p>
                 ))
               ) : (
                 (() => {
                   const photo = photos.find(p => p.id === block.id);
-                  if (!photo) return null;
+                  if (!photo || photo.id === heroPhoto?.id) return null;
                   return (
-                    <div key={i} className="relative group my-4 -mx-5">
+                    <div key={i} className="relative group my-7 -mx-5 sm:-mx-6 bg-slate-800">
                       {isVideoPath(photo.storage_path) ? (
                         <VideoFrame
                           src={getUrl(photo.storage_path)}
                           onClick={() => setLightboxId(photo.id)}
-                          className="w-full max-h-[520px] object-cover cursor-zoom-in"
+                          className="w-full max-h-[560px] object-cover cursor-zoom-in"
                         />
                       ) : (
-                        <img
-                          src={getUrl(photo.storage_path)}
-                          alt={photo.caption || stop.name}
-                          loading="lazy"
-                          decoding="async"
-                          onClick={() => setLightboxId(photo.id)}
-                          className="w-full max-h-[520px] object-cover cursor-zoom-in"
-                        />
+                        <button type="button" onClick={() => setLightboxId(photo.id)} className="block w-full cursor-zoom-in" aria-label={`Open photo from ${stop.name}`}>
+                          <img
+                            src={getUrl(photo.storage_path)}
+                            alt={photo.caption || stop.name}
+                            loading="lazy"
+                            decoding="async"
+                            className="w-full max-h-[560px] object-cover"
+                          />
+                        </button>
                       )}
                       {isVideoPath(photo.storage_path) && <PlayBadge />}
                       {isEditor && (
                         <button
                           onClick={() => remove(photo)}
-                          className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center bg-black/70 rounded-full text-white text-xs transition-opacity"
+                          className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-black/70 rounded-full text-white"
                           title="Delete photo"
+                          aria-label="Delete photo"
                         >
-                          ✕
+                          <X size={16} aria-hidden />
                         </button>
                       )}
                     </div>
@@ -535,10 +603,10 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
         )}
 
         {/* Any photos not placed inline still show up here — nothing is ever hidden */}
-        {!editing && galleryPhotos.length > 0 && (
-          <div className="mt-4 grid grid-cols-3 sm:grid-cols-4 gap-1">
-            {galleryPhotos.map(photo => (
-              <div key={photo.id} className="relative group aspect-square">
+        {!editing && galleryPhotos.some(p => p.id !== heroPhoto?.id) && (
+          <div className="mt-6 grid grid-cols-3 sm:grid-cols-4 gap-1">
+            {galleryPhotos.filter(p => p.id !== heroPhoto?.id).map(photo => (
+              <div key={photo.id} className="relative group aspect-square bg-slate-800 rounded overflow-hidden">
                 {isVideoPath(photo.storage_path) ? (
                   <VideoFrame
                     src={getUrl(photo.storage_path)}
@@ -546,23 +614,25 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
                     className="w-full h-full object-cover rounded cursor-zoom-in"
                   />
                 ) : (
-                  <img
-                    src={getUrl(photo.storage_path)}
-                    alt={photo.caption || stop.name}
-                    loading="lazy"
-                    decoding="async"
-                    onClick={() => setLightboxId(photo.id)}
-                    className="w-full h-full object-cover rounded cursor-zoom-in"
-                  />
+                  <button type="button" onClick={() => setLightboxId(photo.id)} className="block w-full h-full cursor-zoom-in" aria-label={`Open photo from ${stop.name}`}>
+                    <img
+                      src={getUrl(photo.storage_path)}
+                      alt={photo.caption || stop.name}
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
                 )}
                 {isVideoPath(photo.storage_path) && <PlayBadge small />}
                 {isEditor && (
                   <button
                     onClick={() => remove(photo)}
-                    className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center bg-black/70 rounded-full text-white text-xs transition-opacity"
+                    className="absolute top-1 right-1 w-7 h-7 flex items-center justify-center bg-black/70 rounded-full text-white"
                     title="Delete photo"
+                    aria-label="Delete photo"
                   >
-                    ✕
+                    <X size={14} aria-hidden />
                   </button>
                 )}
               </div>
@@ -573,41 +643,73 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
 
       {lightboxPhoto && (
         <div
-          className="fixed inset-0 z-[2000] bg-black/90 flex items-center justify-center"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Photos from ${stop.name}`}
+          className="fixed inset-0 z-[2000] bg-black flex flex-col"
           onClick={() => setLightboxId(null)}
         >
-          <button
-            onClick={() => setLightboxId(null)}
-            className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full text-white"
-          >✕</button>
-          {photos.length > 1 && (
+          <div className="flex items-center justify-between px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-2 text-sm text-slate-300" onClick={(e) => e.stopPropagation()}>
+            <span>{photos.length > 1 ? `${lightboxIndex + 1} / ${photos.length}` : ''}</span>
             <button
-              onClick={(e) => { e.stopPropagation(); showLightbox(-1); }}
-              className="absolute left-4 w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full text-white text-xl"
-            >‹</button>
-          )}
-          {isVideoPath(lightboxPhoto.storage_path) ? (
-            <video
-              src={getUrl(lightboxPhoto.storage_path)}
-              controls
-              autoPlay
-              playsInline
-              onClick={(e) => e.stopPropagation()}
-              className="max-h-[90vh] max-w-[90vw] object-contain rounded"
-            />
-          ) : (
-            <img
-              src={getUrl(lightboxPhoto.storage_path)}
-              alt={lightboxPhoto.caption || stop.name}
-              onClick={(e) => e.stopPropagation()}
-              className="max-h-[90vh] max-w-[90vw] object-contain rounded"
-            />
+              onClick={() => setLightboxId(null)}
+              className="w-11 h-11 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full text-white"
+              aria-label="Close"
+            >
+              <X size={22} aria-hidden />
+            </button>
+          </div>
+          <div
+            className="flex-1 min-h-0 flex items-center justify-center px-2"
+            onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+            onTouchEnd={(e) => {
+              const start = touchStartX.current;
+              touchStartX.current = null;
+              if (start === null || photos.length < 2) return;
+              const dx = e.changedTouches[0].clientX - start;
+              if (Math.abs(dx) > 50) showLightbox(dx < 0 ? 1 : -1);
+            }}
+          >
+            {isVideoPath(lightboxPhoto.storage_path) ? (
+              <video
+                key={lightboxPhoto.id}
+                src={getUrl(lightboxPhoto.storage_path)}
+                controls
+                autoPlay
+                playsInline
+                onClick={(e) => e.stopPropagation()}
+                className="max-h-full max-w-full object-contain"
+              />
+            ) : (
+              <img
+                key={lightboxPhoto.id}
+                src={getUrl(lightboxPhoto.storage_path)}
+                alt={lightboxPhoto.caption || stop.name}
+                onClick={(e) => e.stopPropagation()}
+                className="max-h-full max-w-full object-contain"
+              />
+            )}
+          </div>
+          {lightboxPhoto.caption && (
+            <p className="px-6 pt-3 text-center text-sm text-slate-300" onClick={(e) => e.stopPropagation()}>{lightboxPhoto.caption}</p>
           )}
           {photos.length > 1 && (
-            <button
-              onClick={(e) => { e.stopPropagation(); showLightbox(1); }}
-              className="absolute right-4 w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full text-white text-xl"
-            >›</button>
+            <div className="flex items-center justify-center gap-8 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]" onClick={(e) => e.stopPropagation()}>
+              <button
+                onClick={() => showLightbox(-1)}
+                className="w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full text-white"
+                aria-label="Previous photo"
+              >
+                <ChevronLeft size={26} aria-hidden />
+              </button>
+              <button
+                onClick={() => showLightbox(1)}
+                className="w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full text-white"
+                aria-label="Next photo"
+              >
+                <ChevronRight size={26} aria-hidden />
+              </button>
+            </div>
           )}
         </div>
       )}

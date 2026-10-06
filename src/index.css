@@ -2,15 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Dark theme base styles */
-:root {
-  --color-bg-primary: #0f172a;
-  --color-bg-secondary: #1e293b;
-  --color-bg-tertiary: #334155;
-  --color-text-primary: #f1f5f9;
-  --color-text-secondary: #94a3b8;
-  --color-accent: #06b6d4;
-}
 
 html {
   @apply scroll-smooth;
@@ -130,6 +121,15 @@ body {
 
 .current-stop-marker {
   animation: current-stop-pulse 1.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .current-stop-marker,
+  .animate-fade-in,
+  .animate-slide-up,
+  .animate-slide-left {
+    animation: none;
+  }
 }
 
 /* Distance measure cursor */

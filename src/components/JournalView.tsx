@@ -21,7 +21,7 @@ function JournalPlaceholder({ stop, onClick }: { stop: Stop; onClick: () => void
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-3 px-4 py-3 bg-slate-800/40 hover:bg-slate-800 border border-slate-700/50 hover:border-cyan-600 rounded-lg text-left transition-colors"
+      className="w-full flex items-center gap-3 px-4 py-3 bg-slate-800/40 hover:bg-slate-800 ring-1 ring-slate-700/60 hover:ring-cyan-600 rounded-xl text-left transition-colors"
     >
       <span className="text-lg shrink-0">{COUNTRY_FLAGS[stop.country] || ''}</span>
       <div className="flex-1 min-w-0">
@@ -85,9 +85,10 @@ export default function JournalView({ stops, currentStop, focusStop, onToggleVis
 
   return (
     <div className="flex-1 overflow-y-auto bg-slate-900">
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold text-white mb-1">📖 Trip Journal</h1>
+      <div className="max-w-2xl mx-auto px-3 sm:px-4 py-8 sm:py-12">
+        <div className="mb-10 text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400 mb-2">Sveti Ivan · 2026–27</p>
+          <h1 className="font-serif text-3xl sm:text-4xl font-bold text-white mb-2">The Journal</h1>
           <p className="text-sm text-slate-400">Notes and photos from along the way</p>
         </div>
 
@@ -98,7 +99,7 @@ export default function JournalView({ stops, currentStop, focusStop, onToggleVis
             <p>No journal entries yet.</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-8">
             {entryStops.map(stop => {
               const isCurrent = currentStop?.key === stop.key;
               const isOpen = isCurrent || keys.has(stop.key) || openKeys.has(stop.key);

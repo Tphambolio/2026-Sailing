@@ -1,4 +1,10 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
+import { Sailboat } from 'lucide-react';
+import { getStopPhotoUrl } from '../lib/supabase';
+
+// Backdrop for the gate — a sunset over the Aegean from Serifos. Photos are
+// publicly readable anyway, so showing one before the password leaks nothing.
+const GATE_PHOTO = 'serifos-day-2/1791222577949.jpg';
 
 const STORAGE_KEY = 'site-unlocked-hash';
 
@@ -43,29 +49,42 @@ export default function PasswordGate({ children }: PasswordGateProps) {
   };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-slate-900 px-4">
-      <form onSubmit={handleSubmit} className="bg-slate-800 border border-slate-700 rounded-lg p-6 w-full max-w-sm">
-        <h1 className="text-white text-lg font-bold mb-1 flex items-center gap-2">
-          <span className="text-xl">🌊</span> Mediterranean Odyssey
-        </h1>
-        <p className="text-slate-400 text-sm mb-4">This trip journal is password-protected.</p>
-        <input
-          type="password"
-          value={input}
-          onChange={(e) => { setInput(e.target.value); setError(false); }}
-          placeholder="Password"
-          autoFocus
-          className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 mb-2"
-        />
-        {error && <p className="text-red-400 text-xs mb-2">Incorrect password.</p>}
-        <button
-          type="submit"
-          disabled={!input || checking}
-          className="w-full px-4 py-2 bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-600 disabled:text-slate-400 disabled:cursor-not-allowed rounded-lg text-white text-sm font-medium"
-        >
-          Enter
-        </button>
-      </form>
+    <div className="relative min-h-screen flex flex-col items-center justify-start bg-slate-950 px-5 pt-[18vh] overflow-hidden">
+      <img
+        src={getStopPhotoUrl(GATE_PHOTO)}
+        alt=""
+        aria-hidden
+        className="absolute inset-0 w-full h-full object-cover opacity-70"
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/40 to-slate-950/90" aria-hidden />
+
+      <div className="relative w-full max-w-sm text-center">
+        <Sailboat size={34} className="mx-auto mb-3 text-coral-300" aria-hidden />
+        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-coral-300 mb-2">Sveti Ivan · 2026–27</p>
+        <h1 className="font-serif text-4xl font-bold text-white leading-tight drop-shadow">Mediterranean Odyssey</h1>
+        <p className="mt-2 mb-8 text-slate-200">A family sailing journal</p>
+
+        <form onSubmit={handleSubmit} className="text-left">
+          <label htmlFor="site-password" className="sr-only">Password</label>
+          <input
+            id="site-password"
+            type="password"
+            value={input}
+            onChange={(e) => { setInput(e.target.value); setError(false); }}
+            placeholder="Password"
+            autoFocus
+            className="w-full bg-slate-900/70 backdrop-blur border border-slate-500/60 rounded-xl px-4 py-3 text-base text-white placeholder-slate-400 focus:outline-none focus:border-cyan-400 mb-3"
+          />
+          {error && <p className="text-coral-300 text-sm mb-3" role="alert">Incorrect password.</p>}
+          <button
+            type="submit"
+            disabled={!input || checking}
+            className="w-full px-4 py-3 bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-700/80 disabled:text-slate-400 disabled:cursor-not-allowed rounded-xl text-white text-base font-semibold"
+          >
+            Enter
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
