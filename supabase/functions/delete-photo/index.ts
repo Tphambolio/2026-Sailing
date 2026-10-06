@@ -1,4 +1,5 @@
-// Deletes a photo object from Cloudflare R2 on the user's behalf.
+// Deletes a photo from Cloudflare R2 on the user's behalf — by moving the
+// original to trash/ (restorable) and removing its size variants.
 //
 // The browser can't hold the R2 secret key, so deletes are proxied through
 // here (server-to-server, no presigning needed — this function just signs
@@ -64,6 +65,22 @@ Deno.serve(async (req) => {
   }
 
   const objectUrl = `${r2Endpoint}/${R2_BUCKET}/${path}`;
+
+  // Loss-proofing: move the original to trash/ instead of erasing it, so a
+  // mis-tapped ✕ can be undone (the DB row is archived by a trigger too).
+  // Only erase once the copy has succeeded; 404 means it's already gone.
+  const copy = await aws.fetch(`${r2Endpoint}/${R2_BUCKET}/trash/${path}`, {
+    method: "PUT",
+    headers: { "x-amz-copy-source": `/${R2_BUCKET}/${encodeURI(path)}` },
+  });
+  if (!copy.ok && copy.status !== 404) {
+    const detail = await copy.text().catch(() => "");
+    return new Response(JSON.stringify({ error: `Could not move photo to trash (${copy.status}); nothing was deleted.${detail ? ` ${detail}` : ""}` }), {
+      status: 502,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   const res = await aws.fetch(objectUrl, { method: "DELETE" });
 
   // Also remove any size variants stored beside an image (<name>.w480.jpg etc.).

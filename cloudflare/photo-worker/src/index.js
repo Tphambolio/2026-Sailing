@@ -15,8 +15,8 @@ export default {
     }
 
     const key = decodeURIComponent(new URL(request.url).pathname.slice(1));
-    // backups/ holds nightly journal/itinerary exports — never served publicly.
-    if (!key || key.includes("..") || key.startsWith("backups/")) return new Response("Not found", { status: 404, headers: CORS });
+    // backups/ (nightly exports) and trash/ (deleted photos) are never served publicly.
+    if (!key || key.includes("..") || key.startsWith("backups/") || key.startsWith("trash/")) return new Response("Not found", { status: 404, headers: CORS });
 
     const object = await env.BUCKET.get(key, { range: request.headers, onlyIf: request.headers });
     if (object === null) return new Response("Not found", { status: 404, headers: CORS });
