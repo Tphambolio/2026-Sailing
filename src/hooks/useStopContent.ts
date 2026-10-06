@@ -104,5 +104,18 @@ export function useStopPhotos(stopKey: string) {
     return { error: null };
   }, []);
 
-  return { photos, loading, uploading, error, upload, remove, getUrl: getStopPhotoUrl, refetch };
+  const setCaption = useCallback(async (photo: StopPhoto, caption: string) => {
+    const value = caption.trim() || null;
+    const { data, error: dbError } = await supabase
+      .from('sailing_stop_photos')
+      .update({ caption: value })
+      .eq('id', photo.id)
+      .select()
+      .single();
+    if (dbError) { setError(dbError.message); return { error: dbError }; }
+    setPhotos(prev => prev.map(p => (p.id === photo.id ? { ...p, ...data } : p)));
+    return { error: null };
+  }, []);
+
+  return { photos, loading, uploading, error, upload, remove, setCaption, getUrl: getStopPhotoUrl, refetch };
 }

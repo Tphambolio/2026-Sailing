@@ -375,3 +375,32 @@ describe('JournalEntryCard send link', () => {
     expect(await screen.findByText(/link copied/i)).toBeInTheDocument();
   });
 });
+
+describe('JournalEntryCard captions', () => {
+  const capPhoto = (id: string, caption: string | null) => ({ ...photo, id, storage_path: `dubrovnik/${id}.jpg`, caption });
+
+  it('shows captions under inline photos for readers', () => {
+    mockUseAuth.mockReturnValue({ user: null, isEditor: false });
+    mockUseStopNotes.mockReturnValue({ content: 'Intro.\n\n{{photo:a}}\n\nMore.\n\n{{photo:b}}', loading: false, saving: false, save: vi.fn() });
+    mockUseStopPhotos.mockReturnValue({ photos: [capPhoto('a', null), capPhoto('b', 'Viv and the dolphins')], loading: false, upload: vi.fn(), remove: vi.fn(), setCaption: vi.fn(), getUrl: (p: string) => p });
+    render(<JournalEntryCard stop={stop} />);
+    expect(screen.getByText('Viv and the dolphins')).toBeInTheDocument();
+  });
+
+  it('lets an editor save a caption from the photo viewer without arrow keys flipping photos', async () => {
+    const setCaption = vi.fn().mockResolvedValue({ error: null });
+    mockUseAuth.mockReturnValue({ user: { id: 'user-1' }, isEditor: true });
+    mockUseStopNotes.mockReturnValue({ content: 'Intro.\n\n{{photo:a}}\n\nMore.\n\n{{photo:b}}', loading: false, saving: false, save: vi.fn() });
+    mockUseStopPhotos.mockReturnValue({ photos: [capPhoto('a', null), capPhoto('b', null)], loading: false, upload: vi.fn(), remove: vi.fn(), setCaption, getUrl: (p: string) => p });
+    const user = userEvent.setup();
+    render(<JournalEntryCard stop={stop} />);
+
+    await user.click(screen.getAllByRole('button', { name: /open photo/i })[0]);
+    const input = screen.getByRole('textbox', { name: /caption/i });
+    await user.type(input, 'Sunrise{ArrowRight}');
+    expect(screen.getByRole('dialog')).toHaveTextContent('1 / 2');
+    await user.click(screen.getByRole('button', { name: /^save$/i }));
+
+    expect(setCaption).toHaveBeenCalledWith(expect.objectContaining({ id: 'a' }), 'Sunrise');
+  });
+});

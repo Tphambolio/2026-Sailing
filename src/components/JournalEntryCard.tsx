@@ -62,7 +62,7 @@ interface JournalEntryCardProps {
 export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onLogArrival, onLogDeparture, onEmptyAndCancelled }: JournalEntryCardProps) {
   const { isEditor } = useAuth();
   const { content, loading: notesLoading, saving, save } = useStopNotes(stop.key);
-  const { photos, loading: photosLoading, upload, remove, getUrl } = useStopPhotos(stop.key);
+  const { photos, loading: photosLoading, upload, remove, setCaption, getUrl } = useStopPhotos(stop.key);
   const [draft, setDraft] = useState('');
   const [editing, setEditing] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{ done: number; total: number } | null>(null);
@@ -357,6 +357,8 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
     if (!lightboxId) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setLightboxId(null);
+      // Don't flip photos while the editor is typing a caption
+      else if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       else if (e.key === 'ArrowRight') showLightboxRef.current(1);
       else if (e.key === 'ArrowLeft') showLightboxRef.current(-1);
     };
@@ -613,6 +615,9 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
                         </button>
                       )}
                       {isVideoPath(photo.storage_path) && <PlayBadge />}
+                      {photo.caption && (
+                        <p className="px-5 sm:px-6 py-2 font-serif text-sm italic text-slate-400 bg-slate-900/40">{photo.caption}</p>
+                      )}
                       {isEditor && (
                         <button
                           onClick={() => remove(photo)}
@@ -720,8 +725,30 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
               />
             )}
           </div>
-          {lightboxPhoto.caption && (
-            <p className="px-6 pt-3 text-center text-sm text-slate-300" onClick={(e) => e.stopPropagation()}>{lightboxPhoto.caption}</p>
+          {isEditor ? (
+            <form
+              key={lightboxPhoto.id}
+              className="px-4 pt-3 flex gap-2 max-w-xl w-full mx-auto"
+              onClick={(e) => e.stopPropagation()}
+              onSubmit={(e) => {
+                e.preventDefault();
+                const input = (e.currentTarget.elements.namedItem('caption') as HTMLInputElement);
+                setCaption(lightboxPhoto, input.value).then(() => input.blur());
+              }}
+            >
+              <label htmlFor={`caption-${lightboxPhoto.id}`} className="sr-only">Caption</label>
+              <input
+                id={`caption-${lightboxPhoto.id}`}
+                name="caption"
+                defaultValue={lightboxPhoto.caption ?? ''}
+                placeholder="Add a caption…"
+                maxLength={200}
+                className="flex-1 bg-white/10 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-cyan-400"
+              />
+              <button type="submit" className="px-3 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-sm text-white">Save</button>
+            </form>
+          ) : lightboxPhoto.caption && (
+            <p className="px-6 pt-3 text-center text-sm text-slate-300 font-serif italic" onClick={(e) => e.stopPropagation()}>{lightboxPhoto.caption}</p>
           )}
           {photos.length > 1 && (
             <div className="flex items-center justify-center gap-8 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]" onClick={(e) => e.stopPropagation()}>
