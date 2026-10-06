@@ -15,7 +15,14 @@ const { mockSelect, mockMaybeSingle, mockUpsert, mockDeleteEq, mockGetUser, mock
 
 vi.mock('../lib/supabase', () => ({
   supabase: {
-    auth: { getUser: mockGetUser },
+    // saveNow uses getSession() (no network); derive it from the same mock.
+    auth: {
+      getUser: mockGetUser,
+      getSession: async () => {
+        const r = await mockGetUser();
+        return { data: { session: r?.data?.user ? { user: r.data.user } : null } };
+      },
+    },
     from: vi.fn(() => ({
       select: mockSelect,
       upsert: mockUpsert,
@@ -107,26 +114,25 @@ describe('dataService', () => {
       expect(mockUpsert.mock.calls[0][0]).toMatchObject({ id: 1, stops, updated_by: 'user-1' });
     });
 
-    it('still caches locally even when not signed in, without attempting the Supabase write', async () => {
+    it('does not attempt the Supabase write when not signed in', async () => {
       mockGetUser.mockResolvedValue({ data: { user: null } });
       const { getData, saveUserStops } = await import('./dataService');
       await getData();
       const stops = [stubStop()];
 
-      await saveUserStops(stops);
-
-      expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!)).toEqual(stops);
+      expect(await saveUserStops(stops)).toEqual({ status: 'local-only' });
       expect(mockUpsert).not.toHaveBeenCalled();
     });
 
-    it('keeps the local cache even if the Supabase write fails', async () => {
+    it('keeps a failed (offline) save on this device as a pending change, not as the confirmed copy', async () => {
       mockUpsert.mockResolvedValue({ error: new Error('RLS rejected') });
       const { getData, saveUserStops } = await import('./dataService');
       await getData();
       const stops = [stubStop()];
 
       await expect(saveUserStops(stops)).resolves.toEqual({ status: 'local-only' });
-      expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!)).toEqual(stops);
+      expect(JSON.parse(localStorage.getItem('med_odyssey_pending_stops')!).stops).toEqual(stops);
+      expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
     });
   });
 
@@ -186,5 +192,57 @@ describe('saveUserStops conflict protection', () => {
     const { getData } = await import('./dataService');
     await getData();
     expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!)[0].key).toBe('test-stop');
+  });
+});
+
+describe('itinerary conflict + offline safety', () => {
+  function updateReturns(result: { data: unknown; error: unknown }) {
+    const eq2 = vi.fn(() => ({ select: vi.fn().mockResolvedValue(result) }));
+    mockUpdate.mockReturnValue({ eq: vi.fn(() => ({ eq: eq2 })) });
+    return eq2;
+  }
+  beforeEach(() => {
+    vi.resetModules();
+    localStorage.clear();
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } });
+    mockSelect.mockReturnValue({ eq: vi.fn(() => ({ maybeSingle: mockMaybeSingle })) });
+    mockMaybeSingle.mockResolvedValue({ data: { stops: [stubStop()], updated_at: 'v1' }, error: null });
+  });
+
+  it('refuses every save queued behind a conflict until the itinerary is reloaded', async () => {
+    const eqVersion = updateReturns({ data: [], error: null }); // first save: conflict
+    const { getData, saveUserStops, reloadData } = await import('./dataService');
+    await getData();
+
+    const first = saveUserStops([stubStop({ name: 'mine 1' })]);
+    const second = saveUserStops([stubStop({ name: 'mine 2' })]);
+    expect(await first).toEqual({ status: 'conflict' });
+    expect(await second).toEqual({ status: 'conflict' });
+    expect(eqVersion).toHaveBeenCalledTimes(1); // the queued one never wrote
+
+    mockMaybeSingle.mockResolvedValue({ data: { stops: [stubStop()], updated_at: 'v2' }, error: null });
+    await reloadData();
+    updateReturns({ data: [{ updated_at: 'v3' }], error: null });
+    expect(await saveUserStops([stubStop()])).toEqual({ status: 'saved' });
+  });
+
+  it('shows and re-syncs offline changes on the next load when nobody else edited meanwhile', async () => {
+    localStorage.setItem('med_odyssey_pending_stops', JSON.stringify({ stops: [stubStop({ key: 'offline-edit' })], baseVersion: 'v1' }));
+    const { getData, syncPendingStops } = await import('./dataService');
+    const loaded = await getData();
+    expect(loaded.hasPending).toBe(true);
+    expect(loaded.stops[0].key).toBe('offline-edit');
+
+    updateReturns({ data: [{ updated_at: 'v2' }], error: null });
+    expect(await syncPendingStops()).toEqual({ status: 'saved' });
+    expect(localStorage.getItem('med_odyssey_pending_stops')).toBeNull();
+  });
+
+  it('drops offline changes (and says so) if someone else edited the itinerary meanwhile', async () => {
+    localStorage.setItem('med_odyssey_pending_stops', JSON.stringify({ stops: [stubStop({ key: 'offline-edit' })], baseVersion: 'v0' }));
+    const { getData } = await import('./dataService');
+    const loaded = await getData();
+    expect(loaded.droppedOfflineChanges).toBe(true);
+    expect(loaded.stops[0].key).toBe('test-stop');
   });
 });

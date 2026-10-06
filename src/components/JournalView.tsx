@@ -43,6 +43,15 @@ export default function JournalView({ stops, currentStop, focusStop, onToggleVis
   const [openKeys, setOpenKeys] = useState<Set<string>>(new Set());
   // Entries the editor collapsed (cancelled an empty new entry) — beats "focused".
   const [collapsedKeys, setCollapsedKeys] = useState<Set<string>>(new Set());
+  // A focused entry (sidebar, map, Photos tab, deep link) stays open after focus
+  // moves on — unmounting it would throw away an unsaved draft. Adjusting state
+  // while rendering, on a focus change (React's "store previous props" pattern).
+  const focusKey = focusStop?.key;
+  const [prevFocusKey, setPrevFocusKey] = useState<string | undefined>(undefined);
+  if (focusKey !== prevFocusKey) {
+    setPrevFocusKey(focusKey);
+    if (focusKey) setOpenKeys(prev => (prev.has(focusKey) ? prev : new Set(prev).add(focusKey)));
+  }
 
   // Load the Google Identity Services script as soon as the Journal tab opens,
   // well before any "Google Photos" button click — Chrome's popup blocker
@@ -80,16 +89,16 @@ export default function JournalView({ stops, currentStop, focusStop, onToggleVis
   // (Being the focused stop opens it directly — see isOpen below — so this effect
   // only has to scroll.)
   useEffect(() => {
-    if (!focusStop) return;
-    const id = `journal-${focusStop.key}`;
+    if (!focusKey || loading) return; // wait until the entry list exists to scroll to
+    const id = `journal-${focusKey}`;
     // Instant, not smooth: a smooth scroll sweeps past every lazy placeholder on
     // the way, mounting each one and shifting the target mid-scroll.
     const scrollToIt = () => document.getElementById(id)?.scrollIntoView({ block: 'start' });
     // Cards above the target can still be loading photos, which shifts layout after
     // the first scroll fires — re-correct once things have had time to settle.
-    const timers = [100, 500, 1200].map(ms => setTimeout(scrollToIt, ms));
+    const timers = [100, 500, 1200, 2500].map(ms => setTimeout(scrollToIt, ms));
     return () => timers.forEach(clearTimeout);
-  }, [focusStop]);
+  }, [focusKey, loading]);
 
   return (
     <div className="flex-1 overflow-y-auto bg-slate-900">

@@ -62,7 +62,7 @@ interface JournalEntryCardProps {
 export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onLogArrival, onLogDeparture, onEmptyAndCancelled }: JournalEntryCardProps) {
   const { isEditor } = useAuth();
   const { content, loading: notesLoading, saving, save, error: notesError, loadFailed, refetch: refetchNotes } = useStopNotes(stop.key);
-  const { photos, loading: photosLoading, upload, remove, setCaption, getUrl } = useStopPhotos(stop.key);
+  const { photos, loading: photosLoading, upload, remove, setCaption, getUrl, error: photosError } = useStopPhotos(stop.key);
   const [draft, setDraft] = useState('');
   const [editing, setEditing] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{ done: number; total: number } | null>(null);
@@ -712,12 +712,13 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
           {isEditor ? (
             <form
               key={lightboxPhoto.id}
-              className="px-4 pt-3 flex gap-2 max-w-xl w-full mx-auto"
+              className="px-4 pt-3 flex flex-wrap gap-2 max-w-xl w-full mx-auto"
               onClick={(e) => e.stopPropagation()}
               onSubmit={(e) => {
                 e.preventDefault();
                 const input = (e.currentTarget.elements.namedItem('caption') as HTMLInputElement);
-                setCaption(lightboxPhoto, input.value).then(() => input.blur());
+                // On failure keep the text and focus in the field (the error shows below).
+                setCaption(lightboxPhoto, input.value).then(r => { if (!r?.error) input.blur(); });
               }}
             >
               <label htmlFor={`caption-${lightboxPhoto.id}`} className="sr-only">Caption</label>
@@ -730,6 +731,7 @@ export default function JournalEntryCard({ stop, isCurrent, onToggleVisited, onL
                 className="flex-1 bg-white/10 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-cyan-400"
               />
               <button type="submit" className="px-3 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-sm text-white">Save</button>
+              {photosError && <p className="basis-full text-sm text-coral-300" role="alert">Caption not saved: {photosError}</p>}
             </form>
           ) : lightboxPhoto.caption && (
             <p className="px-6 pt-3 text-center text-sm text-slate-300 font-serif italic" onClick={(e) => e.stopPropagation()}>{lightboxPhoto.caption}</p>

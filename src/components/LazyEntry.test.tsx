@@ -29,3 +29,13 @@ describe('LazyEntry', () => {
     expect(screen.getByText('full entry')).toBeInTheDocument();
   });
 });
+
+describe('LazyEntry latch', () => {
+  it('stays mounted after it stops being eager', () => {
+    vi.stubGlobal('IntersectionObserver', class { observe() {} disconnect() {} });
+    const { rerender } = render(<LazyEntry stop={stop} dateLine="x" eager><p>draft</p></LazyEntry>);
+    rerender(<LazyEntry stop={stop} dateLine="x" eager={false}><p>draft</p></LazyEntry>);
+    expect(screen.getByText('draft')).toBeInTheDocument();
+    vi.unstubAllGlobals();
+  });
+});

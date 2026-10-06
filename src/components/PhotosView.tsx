@@ -9,6 +9,27 @@ import { COUNTRY_FLAGS } from '../data/constants';
 import { formatDate } from '../utils/geo';
 import StopImage from './StopImage';
 
+// Video tiles only fetch their first frame once scrolled near — otherwise opening
+// the tab fires a range request for every video in the trip at once.
+function LazyVideoThumb({ src }: { src: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [near, setNear] = useState(typeof IntersectionObserver === 'undefined');
+  useEffect(() => {
+    const el = ref.current;
+    if (near || !el) return;
+    let root: HTMLElement | null = el.parentElement; // the tab's own scroll panel
+    while (root && !/(auto|scroll)/.test(getComputedStyle(root).overflowY)) root = root.parentElement;
+    const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) setNear(true); }, { root, rootMargin: '600px 0px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [near]);
+  return (
+    <div ref={ref} className="w-full h-full">
+      {near && <video src={`${src}#t=0.1`} muted playsInline preload="metadata" className="w-full h-full object-cover pointer-events-none" />}
+    </div>
+  );
+}
+
 interface PhotosViewProps {
   stops: Stop[];
   currentStop?: Stop | null;
@@ -69,7 +90,7 @@ export default function PhotosView({ stops, currentStop, onOpenEntry }: PhotosVi
         <div className="mb-8 text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400 mb-2">Sveti Ivan · 2026–27</p>
           <h1 className="font-serif text-3xl sm:text-4xl font-bold text-white mb-2">Photos</h1>
-          <p className="text-sm text-slate-400">{photos ? `${photos.length} photos and videos from along the way` : 'Every photo from along the way'}</p>
+          <p className="text-sm text-slate-400">{photos ? `${flat.length} photos and videos from along the way` : 'Every photo from along the way'}</p>
         </div>
 
         {failed ? (
@@ -100,7 +121,7 @@ export default function PhotosView({ stops, currentStop, onOpenEntry }: PhotosVi
                       >
                         {isVideoPath(photo.storage_path) ? (
                           <>
-                            <video src={`${src}#t=0.1`} muted playsInline preload="metadata" className="w-full h-full object-cover pointer-events-none" />
+                            <LazyVideoThumb src={src} />
                             <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
                               <span className="w-8 h-8 rounded-full bg-black/55 flex items-center justify-center">
                                 <svg viewBox="0 0 24 24" fill="white" className="w-4 h-4 ml-0.5" aria-hidden><path d="M8 5v14l11-7z" /></svg>

@@ -95,3 +95,19 @@ describe('JournalView feed ordering', () => {
     expect(ids).toEqual(['journal-dubrovnik', 'journal-split', 'journal-sibenik', 'journal-kotor']);
   });
 });
+
+describe('JournalView keeps focused entries open (unsaved drafts)', () => {
+  it('does not unmount a focused entry when focus moves to another stop', async () => {
+    const a = { ...stops[0], key: 'a', name: 'Stop A' };
+    const b = { ...stops[0], id: 2, key: 'b', name: 'Stop B' };
+    mockUseAuth.mockReturnValue({ user: { id: 'user-1' }, isEditor: true });
+    mockUseJournalEntryKeys.mockReturnValue({ keys: new Set<string>(), loading: false, refetch: vi.fn() }); // neither has content yet
+
+    const { rerender } = render(<JournalView stops={[a, b]} focusStop={a} />);
+    expect(await screen.findAllByTestId('journal-entry-card')).toHaveLength(1);
+
+    rerender(<JournalView stops={[a, b]} focusStop={b} />);
+    // A (possibly holding a draft) stays mounted alongside the newly focused B
+    expect(await screen.findAllByTestId('journal-entry-card')).toHaveLength(2);
+  });
+});

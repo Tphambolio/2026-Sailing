@@ -18,7 +18,10 @@ interface LazyEntryProps {
  */
 export default function LazyEntry({ stop, dateLine, eager = false, children }: LazyEntryProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const [seen, setSeen] = useState(false);
+  const [seen, setSeen] = useState(eager);
+  // Latch: once rendered (eagerly or on scroll) an entry stays mounted, so a
+  // draft being written isn't lost when it stops being the focused stop.
+  if (eager && !seen) setSeen(true);
   const mounted = eager || seen;
 
   useEffect(() => {

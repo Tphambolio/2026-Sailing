@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
-import { getData, saveUserStops, exportStopsJson } from './services/dataService';
+import { getData, reloadData, saveUserStops, syncPendingStops, exportStopsJson, type SaveResult } from './services/dataService';
 import { healRoute, computePhases, computeStats, insertStop, removeStop, updateStop, computeSchengenStatus, schengenByStop, effectiveArrival, effectiveDeparture, currentStopLabel } from './services/routeEngine';
 import type { Stop, Phase, TripStats } from './types';
 import { COUNTRY_FLAGS } from './data/constants';
@@ -34,6 +34,8 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUserEdited, setIsUserEdited] = useState(false);
+  // Itinerary changes saved on this device but not yet on the server (offline).
+  const [unsynced, setUnsynced] = useState(false);
   const [selectedStop, setSelectedStop] = useState<Stop | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeView, setActiveView] = useState<'map' | 'journal' | 'photos'>('journal');
@@ -53,6 +55,11 @@ function App() {
         setStats(result.stats);
         setIsUserEdited(result.isUserEdited);
         setError(null);
+        setUnsynced(result.hasPending);
+        if (result.droppedOfflineChanges) {
+          alert('Itinerary changes you made while offline couldn\'t be saved, because someone else updated the itinerary in the meantime. The latest version is showing — please redo your changes.');
+        }
+        if (result.hasPending) syncPendingStops().then(r => { if (r?.status === 'saved') setUnsynced(false); });
         // Deep link: tripjournal/#<stop-key> opens straight to that entry (the
         // hash survives the password gate since it's the same page).
         const linkedKey = decodeURIComponent(window.location.hash.slice(1));
@@ -72,34 +79,48 @@ function App() {
 
   // Apply route changes: heal, recompute, persist
   const reloadStops = useCallback(async () => {
-    const result = await getData();
+    const result = await reloadData(); // queued behind any in-flight save
     setStops(result.stops);
     setPhases(result.phases);
     setStats(result.stats);
     setIsUserEdited(result.isUserEdited);
     setSelectedStop(prev => prev ? result.stops.find(s => s.key === prev.key) || null : prev);
+    setUnsynced(result.hasPending);
   }, []);
+
+  // One place to react to a save's outcome (normal edits and offline re-syncs).
+  const handleSaveResult = useCallback(({ status }: SaveResult) => {
+    if (status === 'saved') { setUnsynced(false); return; }
+    if (status === 'local-only') { setUnsynced(true); return; }
+    if (status === 'not-loaded') {
+      alert('The itinerary couldn\'t be loaded from the server when this page opened (offline?), so changes can\'t be saved — saving now could overwrite the real one with an old copy. Reload the page when you\'re back online and try again.');
+      return;
+    }
+    // conflict: another editor saved since this device loaded. Ours was NOT
+    // written (it would have wiped theirs) — show theirs and let the user redo.
+    alert('Someone else updated the itinerary since you opened it, so your last change wasn\'t saved. Loading the latest version now — please make your change again.');
+    reloadStops();
+  }, [reloadStops]);
+
+  // Back online: push any changes that were kept on this device.
+  useEffect(() => {
+    const onOnline = () => { syncPendingStops().then(r => { if (r) handleSaveResult(r); }); };
+    window.addEventListener('online', onOnline);
+    return () => window.removeEventListener('online', onOnline);
+  }, [handleSaveResult]);
 
   const applyRouteChange = useCallback((newStops: Stop[]) => {
     const healed = healRoute(newStops);
     setStops(healed);
     setPhases(computePhases(healed));
     setStats(computeStats(healed));
-    saveUserStops(healed).then(({ status }) => {
-      if (status === 'not-loaded') {
-        alert('The itinerary couldn\'t be loaded from the server when this page opened (offline?), so changes can\'t be saved — saving now could overwrite the real one with an old copy. Reload the page when you\'re back online and try again.');
-        return;
-      }
-      if (status !== 'conflict') return;
-      // Another editor saved the itinerary since this device loaded it. Ours was
-      // NOT written (it would have wiped theirs) — show theirs and let the user redo.
-      alert('Someone else updated the itinerary since you opened it, so your last change wasn\'t saved. Loading the latest version now — please make your change again.');
-      reloadStops();
-    });
+    saveUserStops(healed).then(handleSaveResult);
     setIsUserEdited(true);
-    // Keep the open detail panel in sync with the freshly healed stop data
-    setSelectedStop(prev => prev ? healed.find(s => s.id === prev.id) || null : prev);
-  }, [reloadStops]);
+    // Keep the open detail panel in sync with the freshly healed stop data — by
+    // key: ids are renumbered by healRoute, so after an insert/delete an id match
+    // would select the neighbouring stop.
+    setSelectedStop(prev => prev ? healed.find(s => s.key === prev.key) || null : prev);
+  }, [handleSaveResult]);
 
   // Reality tracking handlers
   const handleToggleVisited = useCallback((stop: Stop) => {
@@ -248,8 +269,10 @@ function App() {
               <Sailboat size={22} className="text-cyan-400 shrink-0" aria-hidden />
               <span className="hidden sm:inline font-serif text-lg md:text-xl font-bold">Mediterranean Odyssey</span>
             </h1>
-            {isEditor && isUserEdited && (
-              <span className="hidden md:inline text-xs px-2 py-1 rounded bg-amber-600">Edited</span>
+            {isEditor && unsynced && (
+              <span className="text-xs px-2 py-1 rounded bg-coral-500/90 text-slate-950 font-semibold" role="status" title="Itinerary changes are saved on this device and will sync to the server when you're back online">
+                Not synced yet
+              </span>
             )}
           </div>
           {/* Right side: Controls */}
