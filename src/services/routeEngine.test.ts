@@ -151,3 +151,10 @@ describe('sailedTrack', () => {
     expect(sailedTrack(stops)).toEqual([[1, 1], [1.5, 1.5], [2, 2]]);
   });
 });
+
+describe('schengenExempt stops', () => {
+  it('does not count a Schengen-country stop that was never entered', () => {
+    const stops = [stop({ key: 'symi', country: 'Greece', arrival: '2026-10-01', departure: '2026-10-02', visited: true, actualArrival: '2026-10-01', actualDeparture: '2026-10-02', schengenExempt: true })];
+    expect(computeSchengenStatus(stops, '2026-10-06').usedInWindow).toBe(0);
+  });
+});

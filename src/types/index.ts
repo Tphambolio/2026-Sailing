@@ -42,6 +42,9 @@ export interface Stop {
   visited?: boolean;
   actualArrival?: string;    // ISO date string, overrides `arrival` for Schengen/progress math when set
   actualDeparture?: string;  // ISO date string, overrides `departure` when set
+  // In a Schengen country's waters but never entered (e.g. at anchor without
+  // going ashore or clearing in) — excluded from the 90/180 count.
+  schengenExempt?: boolean;
 }
 
 export interface Phase {

@@ -78,7 +78,7 @@ export function buildSchengenRanges(stops: Stop[], asOf: string = todayISO()): D
 
   const ranges: DateRange[] = [];
   stops.forEach((s, i) => {
-    if (NON_SCHENGEN.includes(s.country)) return;
+    if (NON_SCHENGEN.includes(s.country) || s.schengenExempt) return;
     let start = effectiveArrival(s);
     let end = effectiveDeparture(s);
     if (!start || !end) return;
@@ -148,7 +148,7 @@ export function schengenByStop(stops: Stop[], asOf: string = todayISO()): Map<nu
     out.set(s.id, {
       days: departure ? daysBetween(arrival, departure) : 0,
       rolling: rollingSchengenDays(ranges, departure || arrival),
-      isPaused: NON_SCHENGEN.includes(s.country),
+      isPaused: NON_SCHENGEN.includes(s.country) || !!s.schengenExempt,
     });
   }
   return out;
@@ -184,7 +184,7 @@ export function computeSchengenStatus(stops: Stop[], asOf: string = todayISO()):
 
   // Forward projection: check the rolling count as of each future Schengen stop's departure
   for (const stop of stops) {
-    if (NON_SCHENGEN.includes(stop.country)) continue;
+    if (NON_SCHENGEN.includes(stop.country) || stop.schengenExempt) continue;
     const departure = effectiveDeparture(stop);
     if (!departure || departure <= asOf) continue;
     const wStart = addDays(departure, -179);
@@ -308,7 +308,7 @@ export function computeStats(stops: Stop[]): TripStats {
     }
 
     // Schengen tracking
-    const isSchengen = !NON_SCHENGEN.includes(stop.country);
+    const isSchengen = !NON_SCHENGEN.includes(stop.country) && !stop.schengenExempt;
     if (isSchengen) {
       totalSchengenDays += stayDays;
       const year = getYear(arrival);
