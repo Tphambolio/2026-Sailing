@@ -45,6 +45,9 @@ export interface Stop {
   // In a Schengen country's waters but never entered (e.g. at anchor without
   // going ashore or clearing in) — excluded from the 90/180 count.
   schengenExempt?: boolean;
+  // Official Schengen entry date when it's later than the actual arrival (e.g.
+  // arrived after 22:00, cleared in the next morning) — the 90/180 count starts here.
+  schengenFrom?: string;
 }
 
 export interface Phase {

@@ -82,6 +82,7 @@ export function buildSchengenRanges(stops: Stop[], asOf: string = todayISO()): D
     let start = effectiveArrival(s);
     let end = effectiveDeparture(s);
     if (!start || !end) return;
+    if (s.schengenFrom && s.schengenFrom > start) start = s.schengenFrom; // official entry date
     if (s.visited === false) {
       // A stop explicitly not visited: its past dates are a plan that didn't
       // happen (skipped, or the trip ran differently) — only count the future.

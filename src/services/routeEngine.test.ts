@@ -158,3 +158,11 @@ describe('schengenExempt stops', () => {
     expect(computeSchengenStatus(stops, '2026-10-06').usedInWindow).toBe(0);
   });
 });
+
+describe('schengenFrom (official entry later than arrival)', () => {
+  it('starts counting a stay on the official entry date', () => {
+    const stops = [stop({ key: 'corfu', country: 'Greece', arrival: '2026-08-27', departure: '2026-08-31', visited: true, actualArrival: '2026-08-27', actualDeparture: '2026-08-31', schengenFrom: '2026-08-28' })];
+    // Aug 28..31 = 4 days, not 5
+    expect(computeSchengenStatus(stops, '2026-09-30').usedInWindow).toBe(4);
+  });
+});
